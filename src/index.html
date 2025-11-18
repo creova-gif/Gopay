@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#16a34a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="goPay">
+  <meta name="mobile-web-app-capable" content="yes">
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="goPay - Tanzania's leading super app for payments, shopping, travel, and financial services. Send money, pay bills, order food, and more!">
+  <meta name="keywords" content="Tanzania, mobile money, M-Pesa, payments, wallet, shopping, food delivery, travel booking">
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="goPay - Tanzania Super App">
+  <meta property="og:description" content="All-in-one digital wallet, payments, shopping, and services for Tanzania">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="/icon-512.png">
+  
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="goPay - Tanzania Super App">
+  <meta name="twitter:description" content="All-in-one digital wallet, payments, shopping, and services for Tanzania">
+  
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="/icon-192.png">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icon-192.png">
+  
+  <!-- Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  
+  <!-- Splash Screens for iOS -->
+  <link rel="apple-touch-startup-image" href="/icon-512.png">
+  
+  <title>goPay - Tanzania Super App</title>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      background: #f9fafb;
+    }
+    
+    #root {
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+    }
+    
+    /* iOS Safe Area Support */
+    @supports (padding: max(0px)) {
+      body {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
+    }
+    
+    /* Disable pull-to-refresh on mobile */
+    body {
+      overscroll-behavior-y: contain;
+    }
+    
+    /* Loading Screen */
+    #loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background: linear-gradient(135deg, #16a34a 0%, #2563eb 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      color: white;
+    }
+    
+    #loading-logo {
+      width: 120px;
+      height: 120px;
+      background: white;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      font-weight: bold;
+      color: #16a34a;
+      margin-bottom: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+    
+    #loading-text {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    
+    #loading-subtitle {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    
+    .spinner {
+      margin-top: 30px;
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <div id="loading-logo">gP</div>
+    <div id="loading-text">goPay</div>
+    <div id="loading-subtitle">Tanzania Super App</div>
+    <div class="spinner"></div>
+  </div>
+  
+  <div id="root"></div>
+  
+  <script type="module" src="/App.tsx"></script>
+  
+  <!-- PWA Installation Script -->
+  <script>
+    // Remove loading screen when app loads
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const loading = document.getElementById('loading');
+        if (loading) {
+          loading.style.opacity = '0';
+          loading.style.transition = 'opacity 0.3s ease-out';
+          setTimeout(() => {
+            loading.style.display = 'none';
+          }, 300);
+        }
+      }, 1000);
+    });
+    
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((registration) => {
+            console.log('✅ Service Worker registered:', registration);
+          })
+          .catch((error) => {
+            console.log('❌ Service Worker registration failed:', error);
+          });
+      });
+    }
+    
+    // PWA Install Prompt
+    let deferredPrompt;
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      console.log('💡 goPay can be installed as an app!');
+      
+      // Show custom install button if you want
+      // You can trigger this later with deferredPrompt.prompt()
+    });
+    
+    window.addEventListener('appinstalled', () => {
+      console.log('✅ goPay has been installed!');
+      deferredPrompt = null;
+    });
+    
+    // iOS Standalone Mode Detection
+    if (window.navigator.standalone === true) {
+      console.log('✅ Running in iOS standalone mode');
+    }
+    
+    // Disable zoom on double-tap (iOS)
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (event) => {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+    
+    // Prevent context menu on long press (optional)
+    window.addEventListener('contextmenu', (e) => {
+      if (window.navigator.standalone === true) {
+        e.preventDefault();
+      }
+    });
+  </script>
+</body>
+</html>

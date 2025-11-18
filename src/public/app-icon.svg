@@ -1,0 +1,25 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradient background -->
+  <defs>
+    <linearGradient id="appIconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Rounded square background -->
+  <rect width="120" height="120" rx="26" fill="url(#appIconGradient)"/>
+  
+  <!-- Two-arrow loop symbol -->
+  <g transform="translate(60, 60)">
+    <!-- Top arrow (clockwise) -->
+    <path d="M -15 -22 L -15 -10 C -15 -3 -10 2 -3 2 L 10 2" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <!-- Top arrowhead -->
+    <path d="M 5 -3 L 10 2 L 5 7" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    
+    <!-- Bottom arrow (counter-clockwise) -->
+    <path d="M 15 22 L 15 10 C 15 3 10 -2 3 -2 L -10 -2" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <!-- Bottom arrowhead -->
+    <path d="M -5 3 L -10 -2 L -5 -7" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+</svg>

@@ -1,0 +1,647 @@
+@import "tailwindcss";
+
+/* goPay Tanzania Super App Design System - Original Brand Identity */
+:root {
+  /* Primary Brand Colors - Tanzania Green Theme (Unique to goPay) */
+  --color-primary: 34 197 94; /* Vibrant Tanzania green - emerald-500 */
+  --color-primary-dark: 22 163 74; /* Darker green - emerald-600 */
+  --color-primary-light: 134 239 172; /* Light green - emerald-300 */
+  
+  /* Secondary Colors - Inspired by Tanzanite */
+  --color-secondary: 99 102 241; /* Tanzanite blue - indigo-500 */
+  --color-secondary-dark: 79 70 229; /* indigo-600 */
+  
+  /* Accent Colors */
+  --color-accent: 251 191 36; /* Serengeti gold - amber-400 */
+  --color-success: 34 197 94; /* emerald-500 */
+  --color-warning: 251 146 60; /* orange-400 */
+  --color-error: 239 68 68; /* red-500 */
+  --color-info: 59 130 246; /* blue-500 */
+  
+  /* Neutral Colors */
+  --color-background: 250 250 250; /* Off-white */
+  --color-surface: 255 255 255; /* Pure white */
+  --color-text-primary: 17 24 39; /* gray-900 */
+  --color-text-secondary: 107 114 128; /* gray-500 */
+  
+  /* Shadcn/UI Theme Variables for Proper Contrast */
+  --background: 0 0% 100%; /* white */
+  --foreground: 240 10% 3.9%; /* almost black - high contrast */
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 3.9%;
+  --primary: 142 76% 36%; /* Tanzania green */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --accent: 240 4.8% 95.9%;
+  --accent-foreground: 240 5.9% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --input-background: 0 0% 100%;
+  --ring: 142 76% 36%;
+  --chart-1: 142 76% 36%;
+  --chart-2: 240 76% 36%;
+  --chart-3: 43 87% 56%;
+  --chart-4: 0 84% 60%;
+  --chart-5: 217 91% 60%;
+  --radius: 0.5rem;
+  
+  /* Custom Shadows - Softer, more organic */
+  --shadow-sm: 0 2px 4px 0 rgba(34, 197, 94, 0.08);
+  --shadow-md: 0 4px 12px 0 rgba(34, 197, 94, 0.12);
+  --shadow-lg: 0 8px 24px -4px rgba(34, 197, 94, 0.16);
+  --shadow-xl: 0 16px 48px -8px rgba(34, 197, 94, 0.2);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  
+  /* Border Radius - Unique to goPay (slightly larger, more friendly) */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  
+  /* Spacing adjustments for goPay */
+  --spacing-base: 4px;
+}
+
+/* Smooth scroll with custom easing */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(to bottom, #fafafa 0%, #f5f5f5 100%);
+  color: rgb(var(--color-text-primary));
+  min-height: 100vh;
+}
+
+/* Custom Typography - goPay Style */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Enhanced Button Animations - Unique to goPay */
+button {
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-radius: var(--radius-md);
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Custom Scrollbar - Tanzania Green Theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(34, 197, 94, 0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(34, 197, 94, 0.3);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 197, 94, 0.5);
+  background-clip: content-box;
+}
+
+/* goPay Card Design - Unique Style */
+.gopay-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(34, 197, 94, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.gopay-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgb(34 197 94) 0%, rgb(99 102 241) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gopay-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.gopay-card:hover::before {
+  opacity: 1;
+}
+
+/* Primary Button - goPay Brand */
+.btn-gopay-primary {
+  background: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(22 163 74) 100%);
+  color: white;
+  padding: 0.875rem 1.75rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-gopay-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-gopay-primary:hover {
+  box-shadow: 0 6px 24px rgba(34, 197, 94, 0.4);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.btn-gopay-primary:hover::before {
+  left: 100%;
+}
+
+.btn-gopay-primary:active {
+  transform: scale(0.98);
+}
+
+/* Secondary Button - Tanzanite Blue */
+.btn-gopay-secondary {
+  background: linear-gradient(135deg, rgb(99 102 241) 0%, rgb(79 70 229) 100%);
+  color: white;
+  padding: 0.875rem 1.75rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-gopay-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
+}
+
+/* Outline Button */
+.btn-gopay-outline {
+  background: white;
+  color: rgb(34 197 94);
+  padding: 0.875rem 1.75rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  border: 2px solid rgb(34 197 94);
+  transition: all 0.3s ease;
+}
+
+.btn-gopay-outline:hover {
+  background: rgb(34 197 94);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+}
+
+/* Input Fields - goPay Style */
+input, textarea, select {
+  border-radius: var(--radius-md);
+  border: 2px solid rgba(34, 197, 94, 0.15);
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+  background: white !important;
+  font-size: 1rem;
+  color: #111827 !important; /* Dark gray-900 for maximum visibility */
+  font-weight: 500;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: rgb(34 197 94);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+  transform: translateY(-1px);
+}
+
+input::placeholder, textarea::placeholder {
+  color: #9ca3af !important; /* gray-400 for visible placeholders */
+}
+
+select {
+  color: rgb(17 24 39); /* gray-900 - ensure select text is dark */
+  font-weight: 600; /* Make select text more prominent */
+}
+
+select option {
+  color: rgb(17 24 39);  /* gray-900 */
+  background: white;
+}
+
+/* Badge/Chip - goPay Style */
+.gopay-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: var(--radius-xl);
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.15) 100%);
+  color: rgb(22 163 74);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+/* Gradient Text - Tanzania Pride */
+.gopay-gradient-text {
+  background: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(99 102 241) 50%, rgb(251 191 36) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+}
+
+/* Service Card Grid - Unique Layout */
+.gopay-service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .gopay-service-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Service Card */
+.gopay-service-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 1rem;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+
+.gopay-service-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.gopay-service-card:active {
+  transform: scale(0.98);
+}
+
+/* Bottom Sheet - Tanzania Style */
+.gopay-bottom-sheet {
+  background: white;
+  border-top-left-radius: var(--radius-2xl);
+  border-top-right-radius: var(--radius-2xl);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
+  padding: 1.5rem;
+  position: relative;
+}
+
+.gopay-bottom-sheet::before {
+  content: '';
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 4px;
+  background: rgba(34, 197, 94, 0.3);
+  border-radius: 2px;
+}
+
+/* Loading Animation - Unique */
+@keyframes gopay-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+.gopay-loading {
+  animation: gopay-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Shimmer Loading */
+@keyframes gopay-shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.gopay-shimmer {
+  animation: gopay-shimmer 2.5s infinite linear;
+  background: linear-gradient(
+    90deg,
+    rgba(34, 197, 94, 0.05) 0%,
+    rgba(34, 197, 94, 0.15) 50%,
+    rgba(34, 197, 94, 0.05) 100%
+  );
+  background-size: 1000px 100%;
+}
+
+/* Success State */
+.gopay-success {
+  background: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(22 163 74) 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+}
+
+/* Error State */
+.gopay-error {
+  background: linear-gradient(135deg, rgb(239 68 68) 0%, rgb(220 38 38) 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+}
+
+/* Warning State */
+.gopay-warning {
+  background: linear-gradient(135deg, rgb(251 146 60) 0%, rgb(249 115 22) 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 20px rgba(251, 146, 60, 0.3);
+}
+
+/* Divider */
+.gopay-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(34, 197, 94, 0.2) 50%,
+    transparent 100%
+  );
+  margin: 1.5rem 0;
+}
+
+/* Profile Avatar with Status Ring */
+.gopay-avatar {
+  position: relative;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.gopay-avatar-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgb(34 197 94), rgb(99 102 241));
+  padding: 2px;
+  z-index: -1;
+}
+
+/* Floating Action Button */
+.gopay-fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(22 163 74) 100%);
+  color: white;
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 50;
+}
+
+.gopay-fab:hover {
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 12px 32px rgba(34, 197, 94, 0.5);
+}
+
+/* Focus Visible - Accessibility */
+*:focus-visible {
+  outline: 3px solid rgb(34 197 94);
+  outline-offset: 3px;
+  border-radius: var(--radius-md);
+}
+
+/* Skeleton Loading */
+.gopay-skeleton {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: gopay-shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+/* Transaction Card */
+.gopay-transaction-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: var(--shadow-card);
+  border-left: 4px solid rgb(34 197 94);
+  transition: all 0.2s ease;
+}
+
+.gopay-transaction-card:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Status Dot */
+.gopay-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(34 197 94);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+  animation: gopay-pulse 2s infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  :root {
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-2xl: 24px;
+  }
+  
+  h1 {
+    font-size: 1.75rem;
+  }
+  
+  h2 {
+    font-size: 1.375rem;
+  }
+  
+  h3 {
+    font-size: 1.125rem;
+  }
+  
+  .btn-gopay-primary,
+  .btn-gopay-secondary,
+  .btn-gopay-outline {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9375rem;
+  }
+  
+  .gopay-fab {
+    width: 56px;
+    height: 56px;
+    bottom: 1.5rem;
+    right: 1.5rem;
+  }
+}
+
+/* Dark mode support (optional future enhancement) */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
+    color: #f8fafc;
+  }
+  
+  .gopay-card,
+  .gopay-service-card,
+  .gopay-transaction-card {
+    background: #1e293b;
+    border-color: rgba(34, 197, 94, 0.2);
+  }
+  
+  input, textarea, select {
+    background: #0f172a;
+    color: #f8fafc;
+    border-color: rgba(34, 197, 94, 0.3);
+  }
+}
+
+/* Print styles */
+@media print {
+  .gopay-fab,
+  button,
+  .no-print {
+    display: none !important;
+  }
+  
+  .gopay-card,
+  .gopay-transaction-card {
+    box-shadow: none;
+    border: 1px solid #e5e7eb;
+  }
+}
+
+/* Animation utilities */
+@keyframes gopay-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gopay-animate-slide-up {
+  animation: gopay-slide-up 0.4s ease-out;
+}
+
+@keyframes gopay-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.gopay-animate-fade-in {
+  animation: gopay-fade-in 0.3s ease-out;
+}
+
+/* Unique Tanzania-inspired patterns */
+.gopay-pattern-dots {
+  background-image: radial-gradient(rgba(34, 197, 94, 0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.gopay-pattern-grid {
+  background-image: 
+    linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px);
+  background-size: 30px 30px;
+}

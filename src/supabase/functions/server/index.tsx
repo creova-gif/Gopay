@@ -1,0 +1,693 @@
+import { Hono } from 'npm:hono';
+import { cors } from 'npm:hono/cors';
+import { logger } from 'npm:hono/logger';
+import { createClient } from 'jsr:@supabase/supabase-js@2';
+import * as kv from './kv_store.tsx';
+import shoppingApp from './shopping.tsx';
+import merchantApp from './merchant.tsx';
+import adminApp from './admin.tsx';
+import securityApp from './security.tsx';
+import moviesApp from './movies.tsx';
+import billsApp from './bills.tsx';
+import membershipApp from './membership.tsx';
+import restaurantsApp from './restaurants.tsx';
+import ridesApp from './rides.tsx';
+import profileApp from './profile.tsx';
+import rentalsApp from './rentals.tsx';
+import driversApp from './drivers.tsx';
+import userApp from './user.tsx';
+import notificationsApp from './notifications.tsx';
+import analyticsApp from './analytics.tsx';
+import budgetsApp from './budgets.tsx';
+import gosafariApp from './gosafari.tsx';
+import flightsApp from './flights.tsx';
+import hotelsApp from './hotels.tsx';
+import carsApp from './cars.tsx';
+import complianceApp from './compliance.tsx';
+
+const app = new Hono();
+
+// Middleware
+app.use('*', cors());
+app.use('*', logger(console.log));
+
+// Mount shopping routes
+app.route('/make-server-69a10ee8/shopping', shoppingApp);
+
+// Mount merchant routes
+app.route('/make-server-69a10ee8/merchant', merchantApp);
+
+// Mount admin routes
+app.route('/make-server-69a10ee8/admin', adminApp);
+
+// Mount security routes
+app.route('/make-server-69a10ee8/security', securityApp);
+
+// Mount movies routes
+app.route('/make-server-69a10ee8/movies', moviesApp);
+
+// Mount bills routes
+app.route('/make-server-69a10ee8/bills', billsApp);
+
+// Mount membership routes
+app.route('/make-server-69a10ee8/membership', membershipApp);
+
+// Mount restaurants routes
+app.route('/make-server-69a10ee8/restaurants', restaurantsApp);
+
+// Mount rides routes
+app.route('/make-server-69a10ee8/rides', ridesApp);
+
+// Mount profile routes
+app.route('/make-server-69a10ee8/profile', profileApp);
+
+// Mount rentals routes
+app.route('/make-server-69a10ee8/rentals', rentalsApp);
+
+// Mount drivers routes
+app.route('/make-server-69a10ee8/drivers', driversApp);
+
+// Mount user routes
+app.route('/make-server-69a10ee8/user', userApp);
+
+// Mount notifications routes
+app.route('/make-server-69a10ee8/notifications', notificationsApp);
+
+// Mount analytics routes
+app.route('/make-server-69a10ee8/analytics', analyticsApp);
+
+// Mount budgets routes
+app.route('/make-server-69a10ee8/budgets', budgetsApp);
+
+// Mount gosafari routes
+app.route('/make-server-69a10ee8/gosafari', gosafariApp);
+
+// Mount flights routes
+app.route('/make-server-69a10ee8/flights', flightsApp);
+
+// Mount hotels routes
+app.route('/make-server-69a10ee8/hotels', hotelsApp);
+
+// Mount cars routes
+app.route('/make-server-69a10ee8/cars', carsApp);
+
+// Mount compliance routes
+app.route('/make-server-69a10ee8/compliance', complianceApp);
+
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Utility function to verify user
+async function verifyUser(authHeader: string | null) {
+  if (!authHeader) {
+    return null;
+  }
+  
+  const accessToken = authHeader.split(' ')[1];
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  
+  if (error || !user?.id) {
+    return null;
+  }
+  
+  return user.id;
+}
+
+// Auth Routes
+app.post('/make-server-69a10ee8/auth/signup', async (c) => {
+  try {
+    const { name, email, phone, nida, password } = await c.req.json();
+
+    // Create user in Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true, // Auto-confirm since no email server configured
+      user_metadata: { name, phone, nida },
+    });
+
+    if (authError) {
+      console.error('Auth signup error:', authError);
+      return c.json({ error: authError.message }, 400);
+    }
+
+    const userId = authData.user.id;
+
+    // Store user profile
+    await kv.set(`user:${userId}`, {
+      id: userId,
+      email,
+      name,
+      phone,
+      nida,
+      createdAt: new Date().toISOString(),
+    });
+
+    // Initialize wallet with 100,000 TZS demo balance
+    await kv.set(`wallet:${userId}`, {
+      userId,
+      balance: 100000,
+      currency: 'TZS',
+      pin: '1234', // Demo PIN
+    });
+
+    // Initialize empty linked accounts
+    await kv.set(`linked_accounts:${userId}`, []);
+
+    return c.json({ success: true, userId });
+  } catch (error: any) {
+    console.error('Signup error:', error);
+    return c.json({ error: error.message || 'Signup failed' }, 500);
+  }
+});
+
+// User Profile
+app.get('/make-server-69a10ee8/user/profile', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const userProfile = await kv.get(`user:${userId}`);
+    
+    if (!userProfile) {
+      return c.json({ error: 'Profile not found' }, 404);
+    }
+
+    return c.json(userProfile);
+  } catch (error: any) {
+    console.error('Error fetching profile:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Wallet Balance
+app.get('/make-server-69a10ee8/wallet/balance', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const wallet = await kv.get(`wallet:${userId}`);
+    
+    if (!wallet) {
+      return c.json({ balance: 0, currency: 'TZS' });
+    }
+
+    return c.json({ balance: wallet.balance, currency: wallet.currency });
+  } catch (error: any) {
+    console.error('Error fetching wallet balance:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Linked Accounts
+app.get('/make-server-69a10ee8/wallet/linked-accounts', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const accounts = await kv.get(`linked_accounts:${userId}`) || [];
+    return c.json({ accounts });
+  } catch (error: any) {
+    console.error('Error fetching linked accounts:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Link Account
+app.post('/make-server-69a10ee8/wallet/link-account', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const { type, provider, accountNumber, pin } = await c.req.json();
+
+    // Verify PIN
+    const wallet = await kv.get(`wallet:${userId}`);
+    if (wallet.pin !== pin) {
+      return c.json({ error: 'Invalid PIN' }, 400);
+    }
+
+    const accounts = await kv.get(`linked_accounts:${userId}`) || [];
+    
+    const newAccount = {
+      id: `acc_${Date.now()}`,
+      type,
+      provider,
+      accountNumber,
+      createdAt: new Date().toISOString(),
+    };
+
+    accounts.push(newAccount);
+    await kv.set(`linked_accounts:${userId}`, accounts);
+
+    return c.json({ success: true, account: newAccount });
+  } catch (error: any) {
+    console.error('Error linking account:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Add Funds
+app.post('/make-server-69a10ee8/wallet/add-funds', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const { amount, source, pin } = await c.req.json();
+
+    const wallet = await kv.get(`wallet:${userId}`);
+    if (wallet.pin !== pin) {
+      return c.json({ error: 'Invalid PIN' }, 400);
+    }
+
+    const newBalance = wallet.balance + parseInt(amount);
+    wallet.balance = newBalance;
+    await kv.set(`wallet:${userId}`, wallet);
+
+    // Record transaction
+    const transactionId = `tx_${Date.now()}`;
+    await kv.set(`transaction:${transactionId}`, {
+      id: transactionId,
+      userId,
+      type: 'credit',
+      amount: parseInt(amount),
+      description: `Added funds from ${source}`,
+      timestamp: new Date().toISOString(),
+      status: 'completed',
+    });
+
+    return c.json({ success: true, newBalance });
+  } catch (error: any) {
+    console.error('Error adding funds:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Send Money
+app.post('/make-server-69a10ee8/wallet/send-money', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const { recipient, amount, pin } = await c.req.json();
+
+    const wallet = await kv.get(`wallet:${userId}`);
+    if (wallet.pin !== pin) {
+      return c.json({ error: 'Invalid PIN' }, 400);
+    }
+
+    const amountNum = parseInt(amount);
+    if (wallet.balance < amountNum) {
+      return c.json({ error: 'Insufficient balance' }, 400);
+    }
+
+    wallet.balance -= amountNum;
+    await kv.set(`wallet:${userId}`, wallet);
+
+    // Record transaction
+    const transactionId = `tx_${Date.now()}`;
+    await kv.set(`transaction:${transactionId}`, {
+      id: transactionId,
+      userId,
+      type: 'debit',
+      amount: amountNum,
+      description: `Sent to ${recipient}`,
+      timestamp: new Date().toISOString(),
+      status: 'completed',
+    });
+
+    return c.json({ success: true, newBalance: wallet.balance });
+  } catch (error: any) {
+    console.error('Error sending money:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Recent Transactions
+app.get('/make-server-69a10ee8/transactions/recent', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const allTransactions = await kv.getByPrefix('transaction:');
+    const userTransactions = allTransactions
+      .filter((tx: any) => tx.userId === userId)
+      .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 10);
+
+    return c.json({ transactions: userTransactions });
+  } catch (error: any) {
+    console.error('Error fetching transactions:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Process Payment
+app.post('/make-server-69a10ee8/payments/process', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const { provider, accountNumber, amount, pin } = await c.req.json();
+
+    const wallet = await kv.get(`wallet:${userId}`);
+    if (wallet.pin !== pin) {
+      return c.json({ error: 'Invalid PIN' }, 400);
+    }
+
+    const amountNum = parseInt(amount);
+    if (wallet.balance < amountNum) {
+      return c.json({ error: 'Insufficient balance' }, 400);
+    }
+
+    wallet.balance -= amountNum;
+    await kv.set(`wallet:${userId}`, wallet);
+
+    const reference = `PAY${Date.now()}`;
+    const transactionId = `tx_${Date.now()}`;
+    
+    await kv.set(`transaction:${transactionId}`, {
+      id: transactionId,
+      userId,
+      type: 'debit',
+      amount: amountNum,
+      description: `${provider} - ${accountNumber}`,
+      timestamp: new Date().toISOString(),
+      status: 'completed',
+      category: 'bill_payment',
+    });
+
+    // Store payment record
+    await kv.set(`payment:${reference}`, {
+      reference,
+      userId,
+      provider,
+      accountNumber,
+      amount: amountNum,
+      timestamp: new Date().toISOString(),
+    });
+
+    return c.json({ success: true, reference, newBalance: wallet.balance })
+  } catch (error: any) {
+    console.error('Error processing payment:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Process Bill Payment with Control Number
+app.post('/make-server-69a10ee8/payments/bill-payment', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized - Bill payment requires authentication' }, 401);
+  }
+
+  try {
+    const { provider, controlNumber, accountNumber, amount, phone, pin, paymentMethod, billDetails } = await c.req.json();
+
+    // Verify PIN
+    const wallet = await kv.get(`wallet:${userId}`);
+    if (!wallet) {
+      return c.json({ error: 'Wallet not found' }, 404);
+    }
+    
+    if (wallet.pin !== pin) {
+      return c.json({ error: 'Invalid PIN - Please check your PIN and try again' }, 400);
+    }
+
+    const amountNum = parseInt(amount);
+    if (!amountNum || amountNum <= 0) {
+      return c.json({ error: 'Invalid amount' }, 400);
+    }
+
+    // Check balance (Tanzania BOT regulation: ensure sufficient funds)
+    if (wallet.balance < amountNum) {
+      return c.json({ error: 'Insufficient balance - Please top up your wallet' }, 400);
+    }
+
+    // Generate payment reference (BOT compliant format)
+    const reference = `BP${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+    
+    // Deduct from wallet
+    wallet.balance -= amountNum;
+    await kv.set(`wallet:${userId}`, wallet);
+
+    // Record transaction (BOT regulation: maintain transaction log)
+    const transactionId = `tx_${Date.now()}`;
+    await kv.set(`transaction:${transactionId}`, {
+      id: transactionId,
+      userId,
+      type: 'debit',
+      amount: amountNum,
+      description: `Bill Payment - ${provider}${controlNumber ? ` (CN: ${controlNumber})` : ''}`,
+      timestamp: new Date().toISOString(),
+      status: 'completed',
+      category: 'bill_payment',
+      provider: provider,
+      reference: reference,
+    });
+
+    // Store payment record with control number
+    await kv.set(`payment:${reference}`, {
+      reference,
+      userId,
+      provider,
+      controlNumber: controlNumber || null,
+      accountNumber: accountNumber || null,
+      amount: amountNum,
+      phone: phone,
+      paymentMethod: paymentMethod,
+      billDetails: billDetails,
+      timestamp: new Date().toISOString(),
+      status: 'completed',
+      regulatoryCompliance: {
+        botRegulated: true,
+        transactionLogged: true,
+        receiptGenerated: true,
+        timestamp: new Date().toISOString()
+      }
+    });
+
+    // In production, this would call the actual provider API to process the payment
+    // For TANESCO, DAWASCO, TRA, etc., integration with TEPSA/GePG systems
+    console.log(`Bill payment processed: ${reference} - ${provider} - ${amountNum} TZS`);
+
+    return c.json({ 
+      success: true, 
+      reference, 
+      newBalance: wallet.balance,
+      message: 'Payment successful - Receipt sent to your phone'
+    });
+  } catch (error: any) {
+    console.error('Error processing bill payment:', error);
+    return c.json({ error: error.message || 'Payment processing failed' }, 500);
+  }
+});
+
+// Generate Personal QR Code for receiving money
+app.post('/make-server-69a10ee8/wallet/generate-qr', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const { amount } = await c.req.json();
+    const userProfile = await kv.get(`user:${userId}`);
+    
+    const qrCode = `PAY_${userId}_${amount || 0}_${Date.now()}`;
+    
+    // Store QR code details
+    await kv.set(`qr:${qrCode}`, {
+      qrCode,
+      userId,
+      userName: userProfile.name,
+      amount: amount ? parseInt(amount) : 0,
+      createdAt: new Date().toISOString(),
+      status: 'active',
+      type: 'personal',
+    });
+
+    return c.json({ qrCode, amount: amount || 0, userName: userProfile.name });
+  } catch (error: any) {
+    console.error('Error generating QR code:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Request Money
+app.post('/make-server-69a10ee8/wallet/request-money', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const { recipient, amount, message } = await c.req.json();
+    const userProfile = await kv.get(`user:${userId}`);
+    
+    const requestId = `REQ_${Date.now()}`;
+    
+    await kv.set(`request:${requestId}`, {
+      requestId,
+      fromUserId: userId,
+      fromUserName: userProfile.name,
+      recipient,
+      amount: parseInt(amount),
+      message,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    });
+
+    return c.json({ success: true, requestId });
+  } catch (error: any) {
+    console.error('Error requesting money:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Pay QR Code (Personal or Merchant)
+app.post('/make-server-69a10ee8/wallet/pay-qr', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const { qrCode, amount, pin } = await c.req.json();
+
+    const wallet = await kv.get(`wallet:${userId}`);
+    if (wallet.pin !== pin) {
+      return c.json({ error: 'Invalid PIN' }, 400);
+    }
+
+    const qrData = await kv.get(`qr:${qrCode}`);
+    if (!qrData || qrData.status !== 'active') {
+      return c.json({ error: 'Invalid or expired QR code' }, 400);
+    }
+
+    const paymentAmount = qrData.amount > 0 ? qrData.amount : parseInt(amount);
+
+    if (wallet.balance < paymentAmount) {
+      return c.json({ error: 'Insufficient balance' }, 400);
+    }
+
+    // Deduct from payer
+    wallet.balance -= paymentAmount;
+    await kv.set(`wallet:${userId}`, wallet);
+
+    // Add to recipient
+    const recipientWallet = await kv.get(`wallet:${qrData.userId}`);
+    if (recipientWallet) {
+      recipientWallet.balance += paymentAmount;
+      await kv.set(`wallet:${qrData.userId}`, recipientWallet);
+    }
+
+    // Mark QR as used if it's a one-time QR with fixed amount
+    if (qrData.amount > 0) {
+      qrData.status = 'used';
+      await kv.set(`qr:${qrCode}`, qrData);
+    }
+
+    // Record transactions
+    const transactionId = `tx_${Date.now()}`;
+    await kv.set(`transaction:${transactionId}`, {
+      id: transactionId,
+      userId,
+      type: 'debit',
+      amount: paymentAmount,
+      description: `Payment to ${qrData.userName || 'merchant'}`,
+      timestamp: new Date().toISOString(),
+      status: 'completed',
+      category: 'qr_payment',
+    });
+
+    const recipientTxId = `tx_${Date.now() + 1}`;
+    await kv.set(`transaction:${recipientTxId}`, {
+      id: recipientTxId,
+      userId: qrData.userId,
+      type: 'credit',
+      amount: paymentAmount,
+      description: `Received from user`,
+      timestamp: new Date().toISOString(),
+      status: 'completed',
+      category: 'qr_payment',
+    });
+
+    return c.json({ 
+      success: true, 
+      amount: paymentAmount, 
+      newBalance: wallet.balance,
+      recipientName: qrData.userName 
+    });
+  } catch (error: any) {
+    console.error('Error processing QR payment:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Get User Favorites
+app.get('/make-server-69a10ee8/favorites', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const favorites = await kv.get(`favorites:${userId}`) || [];
+    return c.json({ favorites });
+  } catch (error: any) {
+    console.error('Error fetching favorites:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Add to Favorites
+app.post('/make-server-69a10ee8/favorites/add', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const { type, provider, accountNumber, name } = await c.req.json();
+    
+    const favorites = await kv.get(`favorites:${userId}`) || [];
+    
+    const newFavorite = {
+      id: `fav_${Date.now()}`,
+      type,
+      provider,
+      accountNumber,
+      name,
+      createdAt: new Date().toISOString(),
+    };
+
+    favorites.push(newFavorite);
+    await kv.set(`favorites:${userId}`, favorites);
+
+    return c.json({ success: true, favorite: newFavorite });
+  } catch (error: any) {
+    console.error('Error adding favorite:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+Deno.serve(app.fetch);

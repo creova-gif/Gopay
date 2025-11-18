@@ -1,0 +1,61 @@
+{
+  "name": "gopay-tanzania-super-app",
+  "version": "1.0.0",
+  "description": "Tanzania's #1 Super App - Digital Wallet, Payments, Travel, and Government Services",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 5173",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "replit:setup": "npm install && echo 'Setup complete! Run npm run dev to start the app.'",
+    "replit:dev": "npm run dev",
+    "replit:build": "npm run build"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "lucide-react": "latest",
+    "recharts": "^2.10.0",
+    "date-fns": "^3.0.0",
+    "react-slick": "^0.29.0",
+    "slick-carousel": "^1.8.1",
+    "react-responsive-masonry": "^2.1.7",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
+    "motion": "^10.16.4",
+    "sonner": "^1.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8"
+  },
+  "keywords": [
+    "tanzania",
+    "mobile-money",
+    "mpesa",
+    "digital-wallet",
+    "super-app",
+    "fintech",
+    "payments",
+    "travel-booking",
+    "government-services"
+  ],
+  "author": "goPay Tanzania",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

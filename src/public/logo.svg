@@ -1,0 +1,24 @@
+<svg width="200" height="50" viewBox="0 0 200 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Symbol -->
+  <g transform="translate(25, 25)">
+    <!-- Background circle for symbol -->
+    <circle cx="0" cy="0" r="22" fill="#10b981"/>
+    
+    <!-- Two-arrow loop -->
+    <g transform="scale(0.7)">
+      <!-- Top arrow (clockwise) -->
+      <path d="M -12 -18 L -12 -8 C -12 -2 -8 2 -2 2 L 8 2" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M 4 -2 L 8 2 L 4 6" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      
+      <!-- Bottom arrow (counter-clockwise) -->
+      <path d="M 12 18 L 12 8 C 12 2 8 -2 2 -2 L -8 -2" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M -4 2 L -8 -2 L -4 -6" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>
+  </g>
+
+  <!-- Wordmark -->
+  <g transform="translate(60, 0)">
+    <text x="0" y="33" font-family="system-ui, -apple-system, 'SF Pro Display', sans-serif" font-size="28" font-weight="700" fill="#1f2937" letter-spacing="-0.5">go</text>
+    <text x="38" y="33" font-family="system-ui, -apple-system, 'SF Pro Display', sans-serif" font-size="28" font-weight="700" fill="#10b981" letter-spacing="-0.5">Pay</text>
+  </g>
+</svg>
