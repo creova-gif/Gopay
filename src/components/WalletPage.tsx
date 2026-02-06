@@ -7,12 +7,14 @@ import { ArrowLeft, Plus, Send, Smartphone, Building, CreditCard, ChevronRight, 
 import { projectId } from '../utils/supabase/info';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { getDemoBalance, setDemoBalance, DEMO_LINKED_ACCOUNTS, addDemoTransaction, updateDemoRewards } from '../utils/demoData';
 
 interface WalletPageProps {
   user: User;
   accessToken: string;
   onBack: () => void;
   onNavigate?: (page: 'cards' | 'export' | 'international') => void;
+  isDemoMode?: boolean;
 }
 
 interface LinkedAccount {
@@ -22,7 +24,7 @@ interface LinkedAccount {
   accountNumber: string;
 }
 
-export function WalletPage({ user, accessToken, onBack, onNavigate }: WalletPageProps) {
+export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }: WalletPageProps) {
   const [balance, setBalance] = useState(0);
   const [linkedAccounts, setLinkedAccounts] = useState<LinkedAccount[]>([]);
   const [showAddFunds, setShowAddFunds] = useState(false);
@@ -65,165 +67,214 @@ export function WalletPage({ user, accessToken, onBack, onNavigate }: WalletPage
   }, []);
 
   const fetchWalletData = async () => {
-    try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/balance`,
-        {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          },
-        }
-      );
+    if (isDemoMode) {
+      setBalance(getDemoBalance());
+    } else {
+      try {
+        const response = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/balance`,
+          {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+            },
+          }
+        );
 
-      if (response.ok) {
-        const data = await response.json();
-        setBalance(data.balance || 0);
+        if (response.ok) {
+          const data = await response.json();
+          setBalance(data.balance || 0);
+        }
+      } catch (error) {
+        console.error('Error fetching wallet balance:', error);
       }
-    } catch (error) {
-      console.error('Error fetching wallet balance:', error);
     }
   };
 
   const fetchLinkedAccounts = async () => {
-    try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/linked-accounts`,
-        {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          },
-        }
-      );
+    if (isDemoMode) {
+      setLinkedAccounts(DEMO_LINKED_ACCOUNTS);
+    } else {
+      try {
+        const response = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/linked-accounts`,
+          {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+            },
+          }
+        );
 
-      if (response.ok) {
-        const data = await response.json();
-        setLinkedAccounts(data.accounts || []);
+        if (response.ok) {
+          const data = await response.json();
+          setLinkedAccounts(data.accounts || []);
+        }
+      } catch (error) {
+        console.error('Error fetching linked accounts:', error);
       }
-    } catch (error) {
-      console.error('Error fetching linked accounts:', error);
     }
   };
 
   const handleAddFunds = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/add-funds`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify(addFundsData),
-        }
-      );
+    if (isDemoMode) {
+      setDemoBalance(balance + parseFloat(addFundsData.amount));
+      setShowAddFunds(false);
+      setAddFundsData({ amount: '', source: '', pin: '' });
+      fetchWalletData();
+      alert('Funds added successfully!');
+    } else {
+      try {
+        const response = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/add-funds`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(addFundsData),
+          }
+        );
 
-      if (response.ok) {
-        setShowAddFunds(false);
-        setAddFundsData({ amount: '', source: '', pin: '' });
-        fetchWalletData();
-        alert('Funds added successfully!');
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to add funds');
+        if (response.ok) {
+          setShowAddFunds(false);
+          setAddFundsData({ amount: '', source: '', pin: '' });
+          fetchWalletData();
+          alert('Funds added successfully!');
+        } else {
+          const error = await response.json();
+          alert(error.error || 'Failed to add funds');
+        }
+      } catch (error) {
+        console.error('Error adding funds:', error);
+        alert('An error occurred');
       }
-    } catch (error) {
-      console.error('Error adding funds:', error);
-      alert('An error occurred');
     }
   };
 
   const handleSendMoney = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/send-money`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify(sendMoneyData),
-        }
-      );
+    if (isDemoMode) {
+      setDemoBalance(balance - parseFloat(sendMoneyData.amount));
+      addDemoTransaction({
+        type: 'send',
+        amount: parseFloat(sendMoneyData.amount),
+        recipient: sendMoneyData.recipient,
+      });
+      setShowSendMoney(false);
+      setSendMoneyData({ recipient: '', amount: '', pin: '' });
+      fetchWalletData();
+      alert('Money sent successfully!');
+    } else {
+      try {
+        const response = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/send-money`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(sendMoneyData),
+          }
+        );
 
-      if (response.ok) {
-        setShowSendMoney(false);
-        setSendMoneyData({ recipient: '', amount: '', pin: '' });
-        fetchWalletData();
-        alert('Money sent successfully!');
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to send money');
+        if (response.ok) {
+          setShowSendMoney(false);
+          setSendMoneyData({ recipient: '', amount: '', pin: '' });
+          fetchWalletData();
+          alert('Money sent successfully!');
+        } else {
+          const error = await response.json();
+          alert(error.error || 'Failed to send money');
+        }
+      } catch (error) {
+        console.error('Error sending money:', error);
+        alert('An error occurred');
       }
-    } catch (error) {
-      console.error('Error sending money:', error);
-      alert('An error occurred');
     }
   };
 
   const handleRequestMoney = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/request-money`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify(requestMoneyData),
-        }
-      );
+    if (isDemoMode) {
+      addDemoTransaction({
+        type: 'request',
+        amount: parseFloat(requestMoneyData.amount),
+        recipient: requestMoneyData.recipient,
+        message: requestMoneyData.message,
+      });
+      setShowRequestMoney(false);
+      setRequestMoneyData({ recipient: '', amount: '', message: '' });
+      alert('Money request sent successfully!');
+    } else {
+      try {
+        const response = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/request-money`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(requestMoneyData),
+          }
+        );
 
-      if (response.ok) {
-        setShowRequestMoney(false);
-        setRequestMoneyData({ recipient: '', amount: '', message: '' });
-        alert('Money request sent successfully!');
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to request money');
+        if (response.ok) {
+          setShowRequestMoney(false);
+          setRequestMoneyData({ recipient: '', amount: '', message: '' });
+          alert('Money request sent successfully!');
+        } else {
+          const error = await response.json();
+          alert(error.error || 'Failed to request money');
+        }
+      } catch (error) {
+        console.error('Error requesting money:', error);
+        alert('An error occurred');
       }
-    } catch (error) {
-      console.error('Error requesting money:', error);
-      alert('An error occurred');
     }
   };
 
   const handleLinkAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/link-account`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify(linkAccountData),
-        }
-      );
+    if (isDemoMode) {
+      setLinkedAccounts([...linkedAccounts, linkAccountData]);
+      setShowLinkAccount(false);
+      setLinkAccountData({ type: '', provider: '', accountNumber: '', pin: '' });
+      fetchLinkedAccounts();
+      alert('Account linked successfully!');
+    } else {
+      try {
+        const response = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/link-account`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(linkAccountData),
+          }
+        );
 
-      if (response.ok) {
-        setShowLinkAccount(false);
-        setLinkAccountData({ type: '', provider: '', accountNumber: '', pin: '' });
-        fetchLinkedAccounts();
-        alert('Account linked successfully!');
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Failed to link account');
+        if (response.ok) {
+          setShowLinkAccount(false);
+          setLinkAccountData({ type: '', provider: '', accountNumber: '', pin: '' });
+          fetchLinkedAccounts();
+          alert('Account linked successfully!');
+        } else {
+          const error = await response.json();
+          alert(error.error || 'Failed to link account');
+        }
+      } catch (error) {
+        console.error('Error linking account:', error);
+        alert('An error occurred');
       }
-    } catch (error) {
-      console.error('Error linking account:', error);
-      alert('An error occurred');
     }
   };
 
@@ -339,145 +390,292 @@ export function WalletPage({ user, accessToken, onBack, onNavigate }: WalletPage
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 -mt-8 pb-6 space-y-6">
-        {/* Bank/Card section at top */}
-        <div>
-          <h3 className="text-base mb-3">Bank / Card</h3>
-          <div className="bg-white rounded-2xl p-4 border border-gray-100 hover:bg-gray-50 transition-all cursor-pointer">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="bg-pink-100 p-3 rounded-xl">
-                  <Building className="size-6 text-pink-600" />
+        {/* Featured Quick Transfer Card */}
+        <div className="relative bg-gradient-to-br from-emerald-500 via-green-600 to-teal-600 rounded-3xl p-6 text-white overflow-hidden shadow-2xl group hover:shadow-emerald-500/20 transition-all duration-500">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-teal-400/20 rounded-full -ml-24 -mb-24 blur-2xl group-hover:scale-110 transition-transform duration-700"></div>
+          <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-emerald-300/10 rounded-full blur-xl animate-pulse"></div>
+          
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-white/25 backdrop-blur-md p-2 rounded-xl border border-white/30">
+                    <Building className="size-5 text-white" />
+                  </div>
+                  <span className="text-xs font-medium text-emerald-100 uppercase tracking-wider">Instant Transfer</span>
                 </div>
-                <div>
-                  <p className="text-sm">DuitNow Transfer</p>
-                  <p className="text-xs text-gray-500">Instant bank transfer</p>
-                </div>
+                <h3 className="text-2xl font-bold mb-1 text-[rgb(248,250,255)]">DuitNow Transfer</h3>
+                <p className="text-sm text-emerald-100">Send money instantly to any bank</p>
               </div>
-              <ChevronRight className="size-5 text-gray-400" />
+              <div className="bg-white/15 backdrop-blur-md p-3 rounded-2xl border border-white/30 hover:bg-white/25 transition-all cursor-pointer group-hover:scale-110 duration-300">
+                <ChevronRight className="size-6 text-white" />
+              </div>
             </div>
-            {/* Account number preview */}
-            <div className="bg-blue-50 rounded-xl p-3 flex items-center gap-2">
-              <Wifi className="size-4 text-blue-600" />
-              <span className="text-sm text-blue-900 font-mono">goPay-{user.phone.slice(-4)}</span>
+            
+            {/* Account ID Badge */}
+            <div className="bg-white/20 backdrop-blur-lg rounded-2xl p-4 border border-white/30 shadow-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-emerald-400/30 p-2.5 rounded-xl">
+                    <Wifi className="size-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-emerald-100 mb-0.5">Your Transfer ID</p>
+                    <p className="text-lg font-bold font-mono tracking-wider text-[rgb(240,243,250)]">goPay-{user.phone.slice(-4)}</p>
+                  </div>
+                </div>
+                <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm px-4 py-2 rounded-xl text-xs font-medium transition-all active:scale-95">
+                  Copy
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Other methods section */}
+        {/* Quick Add Money Grid */}
         <div>
-          <h3 className="text-sm text-gray-500 mb-3">Other methods</h3>
-          <div className="space-y-3">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-900">Quick Add Money</h3>
+            <span className="text-xs text-gray-500">Choose method</span>
+          </div>
+          
+          <div className="space-y-4">
+            {/* Featured Card - Bank Cards (Large Hero) */}
             <button
               onClick={() => setShowLinkAccount(true)}
-              className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 rounded-2xl border border-gray-100 transition-all"
+              className="group relative w-full bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-[32px] p-8 text-white overflow-hidden shadow-2xl hover:shadow-purple-500/40 transition-all duration-700 active:scale-[0.98] min-h-[220px]"
             >
-              <div className="flex items-center gap-3">
-                <div className="bg-blue-100 p-3 rounded-xl">
-                  <CreditCard className="size-5 text-blue-600" />
-                </div>
-                <p className="text-sm">Credit card</p>
+              {/* Animated mesh gradient background */}
+              <div className="absolute inset-0 opacity-30">
+                <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
+                <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+                <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" style={{ animationDelay: '4s' }}></div>
               </div>
-              <ChevronRight className="size-5 text-gray-400" />
-            </button>
-
-            <button
-              onClick={() => setShowLinkAccount(true)}
-              className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 rounded-2xl border border-gray-100 transition-all"
-            >
-              <div className="flex items-center gap-3">
-                <div className="bg-green-100 p-3 rounded-xl">
-                  <CreditCard className="size-5 text-green-600" />
-                </div>
-                <p className="text-sm">Debit card</p>
-              </div>
-              <ChevronRight className="size-5 text-gray-400" />
-            </button>
-
-            <button
-              className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 rounded-2xl border border-gray-100 transition-all"
-            >
-              <div className="flex items-center gap-3">
-                <div className="bg-purple-100 p-3 rounded-xl">
-                  <Smartphone className="size-5 text-purple-600" />
-                </div>
-                <p className="text-sm">Reload PIN</p>
-              </div>
-              <ChevronRight className="size-5 text-gray-400" />
-            </button>
-
-            {onNavigate && (
-              <button
-                onClick={() => onNavigate('international')}
-                className="w-full flex items-center justify-between p-4 bg-white hover:bg-gray-50 rounded-2xl border-2 border-red-200 transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="bg-gradient-to-br from-blue-500 to-purple-500 p-3 rounded-xl">
-                    <UserPlus className="size-5 text-white" />
-                  </div>
-                  <div className="text-left">
+              
+              {/* Shimmer sweep */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1500"></div>
+              
+              {/* Floating orbs */}
+              <div className="absolute top-8 right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 group-hover:translate-x-4 transition-all duration-700"></div>
+              <div className="absolute bottom-8 left-12 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:scale-125 transition-all duration-500"></div>
+              
+              {/* Card chip decoration */}
+              <div className="absolute top-6 right-6 w-12 h-12 bg-white/20 backdrop-blur-md rounded-lg border-2 border-white/30 group-hover:rotate-12 transition-transform duration-500"></div>
+              
+              <div className="relative z-10 flex flex-col justify-between h-full">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm">International options</p>
-                      <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                        NEW
-                      </span>
+                      <div className="bg-white/25 backdrop-blur-xl p-3 rounded-2xl border border-white/40 shadow-xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                        <CreditCard className="size-7 text-white" />
+                      </div>
+                      <div className="bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/30">
+                        <span className="text-xs font-bold uppercase tracking-wider">Recommended</span>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-3xl font-black mb-1 tracking-tight text-[rgb(248,250,255)]">Credit & Debit Cards</h3>
+                      <p className="text-sm text-purple-100 font-medium">Visa • Mastercard • All major banks</p>
                     </div>
                   </div>
                 </div>
-                <ChevronRight className="size-5 text-gray-400" />
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-2">
+                    <div className="w-2 h-2 bg-white/60 rounded-full"></div>
+                    <div className="w-8 h-2 bg-white rounded-full"></div>
+                    <div className="w-2 h-2 bg-white/60 rounded-full"></div>
+                  </div>
+                  <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl border border-white/30 group-hover:translate-x-2 transition-transform duration-300">
+                    <ChevronRight className="size-6 text-white" />
+                  </div>
+                </div>
+              </div>
+            </button>
+
+            {/* Two Cards Side by Side */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Reload PIN - Compact Card */}
+              <button
+                className="group relative bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-[28px] p-6 text-white overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 transition-all duration-500 active:scale-95 min-h-[180px]"
+              >
+                {/* Cyberpunk grid */}
+                <div className="absolute inset-0 opacity-20">
+                  <div className="h-full w-full" style={{
+                    backgroundImage: 'linear-gradient(rgba(168, 85, 247, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(168, 85, 247, 0.5) 1px, transparent 1px)',
+                    backgroundSize: '24px 24px'
+                  }}></div>
+                </div>
+                
+                {/* Neon glow lines */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent"></div>
+                  <div className="absolute top-0 bottom-0 left-0 w-px bg-gradient-to-b from-transparent via-purple-500 to-transparent"></div>
+                  <div className="absolute top-0 bottom-0 right-0 w-px bg-gradient-to-b from-transparent via-pink-500 to-transparent"></div>
+                </div>
+                
+                {/* Glow orb */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
+                
+                {/* Lightning decoration */}
+                <div className="absolute top-3 right-3 opacity-10 group-hover:opacity-30 transition-opacity duration-300">
+                  <svg className="w-12 h-12 text-purple-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
+                  </svg>
+                </div>
+                
+                <div className="relative z-10 flex flex-col justify-between h-full">
+                  <div className="space-y-3">
+                    <div className="bg-gradient-to-br from-purple-500 to-pink-600 w-14 h-14 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/50 border-2 border-purple-400/30 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+                      <Smartphone className="size-7 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xl mb-1 tracking-tight text-[rgb(248,250,255)]">Reload PIN</h4>
+                      <p className="text-xs text-gray-400 font-medium">Instant code top-up</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex gap-1">
+                      <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse"></div>
+                      <div className="w-1.5 h-1.5 bg-pink-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                    </div>
+                    <ChevronRight className="size-5 text-gray-500 group-hover:text-purple-400 group-hover:translate-x-1 transition-all duration-300" />
+                  </div>
+                </div>
               </button>
-            )}
+
+              {/* International - Animated Rainbow */}
+              {onNavigate && (
+                <button
+                  onClick={() => onNavigate('international')}
+                  className="group relative rounded-[28px] p-6 text-white overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-orange-500/30 transition-all duration-500 active:scale-95 min-h-[180px]"
+                  style={{
+                    background: 'linear-gradient(135deg, #ff6b6b 0%, #ff8e53 25%, #ffd93d 50%, #6bcf7f 75%, #4d96ff 100%)',
+                    backgroundSize: '300% 300%',
+                    animation: 'gradient-shift 8s ease infinite'
+                  }}
+                >
+                  {/* Shimmer */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1200"></div>
+                  
+                  {/* Sparkles */}
+                  <div className="absolute inset-0">
+                    <div className="absolute top-1/4 left-1/3 w-2 h-2 bg-white/60 rounded-full animate-ping"></div>
+                    <div className="absolute top-2/3 right-1/4 w-1.5 h-1.5 bg-white/70 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
+                    <div className="absolute top-1/2 right-1/2 w-1 h-1 bg-white/80 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
+                  </div>
+                  
+                  {/* NEW Badge */}
+                  <div className="absolute top-3 right-3 z-20">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-white blur-lg animate-pulse"></div>
+                      <span className="relative bg-white text-rose-600 text-[10px] font-black px-2.5 py-1 rounded-full shadow-2xl uppercase tracking-widest">
+                        New
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Globe rings */}
+                  <div className="absolute -bottom-6 -right-6 w-28 h-28 border-4 border-white/20 rounded-full group-hover:scale-110 transition-transform duration-700"></div>
+                  <div className="absolute -bottom-3 -right-3 w-20 h-20 border-2 border-white/30 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
+                  
+                  <div className="relative z-10 flex flex-col justify-between h-full">
+                    <div className="space-y-3">
+                      <div className="bg-white/30 backdrop-blur-xl w-14 h-14 rounded-2xl flex items-center justify-center shadow-2xl border-2 border-white/50 group-hover:scale-110 group-hover:-rotate-12 transition-all duration-300">
+                        <UserPlus className="size-7 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-xl mb-1 tracking-tight drop-shadow-lg">International</h4>
+                        <p className="text-xs font-semibold drop-shadow-md opacity-95">180+ countries</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex gap-0.5">
+                        <div className="w-1 h-4 bg-white/70 rounded-full"></div>
+                        <div className="w-1 h-6 bg-white/90 rounded-full"></div>
+                        <div className="w-1 h-3 bg-white/70 rounded-full"></div>
+                        <div className="w-1 h-5 bg-white/80 rounded-full"></div>
+                      </div>
+                      <ChevronRight className="size-5 text-white/80 group-hover:translate-x-1 transition-transform duration-300" />
+                    </div>
+                  </div>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Payment Methods */}
+        {/* Linked Payment Methods */}
         <div>
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-base">Linked Payment Methods</h3>
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Payment Methods</h3>
+              <p className="text-xs text-gray-500">Manage your linked accounts</p>
+            </div>
             <button 
               onClick={() => setShowLinkAccount(true)}
-              className="text-blue-600 text-sm hover:text-blue-700"
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95 shadow-lg shadow-green-600/20"
             >
-              + Add New
+              <Plus className="size-4" />
+              Add New
             </button>
           </div>
           
           {linkedAccounts.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-              <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                <CreditCard className="size-8 text-gray-400" />
+            <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-8 border-2 border-dashed border-gray-300 overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-green-100 rounded-full -mr-20 -mt-20 blur-3xl opacity-50"></div>
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-100 rounded-full -ml-20 -mb-20 blur-3xl opacity-50"></div>
+              
+              <div className="relative z-10 text-center">
+                <div className="bg-gradient-to-br from-green-500 to-emerald-600 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-green-600/30">
+                  <CreditCard className="size-10 text-white" />
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 mb-2">No payment methods yet</h4>
+                <p className="text-sm text-gray-600 mb-6 max-w-sm mx-auto">Link your bank account or card to start adding money to your wallet instantly</p>
+                <Button 
+                  onClick={() => setShowLinkAccount(true)}
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-600/30 px-6 py-6 text-base rounded-2xl"
+                >
+                  <Plus className="size-5 mr-2" />
+                  Add Your First Method
+                </Button>
               </div>
-              <p className="text-gray-500 mb-2">No payment methods yet</p>
-              <p className="text-sm text-gray-400 mb-4">Link your first account to get started</p>
-              <Button 
-                onClick={() => setShowLinkAccount(true)}
-                className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white"
-              >
-                Add Payment Method
-              </Button>
             </div>
           ) : (
             <div className="space-y-3">
-              {linkedAccounts.map((account) => (
+              {linkedAccounts.map((account, index) => (
                 <div
                   key={account.id}
-                  className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all"
+                  className="group relative bg-white border-2 border-gray-100 rounded-2xl p-5 hover:border-green-300 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 cursor-pointer overflow-hidden"
+                  style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-50 p-3 rounded-xl">
-                      {getAccountIcon(account.type)}
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-green-500/5 to-green-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  
+                  <div className="relative z-10 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        {getAccountIcon(account.type)}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900 mb-0.5">{account.provider}</p>
+                        <p className="text-sm text-gray-500 font-mono">
+                          {account.accountNumber}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm">{account.provider}</p>
-                      <p className="text-xs text-gray-500">
-                        {account.accountNumber}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 bg-green-50 border border-green-200 px-3 py-1.5 rounded-xl">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-xs font-semibold text-green-700">Active</span>
+                      </div>
+                      <ChevronRight className="size-5 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs">
-                      Active
-                    </span>
-                    <ChevronRight className="size-4 text-gray-400" />
                   </div>
                 </div>
               ))}

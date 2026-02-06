@@ -241,8 +241,9 @@ export function MembershipPayment({
 
             <div className="space-y-4">
               <div>
-                <Label>Enter PIN</Label>
+                <Label htmlFor="wallet-pin">Enter PIN</Label>
                 <Input
+                  id="wallet-pin"
                   type="password"
                   inputMode="numeric"
                   maxLength={4}
@@ -250,6 +251,7 @@ export function MembershipPayment({
                   onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
                   placeholder="****"
                   className="text-center text-2xl tracking-widest h-14"
+                  aria-label="Enter your 4-digit PIN"
                 />
               </div>
 
@@ -407,13 +409,15 @@ export function MembershipPayment({
 
                 {paymentMethod === provider.id && (
                   <div className="mt-3 p-4 bg-gray-50 rounded-xl animate-in slide-in-from-top-2 duration-300">
-                    <Label className="mb-2">Phone Number</Label>
+                    <Label htmlFor={`${provider.id}-phone`} className="mb-2">Phone Number</Label>
                     <Input
+                      id={`${provider.id}-phone`}
                       type="tel"
                       placeholder="0712 345 678"
                       value={mobileNumber}
                       onChange={(e) => setMobileNumber(e.target.value)}
                       className="mb-3"
+                      aria-label={`${provider.name} phone number`}
                     />
                     <Button
                       onClick={() => handleMobileMoneyPayment(provider)}

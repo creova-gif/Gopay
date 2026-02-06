@@ -6,9 +6,12 @@ import { User } from '../App';
 import { 
   ArrowLeft, Bus, Ship, Plane, Hotel, Mountain, Calendar, Users, MapPin, 
   Clock, ChevronRight, Star, Check, CreditCard, Train, Ticket, Search,
-  ArrowRight, Info, Shield, AlertCircle
+  ArrowRight, Info, Shield, AlertCircle, Sparkles, TrendingUp, Zap, Heart,
+  Wifi, Coffee, UtensilsCrossed, Waves, TreePalm
 } from 'lucide-react';
 import { projectId } from '../utils/supabase/info';
+import { ImageWithFallback } from './figma/ImageWithFallback';
+import { UnifiedBookingSystem } from './UnifiedBookingSystem';
 
 interface TravelPageProps {
   user: User;
@@ -17,10 +20,13 @@ interface TravelPageProps {
 }
 
 type TravelMode = 'flights' | 'bus' | 'ferry' | 'hotels' | 'parks' | 'train' | null;
+type BookingService = 'flights' | 'buses' | 'sgr' | 'hotels' | 'parks';
 
 export function TravelPage({ user, accessToken, onBack }: TravelPageProps) {
   const [currentMode, setCurrentMode] = useState<TravelMode>(null);
   const [searchStep, setSearchStep] = useState<'search' | 'results' | 'details' | 'payment' | 'success'>('search');
+  const [showUnifiedBooking, setShowUnifiedBooking] = useState(false);
+  const [selectedBookingService, setSelectedBookingService] = useState<BookingService | null>(null);
   
   // Search form state
   const [searchData, setSearchData] = useState({
@@ -40,6 +46,12 @@ export function TravelPage({ user, accessToken, onBack }: TravelPageProps) {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [pin, setPin] = useState('');
   const [bookingReference, setBookingReference] = useState('');
+
+  // Popular Cities for autocomplete
+  const tanzaniaCities = [
+    'Dar es Salaam', 'Arusha', 'Dodoma', 'Mwanza', 'Zanzibar', 'Mbeya', 
+    'Morogoro', 'Tanga', 'Kigoma', 'Kilimanjaro', 'Moshi', 'Pemba', 'Serengeti'
+  ];
 
   // Mock data for flights - Comprehensive Tanzania routes
   const allFlights = [
@@ -124,37 +136,37 @@ export function TravelPage({ user, accessToken, onBack }: TravelPageProps) {
 
   // Mock data for buses
   const mockBuses = [
-    { id: 'BUS001', company: 'Kilimanjaro Express', from: 'Dar es Salaam', to: 'Arusha', departure: '06:00', arrival: '14:00', duration: '8h', price: 30000, seats: 25, type: 'Semi-Luxury' },
-    { id: 'BUS002', company: 'Dar Express', from: 'Dar es Salaam', to: 'Arusha', departure: '07:30', arrival: '15:30', duration: '8h', price: 35000, seats: 18, type: 'VIP' },
-    { id: 'BUS003', company: 'Shabiby Express', from: 'Dar es Salaam', to: 'Mwanza', departure: '05:00', arrival: '17:00', duration: '12h', price: 45000, seats: 20, type: 'Semi-Luxury' },
-    { id: 'BUS004', company: 'Tahmeed Coach', from: 'Dar es Salaam', to: 'Dodoma', departure: '08:00', arrival: '14:00', duration: '6h', price: 25000, seats: 30, type: 'Standard' },
-    { id: 'BUS005', company: 'Sumry Express', from: 'Arusha', to: 'Moshi', departure: '09:00', arrival: '10:30', duration: '1h 30m', price: 8000, seats: 35, type: 'Standard' },
+    { id: 'BUS001', company: 'Kilimanjaro Express', from: 'Dar es Salaam', to: 'Arusha', departure: '06:00', arrival: '14:00', duration: '8h', price: 30000, seats: 25, type: 'Semi-Luxury', rating: 4.5 },
+    { id: 'BUS002', company: 'Dar Express', from: 'Dar es Salaam', to: 'Arusha', departure: '07:30', arrival: '15:30', duration: '8h', price: 35000, seats: 18, type: 'VIP', rating: 4.8 },
+    { id: 'BUS003', company: 'Shabiby Express', from: 'Dar es Salaam', to: 'Mwanza', departure: '05:00', arrival: '17:00', duration: '12h', price: 45000, seats: 20, type: 'Semi-Luxury', rating: 4.3 },
+    { id: 'BUS004', company: 'Tahmeed Coach', from: 'Dar es Salaam', to: 'Dodoma', departure: '08:00', arrival: '14:00', duration: '6h', price: 25000, seats: 30, type: 'Standard', rating: 4.0 },
+    { id: 'BUS005', company: 'Sumry Express', from: 'Arusha', to: 'Moshi', departure: '09:00', arrival: '10:30', duration: '1h 30m', price: 8000, seats: 35, type: 'Standard', rating: 4.2 },
   ];
 
   // Mock data for ferries
   const mockFerries = [
-    { id: 'FER001', company: 'Azam Marine', from: 'Dar es Salaam', to: 'Zanzibar', departure: '07:00', arrival: '09:00', duration: '2h', price: 35000, seats: 150, type: 'Fast Ferry' },
-    { id: 'FER002', company: 'Azam Marine', from: 'Dar es Salaam', to: 'Zanzibar', departure: '12:30', arrival: '14:30', duration: '2h', price: 35000, seats: 150, type: 'Fast Ferry' },
-    { id: 'FER003', company: 'Kilimanjaro Ferry', from: 'Dar es Salaam', to: 'Zanzibar', departure: '09:00', arrival: '13:00', duration: '4h', price: 25000, seats: 200, type: 'Standard' },
-    { id: 'FER004', company: 'Zanzibar Ferry', from: 'Zanzibar', to: 'Pemba', departure: '08:00', arrival: '10:30', duration: '2h 30m', price: 40000, seats: 100, type: 'Fast Ferry' },
+    { id: 'FER001', company: 'Azam Marine', from: 'Dar es Salaam', to: 'Zanzibar', departure: '07:00', arrival: '09:00', duration: '2h', price: 35000, seats: 150, type: 'Fast Ferry', rating: 4.7 },
+    { id: 'FER002', company: 'Azam Marine', from: 'Dar es Salaam', to: 'Zanzibar', departure: '12:30', arrival: '14:30', duration: '2h', price: 35000, seats: 150, type: 'Fast Ferry', rating: 4.7 },
+    { id: 'FER003', company: 'Kilimanjaro Ferry', from: 'Dar es Salaam', to: 'Zanzibar', departure: '09:00', arrival: '13:00', duration: '4h', price: 25000, seats: 200, type: 'Standard', rating: 4.2 },
+    { id: 'FER004', company: 'Zanzibar Ferry', from: 'Zanzibar', to: 'Pemba', departure: '08:00', arrival: '10:30', duration: '2h 30m', price: 40000, seats: 100, type: 'Fast Ferry', rating: 4.5 },
   ];
 
   // Mock data for hotels
   const mockHotels = [
-    { id: 'HOT001', name: 'Serena Hotel Dar es Salaam', location: 'Dar es Salaam', rating: 5, price: 250000, amenities: ['WiFi', 'Pool', 'Spa', 'Restaurant'], image: '🏨' },
-    { id: 'HOT002', name: 'Hyatt Regency Dar es Salaam', location: 'Dar es Salaam', rating: 5, price: 280000, amenities: ['WiFi', 'Pool', 'Gym', 'Restaurant'], image: '🏨' },
-    { id: 'HOT003', name: 'Four Points by Sheraton Arusha', location: 'Arusha', rating: 4, price: 180000, amenities: ['WiFi', 'Restaurant', 'Bar'], image: '🏨' },
-    { id: 'HOT004', name: 'Zanzibar Serena Hotel', location: 'Zanzibar', rating: 5, price: 320000, amenities: ['Beach', 'Pool', 'Spa', 'WiFi'], image: '🏨' },
-    { id: 'HOT005', name: 'Arusha Coffee Lodge', location: 'Arusha', rating: 4, price: 200000, amenities: ['WiFi', 'Garden', 'Restaurant'], image: '🏨' },
+    { id: 'HOT001', name: 'Serena Hotel Dar es Salaam', location: 'Dar es Salaam', rating: 5, price: 250000, amenities: ['WiFi', 'Pool', 'Spa', 'Restaurant'], image: 'https://images.unsplash.com/photo-1729717949780-46e511489c3f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBob3RlbCUyMHJlc29ydHxlbnwxfHx8fDE3Njc4Mjk0MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+    { id: 'HOT002', name: 'Hyatt Regency Dar es Salaam', location: 'Dar es Salaam', rating: 5, price: 280000, amenities: ['WiFi', 'Pool', 'Gym', 'Restaurant'], image: 'https://images.unsplash.com/photo-1729717949780-46e511489c3f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBob3RlbCUyMHJlc29ydHxlbnwxfHx8fDE3Njc4Mjk0MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+    { id: 'HOT003', name: 'Four Points by Sheraton Arusha', location: 'Arusha', rating: 4, price: 180000, amenities: ['WiFi', 'Restaurant', 'Bar'], image: 'https://images.unsplash.com/photo-1729717949780-46e511489c3f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBob3RlbCUyMHJlc29ydHxlbnwxfHx8fDE3Njc4Mjk0MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+    { id: 'HOT004', name: 'Zanzibar Serena Hotel', location: 'Zanzibar', rating: 5, price: 320000, amenities: ['Beach', 'Pool', 'Spa', 'WiFi'], image: 'https://images.unsplash.com/photo-1707296450219-2d9cc08bdef0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxaYW56aWJhciUyMGJlYWNoJTIwc3Vuc2V0fGVufDF8fHx8MTc2NzkwMTQ4OHww&ixlib=rb-4.1.0&q=80&w=1080' },
+    { id: 'HOT005', name: 'Arusha Coffee Lodge', location: 'Arusha', rating: 4, price: 200000, amenities: ['WiFi', 'Garden', 'Restaurant'], image: 'https://images.unsplash.com/photo-1729717949780-46e511489c3f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBob3RlbCUyMHJlc29ydHxlbnwxfHx8fDE3Njc4Mjk0MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080' },
   ];
 
   // Mock data for national parks
   const mockParks = [
-    { id: 'PARK001', name: 'Serengeti National Park', entrance: 70000, guide: 50000, camping: 30000, location: 'Northern Tanzania', description: 'World-famous wildlife sanctuary' },
-    { id: 'PARK002', name: 'Ngorongoro Crater', entrance: 70000, guide: 60000, camping: 35000, location: 'Northern Tanzania', description: 'UNESCO World Heritage Site' },
-    { id: 'PARK003', name: 'Mount Kilimanjaro', entrance: 80000, guide: 200000, camping: 40000, location: 'Northern Tanzania', description: 'Africa\'s highest peak' },
-    { id: 'PARK004', name: 'Tarangire National Park', entrance: 50000, guide: 40000, camping: 25000, location: 'Northern Tanzania', description: 'Famous for elephants' },
-    { id: 'PARK005', name: 'Lake Manyara', entrance: 50000, guide: 40000, camping: 25000, location: 'Northern Tanzania', description: 'Tree-climbing lions' },
+    { id: 'PARK001', name: 'Serengeti National Park', entrance: 70000, guide: 50000, camping: 30000, location: 'Northern Tanzania', description: 'World-famous wildlife sanctuary', image: 'https://images.unsplash.com/photo-1641133292545-32e441e60190?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxTZXJlbmdldGklMjBzYWZhcmklMjB3aWxkbGlmZXxlbnwxfHx8fDE3Njc4NzU1NzN8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+    { id: 'PARK002', name: 'Ngorongoro Crater', entrance: 70000, guide: 60000, camping: 35000, location: 'Northern Tanzania', description: 'UNESCO World Heritage Site', image: 'https://images.unsplash.com/photo-1641133292545-32e441e60190?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxTZXJlbmdldGklMjBzYWZhcmklMjB3aWxkbGlmZXxlbnwxfHx8fDE3Njc4NzU1NzN8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+    { id: 'PARK003', name: 'Mount Kilimanjaro', entrance: 80000, guide: 200000, camping: 40000, location: 'Northern Tanzania', description: 'Africa\'s highest peak', image: 'https://images.unsplash.com/photo-1518729571365-9a891a9df2bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxNb3VudCUyMEtpbGltYW5qYXJvfGVufDF8fHx8MTc2NzkwMTQ4OXww&ixlib=rb-4.1.0&q=80&w=1080' },
+    { id: 'PARK004', name: 'Tarangire National Park', entrance: 50000, guide: 40000, camping: 25000, location: 'Northern Tanzania', description: 'Famous for elephants', image: 'https://images.unsplash.com/photo-1641133292545-32e441e60190?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxTZXJlbmdldGklMjBzYWZhcmklMjB3aWxkbGlmZXxlbnwxfHx8fDE3Njc4NzU1NzN8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+    { id: 'PARK005', name: 'Lake Manyara', entrance: 50000, guide: 40000, camping: 25000, location: 'Northern Tanzania', description: 'Tree-climbing lions', image: 'https://images.unsplash.com/photo-1641133292545-32e441e60190?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxTZXJlbmdldGklMjBzYWZhcmklMjB3aWxkbGlmZXxlbnwxfHx8fDE3Njc4NzU1NzN8MA&ixlib=rb-4.1.0&q=80&w=1080' },
   ];
 
   // Mock data for SGR trains
@@ -246,167 +258,348 @@ export function TravelPage({ user, accessToken, onBack }: TravelPageProps) {
     });
   };
 
+  // Quick Book Destinations
+  const quickBookDestinations = [
+    {
+      name: 'Zanzibar Paradise',
+      subtitle: 'Beach & Culture',
+      image: 'https://images.unsplash.com/photo-1707296450219-2d9cc08bdef0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxaYW56aWJhciUyMGJlYWNoJTIwc3Vuc2V0fGVufDF8fHx8MTc2NzkwMTQ4OHww&ixlib=rb-4.1.0&q=80&w=1080',
+      from: 25000,
+      gradient: 'from-cyan-500 to-blue-600',
+      popular: true
+    },
+    {
+      name: 'Serengeti Safari',
+      subtitle: 'Wildlife Adventure',
+      image: 'https://images.unsplash.com/photo-1641133292545-32e441e60190?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxTZXJlbmdldGklMjBzYWZhcmklMjB3aWxkbGlmZXxlbnwxfHx8fDE3Njc4NzU1NzN8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      from: 280000,
+      gradient: 'from-amber-500 to-orange-600',
+      popular: true
+    },
+    {
+      name: 'Kilimanjaro Trek',
+      subtitle: 'Summit Africa',
+      image: 'https://images.unsplash.com/photo-1518729571365-9a891a9df2bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxNb3VudCUyMEtpbGltYW5qYXJvfGVufDF8fHx8MTc2NzkwMTQ4OXww&ixlib=rb-4.1.0&q=80&w=1080',
+      from: 80000,
+      gradient: 'from-purple-500 to-pink-600',
+      popular: false
+    },
+    {
+      name: 'Dar es Salaam',
+      subtitle: 'City Exploration',
+      image: 'https://images.unsplash.com/photo-1707299311857-abdc17b9dc06?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxEYXIlMjBlcyUyMFNhbGFhbSUyMGNpdHl8ZW58MXx8fHwxNzY3OTAxNDkwfDA&ixlib=rb-4.1.0&q=80&w=1080',
+      from: 75000,
+      gradient: 'from-green-500 to-emerald-600',
+      popular: false
+    }
+  ];
+
   // Main menu view
   if (!currentMode) {
+    // Check if unified booking system should be shown
+    if (showUnifiedBooking && selectedBookingService) {
+      return (
+        <UnifiedBookingSystem
+          user={user}
+          onBack={() => {
+            setShowUnifiedBooking(false);
+            setSelectedBookingService(null);
+          }}
+          initialService={selectedBookingService}
+        />
+      );
+    }
+    
     return (
-      <div className="min-h-screen bg-gray-50 pb-6">
-        {/* Header */}
-        <div className="bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 px-4 pt-6 pb-20 rounded-b-3xl shadow-xl">
-          <div className="flex items-center gap-4 mb-6">
-            <button
-              onClick={onBack}
-              className="bg-white/20 p-3 rounded-full hover:bg-white/30 transition-all"
-            >
-              <ArrowLeft className="size-5 text-white" />
-            </button>
-            <div>
-              <h1 className="text-3xl text-white">Travel & Booking</h1>
-              <p className="text-green-100 text-sm">Book your journey across Tanzania</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50/30 to-blue-50/20 pb-6">
+        {/* Hero Header with Gradient */}
+        <div className="relative bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 px-6 pt-8 pb-32 overflow-hidden">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-teal-400/20 rounded-full -ml-24 -mb-24 blur-2xl"></div>
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-4 mb-8">
+              <button
+                onClick={onBack}
+                className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl hover:bg-white/30 transition-all active:scale-95"
+              >
+                <ArrowLeft className="size-5 text-white" />
+              </button>
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-white mb-1">Explore Tanzania</h1>
+                <p className="text-green-100 text-sm flex items-center gap-2">
+                  <Sparkles className="size-4" />
+                  Book your perfect journey
+                </p>
+              </div>
+            </div>
+
+            {/* Loyalty Points Banner */}
+            <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-amber-400 p-2.5 rounded-xl">
+                  <Star className="size-5 text-amber-900" />
+                </div>
+                <div>
+                  <p className="text-white text-sm font-medium">GO Rewards Points</p>
+                  <p className="text-green-100 text-xs">Earn 5% on every booking</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-white">{user.loyaltyPoints || 0}</p>
+                <p className="text-green-100 text-xs">points</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Travel Options Grid */}
-        <div className="px-4 -mt-12 space-y-3">
-          {/* Flights */}
-          <button
-            onClick={() => setCurrentMode('flights')}
-            className="w-full bg-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all border border-gray-100"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="bg-blue-100 p-4 rounded-2xl">
-                  <Plane className="size-8 text-blue-600" />
-                </div>
-                <div className="text-left">
-                  <p className="text-lg">Domestic Flights</p>
-                  <p className="text-sm text-gray-500">Dar, Arusha, Mwanza, Zanzibar</p>
+        {/* Quick Book Destinations - Horizontal Scroll */}
+        <div className="px-6 -mt-20 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">✨ Popular Destinations</h2>
+            <button className="text-sm text-green-600 font-medium flex items-center gap-1">
+              View All
+              <ChevronRight className="size-4" />
+            </button>
+          </div>
+          
+          <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
+            {quickBookDestinations.map((dest, idx) => (
+              <div
+                key={idx}
+                className="flex-shrink-0 w-64 relative rounded-3xl overflow-hidden shadow-xl group cursor-pointer"
+              >
+                <div className="relative h-48">
+                  <ImageWithFallback
+                    src={dest.image}
+                    alt={dest.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-t ${dest.gradient} opacity-60`}></div>
+                  
+                  {dest.popular && (
+                    <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+                      <TrendingUp className="size-3.5 text-red-500" />
+                      <span className="text-xs font-semibold text-gray-900">Trending</span>
+                    </div>
+                  )}
+                  
+                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                    <h3 className="text-white font-bold text-xl mb-1">{dest.name}</h3>
+                    <p className="text-white/90 text-sm mb-3">{dest.subtitle}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="text-white">
+                        <span className="text-xs opacity-90">From</span>
+                        <p className="text-lg font-bold">{formatCurrency(dest.from)}</p>
+                      </div>
+                      <button className="bg-white text-gray-900 px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-100 transition-colors shadow-lg">
+                        Book Now
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <ChevronRight className="size-6 text-gray-400" />
+            ))}
+          </div>
+        </div>
+
+        {/* Travel Options - Enhanced Cards */}
+        <div className="px-6 space-y-3">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">🚀 Book Your Journey</h2>
+          
+          {/* Flights */}
+          <button
+            onClick={() => {
+              setSelectedBookingService('flights');
+              setShowUnifiedBooking(true);
+            }}
+            className="w-full bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border border-blue-100 hover:border-blue-300 group relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full -mr-16 -mt-16 opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-2xl shadow-lg group-hover:scale-110 transition-transform">
+                  <Plane className="size-7 text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="text-lg font-semibold text-gray-900 mb-1">Domestic Flights</p>
+                  <p className="text-sm text-gray-500">Fast & convenient air travel</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">40+ Routes</span>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Same Day</span>
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="size-6 text-blue-600 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </button>
+
+          {/* Ferry to Zanzibar - Featured */}
+          <button
+            onClick={() => setCurrentMode('ferry')}
+            className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all group relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20 blur-2xl"></div>
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl shadow-lg group-hover:scale-110 transition-transform border border-white/30">
+                  <Ship className="size-7 text-white" />
+                </div>
+                <div className="text-left">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-lg font-bold text-white">Ferry to Zanzibar</p>
+                    <Zap className="size-4 text-yellow-300" />
+                  </div>
+                  <p className="text-sm text-cyan-100 mb-2">Fast & scenic ocean journey</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs bg-white/25 backdrop-blur-sm text-white px-2 py-1 rounded-full font-medium border border-white/30">2-4 Hours</span>
+                    <span className="text-xs bg-white/25 backdrop-blur-sm text-white px-2 py-1 rounded-full font-medium border border-white/30">From {formatCurrency(25000)}</span>
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="size-6 text-white group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
 
           {/* Bus */}
           <button
-            onClick={() => setCurrentMode('bus')}
-            className="w-full bg-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all border border-gray-100"
+            onClick={() => {
+              setSelectedBookingService('buses');
+              setShowUnifiedBooking(true);
+            }}
+            className="w-full bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border border-green-100 hover:border-green-300 group relative overflow-hidden"
           >
-            <div className="flex items-center justify-between">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-100 to-green-50 rounded-full -mr-16 -mt-16 opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="relative flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="bg-green-100 p-4 rounded-2xl">
-                  <Bus className="size-8 text-green-600" />
+                <div className="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-2xl shadow-lg group-hover:scale-110 transition-transform">
+                  <Bus className="size-7 text-white" />
                 </div>
                 <div className="text-left">
-                  <p className="text-lg">Bus Tickets</p>
-                  <p className="text-sm text-gray-500">Intercity luxury coaches</p>
+                  <p className="text-lg font-semibold text-gray-900 mb-1">Luxury Buses</p>
+                  <p className="text-sm text-gray-500">Comfortable intercity coaches</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">VIP Available</span>
+                  </div>
                 </div>
               </div>
-              <ChevronRight className="size-6 text-gray-400" />
-            </div>
-          </button>
-
-          {/* Ferry */}
-          <button
-            onClick={() => setCurrentMode('ferry')}
-            className="w-full bg-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all border border-gray-100"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="bg-cyan-100 p-4 rounded-2xl">
-                  <Ship className="size-8 text-cyan-600" />
-                </div>
-                <div className="text-left">
-                  <p className="text-lg">Ferry to Zanzibar</p>
-                  <p className="text-sm text-gray-500">Fast & standard ferries</p>
-                </div>
-              </div>
-              <ChevronRight className="size-6 text-gray-400" />
+              <ChevronRight className="size-6 text-green-600 group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
 
           {/* SGR Train */}
           <button
-            onClick={() => setCurrentMode('train')}
-            className="w-full bg-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all border border-gray-100"
+            onClick={() => {
+              setSelectedBookingService('sgr');
+              setShowUnifiedBooking(true);
+            }}
+            className="w-full bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border border-red-100 hover:border-red-300 group relative overflow-hidden"
           >
-            <div className="flex items-center justify-between">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-100 to-red-50 rounded-full -mr-16 -mt-16 opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="relative flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="bg-red-100 p-4 rounded-2xl">
-                  <Train className="size-8 text-red-600" />
+                <div className="bg-gradient-to-br from-red-500 to-red-600 p-4 rounded-2xl shadow-lg group-hover:scale-110 transition-transform">
+                  <Train className="size-7 text-white" />
                 </div>
                 <div className="text-left">
-                  <p className="text-lg">SGR Train</p>
-                  <p className="text-sm text-gray-500">Dar es Salaam - Morogoro</p>
+                  <p className="text-lg font-semibold text-gray-900 mb-1">SGR Train</p>
+                  <p className="text-sm text-gray-500">Modern railway experience</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">Dar → Morogoro</span>
+                  </div>
                 </div>
               </div>
-              <ChevronRight className="size-6 text-gray-400" />
+              <ChevronRight className="size-6 text-red-600 group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
 
           {/* Hotels */}
           <button
-            onClick={() => setCurrentMode('hotels')}
-            className="w-full bg-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all border border-gray-100"
+            onClick={() => {
+              setSelectedBookingService('hotels');
+              setShowUnifiedBooking(true);
+            }}
+            className="w-full bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border border-orange-100 hover:border-orange-300 group relative overflow-hidden"
           >
-            <div className="flex items-center justify-between">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-100 to-orange-50 rounded-full -mr-16 -mt-16 opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="relative flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="bg-orange-100 p-4 rounded-2xl">
-                  <Hotel className="size-8 text-orange-600" />
+                <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-4 rounded-2xl shadow-lg group-hover:scale-110 transition-transform">
+                  <Hotel className="size-7 text-white" />
                 </div>
                 <div className="text-left">
-                  <p className="text-lg">Hotels & Lodges</p>
-                  <p className="text-sm text-gray-500">Book accommodations</p>
+                  <p className="text-lg font-semibold text-gray-900 mb-1">Hotels & Lodges</p>
+                  <p className="text-sm text-gray-500">Luxury to budget stays</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-medium">500+ Properties</span>
+                  </div>
                 </div>
               </div>
-              <ChevronRight className="size-6 text-gray-400" />
+              <ChevronRight className="size-6 text-orange-600 group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
 
           {/* National Parks */}
           <button
-            onClick={() => setCurrentMode('parks')}
-            className="w-full bg-white rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all border border-gray-100"
+            onClick={() => {
+              setSelectedBookingService('parks');
+              setShowUnifiedBooking(true);
+            }}
+            className="w-full bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border border-emerald-100 hover:border-emerald-300 group relative overflow-hidden"
           >
-            <div className="flex items-center justify-between">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-full -mr-16 -mt-16 opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
+            <div className="relative flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="bg-emerald-100 p-4 rounded-2xl">
-                  <Mountain className="size-8 text-emerald-600" />
+                <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 rounded-2xl shadow-lg group-hover:scale-110 transition-transform">
+                  <Mountain className="size-7 text-white" />
                 </div>
                 <div className="text-left">
-                  <p className="text-lg">National Parks</p>
-                  <p className="text-sm text-gray-500">Serengeti, Kilimanjaro, Ngorongoro</p>
+                  <p className="text-lg font-semibold text-gray-900 mb-1">National Parks</p>
+                  <p className="text-sm text-gray-500">Safari & adventure packages</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium">UNESCO Sites</span>
+                  </div>
                 </div>
               </div>
-              <ChevronRight className="size-6 text-gray-400" />
+              <ChevronRight className="size-6 text-emerald-600 group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
         </div>
 
-        {/* Popular Routes */}
-        <div className="px-4 mt-6">
-          <h3 className="text-lg mb-4">🔥 Popular Routes</h3>
-          <div className="space-y-3">
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-4 border border-blue-200">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm">Dar es Salaam → Zanzibar</p>
-                <p className="text-blue-700">from {formatCurrency(25000)}</p>
+        {/* AI Travel Tips */}
+        <div className="px-6 mt-6">
+          <div className="bg-gradient-to-r from-purple-500 to-pink-600 rounded-3xl p-6 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20 blur-2xl"></div>
+            <div className="relative flex items-start gap-4">
+              <div className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl">
+                <Sparkles className="size-6 text-white" />
               </div>
-              <p className="text-xs text-gray-600">Ferry • 2-4 hours</p>
+              <div className="flex-1">
+                <p className="text-white font-semibold mb-1">AI Travel Assistant</p>
+                <p className="text-purple-100 text-sm mb-3">Get personalized travel recommendations and smart booking tips</p>
+                <button className="bg-white text-purple-600 px-4 py-2 rounded-full text-sm font-semibold hover:bg-purple-50 transition-colors shadow-lg">
+                  Ask AI
+                </button>
+              </div>
             </div>
-            <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-4 border border-green-200">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm">Dar es Salaam → Arusha</p>
-                <p className="text-green-700">from {formatCurrency(30000)}</p>
-              </div>
-              <p className="text-xs text-gray-600">Bus • 8 hours</p>
+          </div>
+        </div>
+
+        {/* Trust Indicators */}
+        <div className="px-6 mt-6 pb-4">
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white rounded-2xl p-4 text-center shadow-md">
+              <Shield className="size-6 text-green-600 mx-auto mb-2" />
+              <p className="text-xs text-gray-600 font-medium">Secure Payment</p>
             </div>
-            <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-2xl p-4 border border-purple-200">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-sm">Arusha → Serengeti</p>
-                <p className="text-purple-700">from {formatCurrency(280000)}</p>
-              </div>
-              <p className="text-xs text-gray-600">Flight • 1h 15m</p>
+            <div className="bg-white rounded-2xl p-4 text-center shadow-md">
+              <Check className="size-6 text-green-600 mx-auto mb-2" />
+              <p className="text-xs text-gray-600 font-medium">Instant Confirm</p>
+            </div>
+            <div className="bg-white rounded-2xl p-4 text-center shadow-md">
+              <Heart className="size-6 text-green-600 mx-auto mb-2" />
+              <p className="text-xs text-gray-600 font-medium">Best Prices</p>
             </div>
           </div>
         </div>
@@ -417,71 +610,80 @@ export function TravelPage({ user, accessToken, onBack }: TravelPageProps) {
   // Success screen
   if (searchStep === 'success') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-3xl p-8 shadow-2xl text-center">
-          <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="size-10 text-green-600" />
-          </div>
-          <h2 className="text-2xl mb-2">Booking Confirmed!</h2>
-          <p className="text-gray-500 mb-6">Your booking has been successfully processed</p>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
+          {/* Success Animation Background */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-green-100 rounded-full blur-3xl opacity-50"></div>
           
-          <div className="bg-gray-50 rounded-2xl p-6 mb-6 text-left">
-            <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
-              <span className="text-sm text-gray-500">Reference Number</span>
-              <span className="font-mono text-green-600">{bookingReference}</span>
+          <div className="relative">
+            <div className="bg-gradient-to-br from-green-500 to-emerald-600 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl animate-bounce">
+              <Check className="size-12 text-white" strokeWidth={3} />
             </div>
-            <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
-              <span className="text-sm text-gray-500">Travel Type</span>
-              <span className="capitalize">{currentMode}</span>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Booking Confirmed!</h2>
+            <p className="text-gray-500 mb-8">Your journey awaits — bon voyage! 🎉</p>
+            
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-6 mb-6 text-left border border-gray-200">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+                <span className="text-sm text-gray-500 font-medium">Booking Reference</span>
+                <span className="font-mono text-green-600 font-bold text-lg">{bookingReference}</span>
+              </div>
+              <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+                <span className="text-sm text-gray-500 font-medium">Travel Type</span>
+                <span className="capitalize font-semibold text-gray-900">{currentMode}</span>
+              </div>
+              {selectedBooking && (
+                <>
+                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+                    <span className="text-sm text-gray-500 font-medium">Route</span>
+                    <span className="text-sm font-semibold text-gray-900">{selectedBooking.from} → {selectedBooking.to || selectedBooking.location || selectedBooking.name}</span>
+                  </div>
+                  {searchData.departDate && (
+                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+                      <span className="text-sm text-gray-500 font-medium">Travel Date</span>
+                      <span className="text-sm font-semibold text-gray-900">{new Date(searchData.departDate).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                    </div>
+                  )}
+                  {selectedBooking.departure && (
+                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+                      <span className="text-sm text-gray-500 font-medium">Departure Time</span>
+                      <span className="text-sm font-semibold text-gray-900">{selectedBooking.departure}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
+                    <span className="text-sm text-gray-500 font-medium">Passengers</span>
+                    <span className="text-sm font-semibold text-gray-900">{searchData.passengers || searchData.rooms || searchData.visitors}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500 font-medium">Amount Paid</span>
+                    <span className="text-green-600 font-bold text-lg">{formatCurrency(selectedBooking.price * (searchData.passengers || searchData.rooms || searchData.visitors))}</span>
+                  </div>
+                </>
+              )}
             </div>
-            {selectedBooking && (
-              <>
-                <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
-                  <span className="text-sm text-gray-500">Route</span>
-                  <span className="text-sm">{selectedBooking.from} → {selectedBooking.to}</span>
-                </div>
-                {searchData.departDate && (
-                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
-                    <span className="text-sm text-gray-500">Travel Date</span>
-                    <span className="text-sm">{new Date(searchData.departDate).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                  </div>
-                )}
-                {selectedBooking.departure && (
-                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
-                    <span className="text-sm text-gray-500">Departure Time</span>
-                    <span className="text-sm">{selectedBooking.departure}</span>
-                  </div>
-                )}
-                <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200">
-                  <span className="text-sm text-gray-500">Passengers</span>
-                  <span className="text-sm">{searchData.passengers || searchData.rooms || searchData.visitors}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Amount Paid</span>
-                  <span className="text-green-600">{formatCurrency(selectedBooking.price * (searchData.passengers || searchData.rooms || searchData.visitors))}</span>
-                </div>
-              </>
-            )}
-          </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6 text-sm text-blue-900">
-            <Info className="size-5 inline mr-2" />
-            Your e-ticket has been sent to {user.email}
-          </div>
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 mb-6 text-sm text-blue-900 flex items-start gap-3">
+              <Info className="size-5 flex-shrink-0 mt-0.5" />
+              <div className="text-left">
+                <p className="font-semibold mb-1">E-Ticket Sent!</p>
+                <p>Your e-ticket has been sent to <span className="font-semibold">{user.email}</span></p>
+              </div>
+            </div>
 
-          <Button
-            onClick={resetBooking}
-            className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full"
-          >
-            Book Another Trip
-          </Button>
-          <Button
-            onClick={onBack}
-            variant="outline"
-            className="w-full h-12 mt-3 rounded-full"
-          >
-            Back to Home
-          </Button>
+            <Button
+              onClick={resetBooking}
+              className="w-full h-14 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-2xl text-base font-semibold shadow-lg hover:shadow-xl transition-all mb-3"
+            >
+              <Ticket className="size-5 mr-2" />
+              Book Another Trip
+            </Button>
+            <Button
+              onClick={onBack}
+              variant="outline"
+              className="w-full h-14 rounded-2xl text-base font-semibold border-2"
+            >
+              Back to Home
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -493,75 +695,82 @@ export function TravelPage({ user, accessToken, onBack }: TravelPageProps) {
     
     return (
       <div className="min-h-screen bg-gray-50 pb-6">
-        <div className="bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 px-4 pt-6 pb-8 rounded-b-3xl shadow-xl">
-          <div className="flex items-center gap-4 mb-4">
+        <div className="bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 px-6 pt-8 pb-12 rounded-b-3xl shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24 blur-2xl"></div>
+          <div className="relative flex items-center gap-4 mb-4">
             <button
               onClick={() => setSearchStep('details')}
-              className="bg-white/20 p-3 rounded-full hover:bg-white/30 transition-all"
+              className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl hover:bg-white/30 transition-all"
             >
               <ArrowLeft className="size-5 text-white" />
             </button>
-            <h1 className="text-2xl text-white">Confirm Payment</h1>
+            <h1 className="text-2xl font-bold text-white">Confirm Payment</h1>
           </div>
         </div>
 
-        <div className="px-4 -mt-2 space-y-4">
+        <div className="px-6 -mt-6 space-y-4">
           {/* Payment Summary */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-lg mb-4">Payment Summary</h3>
+          <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <CreditCard className="size-5 text-green-600" />
+              Payment Summary
+            </h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                 <span className="text-gray-600">Base Price</span>
-                <span>{formatCurrency(selectedBooking?.price || 0)}</span>
+                <span className="font-semibold">{formatCurrency(selectedBooking?.price || 0)}</span>
               </div>
               <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                 <span className="text-gray-600">Quantity</span>
-                <span>× {searchData.passengers || searchData.rooms || searchData.visitors}</span>
+                <span className="font-semibold">× {searchData.passengers || searchData.rooms || searchData.visitors}</span>
               </div>
               <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                 <span className="text-gray-600">Service Fee</span>
-                <span>{formatCurrency(1000)}</span>
+                <span className="font-semibold">{formatCurrency(1000)}</span>
               </div>
-              <div className="flex items-center justify-between text-lg pt-2">
-                <span>Total Amount</span>
-                <span className="text-green-600">{formatCurrency(totalAmount + 1000)}</span>
+              <div className="flex items-center justify-between pt-3">
+                <span className="text-lg font-bold text-gray-900">Total Amount</span>
+                <span className="text-2xl font-bold text-green-600">{formatCurrency(totalAmount + 1000)}</span>
               </div>
             </div>
           </div>
 
-          {/* Payment Method */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-base mb-4">Payment Method</h3>
-            <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-5 text-white">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-green-100 text-sm">Pay from</span>
-                <CreditCard className="size-5" />
+          {/* Wallet Balance */}
+          <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-3xl p-6 shadow-xl text-white">
+            <p className="text-green-100 text-sm mb-2">Available Balance</p>
+            <p className="text-3xl font-bold mb-1">{formatCurrency(user.balance || 0)}</p>
+            {user.balance && user.balance >= (totalAmount + 1000) ? (
+              <div className="flex items-center gap-2 text-green-100 text-sm">
+                <Check className="size-4" />
+                <span>Sufficient balance</span>
               </div>
-              <p className="text-2xl mb-1">goPay Wallet</p>
-              <p className="text-green-100 text-sm">Balance: {formatCurrency(450000)}</p>
-            </div>
+            ) : (
+              <div className="flex items-center gap-2 text-amber-200 text-sm">
+                <AlertCircle className="size-4" />
+                <span>Please top up your wallet</span>
+              </div>
+            )}
           </div>
 
-          {/* PIN Entry */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <Label htmlFor="payment-pin" className="text-base mb-3 block">Enter PIN to confirm</Label>
+          {/* PIN Input */}
+          <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
+            <Label className="text-gray-900 font-semibold mb-3 block">Enter 4-Digit PIN</Label>
             <Input
-              id="payment-pin"
               type="password"
-              placeholder="••••"
               maxLength={4}
+              placeholder="••••"
               value={pin}
-              onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-              className="text-center text-2xl tracking-widest h-16 rounded-xl"
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+              className="text-center text-2xl tracking-widest h-16 rounded-2xl border-2 focus:border-green-500"
             />
           </div>
 
-          {/* Security Notice */}
-          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-start gap-3">
-            <Shield className="size-5 text-green-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-green-900">
-              <p className="font-medium mb-1">Secure Payment</p>
-              <p className="text-green-700">Your transaction is protected with 256-bit encryption</p>
+          {/* Security Note */}
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 flex items-start gap-3">
+            <Shield className="size-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-blue-900">
+              <p className="font-semibold mb-1">Secure Transaction</p>
+              <p>Your payment is encrypted and protected by goPay security</p>
             </div>
           </div>
 
@@ -569,96 +778,94 @@ export function TravelPage({ user, accessToken, onBack }: TravelPageProps) {
           <Button
             onClick={handleConfirmPayment}
             disabled={pin.length !== 4}
-            className="w-full h-14 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full text-lg disabled:opacity-50"
+            className="w-full h-16 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-2xl text-lg font-bold shadow-xl hover:shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Confirm Payment
+            Confirm & Pay {formatCurrency(totalAmount + 1000)}
           </Button>
         </div>
       </div>
     );
   }
 
-  // Booking details screen
+  // Details Screen
   if (searchStep === 'details' && selectedBooking) {
     return (
       <div className="min-h-screen bg-gray-50 pb-6">
-        <div className="bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 px-4 pt-6 pb-8 rounded-b-3xl shadow-xl">
-          <div className="flex items-center gap-4 mb-4">
+        <div className="bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 px-6 pt-8 pb-12 rounded-b-3xl shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24 blur-2xl"></div>
+          <div className="relative flex items-center gap-4">
             <button
               onClick={() => setSearchStep('results')}
-              className="bg-white/20 p-3 rounded-full hover:bg-white/30 transition-all"
+              className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl hover:bg-white/30 transition-all"
             >
               <ArrowLeft className="size-5 text-white" />
             </button>
-            <h1 className="text-2xl text-white">Booking Details</h1>
+            <div>
+              <h1 className="text-2xl font-bold text-white">Booking Details</h1>
+              <p className="text-green-100 text-sm">Review your selection</p>
+            </div>
           </div>
         </div>
 
-        <div className="px-4 -mt-2 space-y-4">
-          {/* Route Info */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <div className="flex items-center justify-between mb-6">
+        <div className="px-6 -mt-6 space-y-4">
+          {/* Booking Card */}
+          <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
+            <div className="flex items-start justify-between mb-6">
               <div>
-                <p className="text-2xl">{selectedBooking.from}</p>
-                <p className="text-sm text-gray-500">{selectedBooking.departure || 'Departure'}</p>
-              </div>
-              <div className="flex-1 mx-4">
-                <div className="border-t-2 border-dashed border-gray-300 relative">
-                  <ArrowRight className="size-6 text-gray-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white" />
-                </div>
-                <p className="text-xs text-center text-gray-500 mt-1">{selectedBooking.duration}</p>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">
+                  {selectedBooking.airline || selectedBooking.company || selectedBooking.name}
+                </h2>
+                <p className="text-gray-500 text-sm">
+                  {selectedBooking.type || selectedBooking.class || `${selectedBooking.rating} ★`}
+                </p>
               </div>
               <div className="text-right">
-                <p className="text-2xl">{selectedBooking.to}</p>
-                <p className="text-sm text-gray-500">{selectedBooking.arrival || 'Arrival'}</p>
+                <p className="text-2xl font-bold text-green-600">{formatCurrency(selectedBooking.price)}</p>
+                <p className="text-xs text-gray-500">per person/night</p>
               </div>
             </div>
 
-            {currentMode === 'flights' && (
-              <div className="bg-blue-50 rounded-xl p-4">
-                <p className="text-sm text-gray-600 mb-2">Airline: <span className="text-gray-900">{selectedBooking.airline}</span></p>
-                <p className="text-sm text-gray-600">Available Seats: <span className="text-green-600">{selectedBooking.seats}</span></p>
-              </div>
-            )}
-
-            {currentMode === 'bus' && (
-              <div className="bg-green-50 rounded-xl p-4">
-                <p className="text-sm text-gray-600 mb-2">Company: <span className="text-gray-900">{selectedBooking.company}</span></p>
-                <p className="text-sm text-gray-600 mb-2">Class: <span className="text-gray-900">{selectedBooking.type}</span></p>
-                <p className="text-sm text-gray-600">Available Seats: <span className="text-green-600">{selectedBooking.seats}</span></p>
-              </div>
-            )}
-
-            {currentMode === 'ferry' && (
-              <div className="bg-cyan-50 rounded-xl p-4">
-                <p className="text-sm text-gray-600 mb-2">Ferry: <span className="text-gray-900">{selectedBooking.company}</span></p>
-                <p className="text-sm text-gray-600 mb-2">Type: <span className="text-gray-900">{selectedBooking.type}</span></p>
-                <p className="text-sm text-gray-600">Available Seats: <span className="text-green-600">{selectedBooking.seats}</span></p>
-              </div>
-            )}
-
-            {currentMode === 'train' && (
-              <div className="bg-red-50 rounded-xl p-4">
-                <p className="text-sm text-gray-600 mb-2">SGR Express</p>
-                <p className="text-sm text-gray-600 mb-2">Class: <span className="text-gray-900">{selectedBooking.class}</span></p>
-                <p className="text-sm text-gray-600">Available Seats: <span className="text-green-600">{selectedBooking.seats}</span></p>
-              </div>
-            )}
-
-            {currentMode === 'hotels' && (
-              <div className="bg-orange-50 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-lg">{selectedBooking.name}</p>
-                  <div className="flex items-center gap-1">
-                    {[...Array(selectedBooking.rating)].map((_, i) => (
-                      <Star key={i} className="size-4 text-yellow-500 fill-yellow-500" />
-                    ))}
+            {/* Route/Location Info */}
+            {selectedBooking.from && selectedBooking.to && (
+              <div className="bg-gray-50 rounded-2xl p-4 mb-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-center flex-1">
+                    <p className="text-sm text-gray-500 mb-1">From</p>
+                    <p className="font-semibold text-gray-900">{selectedBooking.from}</p>
+                    {selectedBooking.departure && (
+                      <p className="text-sm text-gray-600 mt-1">{selectedBooking.departure}</p>
+                    )}
+                  </div>
+                  <div className="px-4">
+                    <ArrowRight className="size-6 text-green-600" />
+                  </div>
+                  <div className="text-center flex-1">
+                    <p className="text-sm text-gray-500 mb-1">To</p>
+                    <p className="font-semibold text-gray-900">{selectedBooking.to}</p>
+                    {selectedBooking.arrival && (
+                      <p className="text-sm text-gray-600 mt-1">{selectedBooking.arrival}</p>
+                    )}
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">📍 {selectedBooking.location}</p>
+                {selectedBooking.duration && (
+                  <div className="text-center mt-3 pt-3 border-t border-gray-200">
+                    <p className="text-sm text-gray-600">Duration: <span className="font-semibold text-gray-900">{selectedBooking.duration}</span></p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Amenities for hotels */}
+            {selectedBooking.amenities && (
+              <div className="mb-4">
+                <p className="text-sm font-semibold text-gray-900 mb-3">Amenities</p>
                 <div className="flex flex-wrap gap-2">
-                  {selectedBooking.amenities.map((amenity: string) => (
-                    <span key={amenity} className="bg-white px-3 py-1 rounded-full text-xs">
+                  {selectedBooking.amenities.map((amenity: string, idx: number) => (
+                    <span key={idx} className="bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5">
+                      {amenity === 'WiFi' && <Wifi className="size-3.5" />}
+                      {amenity === 'Restaurant' && <UtensilsCrossed className="size-3.5" />}
+                      {amenity === 'Pool' && <Waves className="size-3.5" />}
+                      {amenity === 'Beach' && <TreePalm className="size-3.5" />}
                       {amenity}
                     </span>
                   ))}
@@ -666,89 +873,76 @@ export function TravelPage({ user, accessToken, onBack }: TravelPageProps) {
               </div>
             )}
 
-            {currentMode === 'parks' && (
-              <div className="bg-emerald-50 rounded-xl p-4">
-                <p className="text-lg mb-2">{selectedBooking.name}</p>
-                <p className="text-sm text-gray-600 mb-3">📍 {selectedBooking.location}</p>
-                <p className="text-sm text-gray-700 mb-4">{selectedBooking.description}</p>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Park Entrance Fee</span>
-                    <span className="text-sm">{formatCurrency(selectedBooking.entrance)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Guide Service (optional)</span>
-                    <span className="text-sm">{formatCurrency(selectedBooking.guide)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Camping Fee (optional)</span>
-                    <span className="text-sm">{formatCurrency(selectedBooking.camping)}</span>
-                  </div>
+            {/* Seats Available */}
+            {selectedBooking.seats && (
+              <div className="flex items-center gap-2 text-sm">
+                <div className={`flex items-center gap-1.5 ${selectedBooking.seats < 10 ? 'text-orange-600' : 'text-green-600'}`}>
+                  <Info className="size-4" />
+                  <span className="font-medium">{selectedBooking.seats} seats available</span>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Passenger/Room Info */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-base mb-4">
-              {currentMode === 'hotels' ? 'Rooms' : currentMode === 'parks' ? 'Visitors' : 'Passengers'}
-            </h3>
+          {/* Passenger/Room Selection */}
+          <div className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
+            <Label className="text-gray-900 font-semibold mb-4 block flex items-center gap-2">
+              <Users className="size-5 text-green-600" />
+              {currentMode === 'hotels' ? 'Number of Rooms' : currentMode === 'parks' ? 'Number of Visitors' : 'Number of Passengers'}
+            </Label>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => {
-                  if (currentMode === 'hotels') {
-                    setSearchData({ ...searchData, rooms: Math.max(1, searchData.rooms - 1) });
-                  } else if (currentMode === 'parks') {
-                    setSearchData({ ...searchData, visitors: Math.max(1, searchData.visitors - 1) });
-                  } else {
-                    setSearchData({ ...searchData, passengers: Math.max(1, searchData.passengers - 1) });
+                  const key = currentMode === 'hotels' ? 'rooms' : currentMode === 'parks' ? 'visitors' : 'passengers';
+                  if (searchData[key] > 1) {
+                    setSearchData({ ...searchData, [key]: searchData[key] - 1 });
                   }
                 }}
-                className="bg-gray-100 hover:bg-gray-200 w-12 h-12 rounded-full flex items-center justify-center"
+                className="bg-gray-100 hover:bg-gray-200 p-3 rounded-xl transition-colors"
               >
-                <span className="text-xl">−</span>
+                <span className="text-2xl font-bold text-gray-700">−</span>
               </button>
               <div className="flex-1 text-center">
-                <p className="text-3xl">
+                <p className="text-3xl font-bold text-gray-900">
                   {currentMode === 'hotels' ? searchData.rooms : currentMode === 'parks' ? searchData.visitors : searchData.passengers}
                 </p>
               </div>
               <button
                 onClick={() => {
-                  if (currentMode === 'hotels') {
-                    setSearchData({ ...searchData, rooms: searchData.rooms + 1 });
-                  } else if (currentMode === 'parks') {
-                    setSearchData({ ...searchData, visitors: searchData.visitors + 1 });
-                  } else {
-                    setSearchData({ ...searchData, passengers: searchData.passengers + 1 });
+                  const key = currentMode === 'hotels' ? 'rooms' : currentMode === 'parks' ? 'visitors' : 'passengers';
+                  if (searchData[key] < (selectedBooking.seats || 10)) {
+                    setSearchData({ ...searchData, [key]: searchData[key] + 1 });
                   }
                 }}
-                className="bg-green-600 hover:bg-green-700 text-white w-12 h-12 rounded-full flex items-center justify-center"
+                className="bg-green-600 hover:bg-green-700 p-3 rounded-xl transition-colors"
               >
-                <span className="text-xl">+</span>
+                <span className="text-2xl font-bold text-white">+</span>
               </button>
             </div>
           </div>
 
-          {/* Price Summary */}
-          <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-6 text-white shadow-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-green-100">Price per {currentMode === 'hotels' ? 'room' : currentMode === 'parks' ? 'person' : 'ticket'}</span>
-              <span className="text-2xl">{formatCurrency(selectedBooking.price)}</span>
-            </div>
-            <div className="flex items-center justify-between pt-3 border-t border-white/20">
-              <span className="text-lg">Total</span>
-              <span className="text-3xl">
-                {formatCurrency(selectedBooking.price * (searchData.passengers || searchData.rooms || searchData.visitors))}
-              </span>
+          {/* Total Price */}
+          <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-3xl p-6 shadow-xl text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-100 text-sm mb-1">Total Price</p>
+                <p className="text-3xl font-bold">
+                  {formatCurrency(selectedBooking.price * (searchData.passengers || searchData.rooms || searchData.visitors))}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-green-100 text-sm">You'll earn</p>
+                <p className="text-xl font-bold text-amber-300">
+                  +{Math.floor(selectedBooking.price * (searchData.passengers || searchData.rooms || searchData.visitors) * 0.05)} pts
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Proceed Button */}
+          {/* Proceed to Payment */}
           <Button
             onClick={handleProceedToPayment}
-            className="w-full h-14 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full text-lg"
+            className="w-full h-16 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-2xl text-lg font-bold shadow-xl hover:shadow-2xl transition-all"
           >
             Proceed to Payment
           </Button>
@@ -757,402 +951,330 @@ export function TravelPage({ user, accessToken, onBack }: TravelPageProps) {
     );
   }
 
-  // Search/Results screens
+  // Results Screen (Render based on mode)
+  if (searchStep === 'results') {
+    const results = currentMode === 'flights' ? mockFlights : 
+                    currentMode === 'bus' ? mockBuses :
+                    currentMode === 'ferry' ? mockFerries :
+                    currentMode === 'train' ? mockTrains :
+                    currentMode === 'hotels' ? mockHotels :
+                    currentMode === 'parks' ? mockParks : [];
+
+    return (
+      <div className="min-h-screen bg-gray-50 pb-6">
+        <div className="bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 px-6 pt-8 pb-12 rounded-b-3xl shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24 blur-2xl"></div>
+          <div className="relative flex items-center gap-4 mb-4">
+            <button
+              onClick={() => setSearchStep('search')}
+              className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl hover:bg-white/30 transition-all"
+            >
+              <ArrowLeft className="size-5 text-white" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-white capitalize">{currentMode} Results</h1>
+              <p className="text-green-100 text-sm">{results.length} options found</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-6 -mt-6 space-y-3">
+          {results.map((item: any) => (
+            <button
+              key={item.id}
+              onClick={() => handleSelectBooking(item)}
+              className="w-full bg-white rounded-3xl p-5 shadow-lg hover:shadow-xl transition-all border border-gray-100 hover:border-green-300 text-left"
+            >
+              {currentMode === 'hotels' || currentMode === 'parks' ? (
+                <>
+                  {item.image && (
+                    <div className="w-full h-40 rounded-2xl overflow-hidden mb-4">
+                      <ImageWithFallback src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">{item.name}</h3>
+                      <p className="text-sm text-gray-500 mb-2">{item.location || item.description}</p>
+                      {item.rating && (
+                        <div className="flex items-center gap-1 mb-2">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} className={`size-4 ${i < item.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-300'}`} />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-green-600">{formatCurrency(item.price || item.entrance)}</p>
+                      <p className="text-xs text-gray-500">per night</p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">{item.airline || item.company}</h3>
+                      <p className="text-sm text-gray-500">{item.type || item.class}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-green-600">{formatCurrency(item.price)}</p>
+                      <p className="text-xs text-gray-500">{item.seats} seats left</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between bg-gray-50 rounded-2xl p-4">
+                    <div className="text-center flex-1">
+                      <p className="text-sm text-gray-500 mb-1">{item.from}</p>
+                      <p className="font-semibold text-gray-900 text-lg">{item.departure}</p>
+                    </div>
+                    <div className="px-4">
+                      <div className="flex flex-col items-center">
+                        <ArrowRight className="size-5 text-green-600" />
+                        <p className="text-xs text-gray-500 mt-1">{item.duration}</p>
+                      </div>
+                    </div>
+                    <div className="text-center flex-1">
+                      <p className="text-sm text-gray-500 mb-1">{item.to}</p>
+                      <p className="font-semibold text-gray-900 text-lg">{item.arrival}</p>
+                    </div>
+                  </div>
+                </>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Search Form Screen
   return (
     <div className="min-h-screen bg-gray-50 pb-6">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 px-4 pt-6 pb-6 rounded-b-3xl shadow-xl">
-        <div className="flex items-center gap-4 mb-4">
+      <div className="bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 px-6 pt-8 pb-12 rounded-b-3xl shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24 blur-2xl"></div>
+        <div className="relative flex items-center gap-4">
           <button
-            onClick={() => {
-              if (searchStep === 'results') {
-                setSearchStep('search');
-              } else {
-                resetBooking();
-              }
-            }}
-            className="bg-white/20 p-3 rounded-full hover:bg-white/30 transition-all"
+            onClick={resetBooking}
+            className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl hover:bg-white/30 transition-all"
           >
             <ArrowLeft className="size-5 text-white" />
           </button>
           <div>
-            <h1 className="text-2xl text-white capitalize">{currentMode}</h1>
-            <p className="text-green-100 text-sm">
-              {searchStep === 'results' ? (
-                searchData.from && searchData.to ? (
-                  `${searchData.from} → ${searchData.to}${searchData.departDate ? ' • ' + new Date(searchData.departDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}`
-                ) : 'Available options'
-              ) : 'Search and book'}
-            </p>
+            <h1 className="text-2xl font-bold text-white capitalize">{currentMode}</h1>
+            <p className="text-green-100 text-sm">Search and book your journey</p>
           </div>
         </div>
       </div>
 
-      <div className="px-4 -mt-2">
-        {searchStep === 'search' && (
-          <div className="bg-white rounded-2xl p-6 shadow-lg space-y-4">
-            {(currentMode === 'flights' || currentMode === 'bus' || currentMode === 'ferry' || currentMode === 'train') && (
-              <>
-                <div>
-                  <Label htmlFor="from">From</Label>
-                  <Input
-                    id="from"
-                    placeholder="Dar es Salaam"
-                    value={searchData.from}
-                    onChange={(e) => setSearchData({ ...searchData, from: e.target.value })}
-                    className="mt-1 h-12"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="to">To</Label>
-                  <Input
-                    id="to"
-                    placeholder="Arusha"
-                    value={searchData.to}
-                    onChange={(e) => setSearchData({ ...searchData, to: e.target.value })}
-                    className="mt-1 h-12"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="depart-date">Travel Date</Label>
-                  <Input
-                    id="depart-date"
-                    type="date"
-                    min={new Date().toISOString().split('T')[0]}
-                    value={searchData.departDate}
-                    onChange={(e) => setSearchData({ ...searchData, departDate: e.target.value })}
-                    className="mt-1 h-12"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="passengers">Passengers</Label>
-                  <Input
-                    id="passengers"
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={searchData.passengers}
-                    onChange={(e) => setSearchData({ ...searchData, passengers: parseInt(e.target.value) || 1 })}
-                    className="mt-1 h-12"
-                  />
-                </div>
-              </>
-            )}
-
-            {currentMode === 'hotels' && (
-              <>
-                <div>
-                  <Label htmlFor="hotel-location">Location</Label>
-                  <Input
-                    id="hotel-location"
-                    placeholder="Dar es Salaam"
-                    value={searchData.from}
-                    onChange={(e) => setSearchData({ ...searchData, from: e.target.value })}
-                    className="mt-1 h-12"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="check-in">Check-in Date</Label>
-                  <Input
-                    id="check-in"
-                    type="date"
-                    value={searchData.checkIn}
-                    onChange={(e) => setSearchData({ ...searchData, checkIn: e.target.value })}
-                    className="mt-1 h-12"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="check-out">Check-out Date</Label>
-                  <Input
-                    id="check-out"
-                    type="date"
-                    value={searchData.checkOut}
-                    onChange={(e) => setSearchData({ ...searchData, checkOut: e.target.value })}
-                    className="mt-1 h-12"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="rooms">Rooms</Label>
-                  <Input
-                    id="rooms"
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={searchData.rooms}
-                    onChange={(e) => setSearchData({ ...searchData, rooms: parseInt(e.target.value) || 1 })}
-                    className="mt-1 h-12"
-                  />
-                </div>
-              </>
-            )}
-
-            {currentMode === 'parks' && (
-              <>
-                <div>
-                  <Label htmlFor="park">Select Park</Label>
-                  <select
-                    id="park"
-                    value={searchData.parkName}
-                    onChange={(e) => setSearchData({ ...searchData, parkName: e.target.value })}
-                    className="mt-1 h-12 w-full rounded-md border border-gray-300 px-3"
-                  >
-                    <option value="">Choose a park...</option>
-                    <option value="Serengeti">Serengeti National Park</option>
-                    <option value="Ngorongoro">Ngorongoro Crater</option>
-                    <option value="Kilimanjaro">Mount Kilimanjaro</option>
-                    <option value="Tarangire">Tarangire National Park</option>
-                    <option value="Manyara">Lake Manyara</option>
-                  </select>
-                </div>
-                <div>
-                  <Label htmlFor="visit-date">Visit Date</Label>
-                  <Input
-                    id="visit-date"
-                    type="date"
-                    value={searchData.departDate}
-                    onChange={(e) => setSearchData({ ...searchData, departDate: e.target.value })}
-                    className="mt-1 h-12"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="visitors">Number of Visitors</Label>
-                  <Input
-                    id="visitors"
-                    type="number"
-                    min="1"
-                    max="20"
-                    value={searchData.visitors}
-                    onChange={(e) => setSearchData({ ...searchData, visitors: parseInt(e.target.value) || 1 })}
-                    className="mt-1 h-12"
-                  />
-                </div>
-              </>
-            )}
-
-            <Button
-              onClick={handleSearch}
-              className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full mt-4"
-            >
-              <Search className="size-5 mr-2" />
-              Search {currentMode === 'hotels' ? 'Hotels' : currentMode === 'parks' ? 'Parks' : 'Tickets'}
-            </Button>
-          </div>
-        )}
-
-        {searchStep === 'results' && (
-          <div className="space-y-3 mt-4">
-            {currentMode === 'flights' && mockFlights.length === 0 && (
-              <div className="bg-white rounded-2xl p-8 shadow-md text-center">
-                <Plane className="size-12 text-gray-300 mx-auto mb-3" />
-                <h3 className="font-bold mb-2">No Flights Found</h3>
-                <p className="text-gray-500 text-sm mb-4">
-                  No flights available for this route. Try different destinations or dates.
-                </p>
-                <p className="text-sm text-gray-600 mb-2">Popular routes:</p>
-                <div className="space-y-1 text-sm text-green-600">
-                  <p>Dar es Salaam ↔ Arusha, Mwanza, Zanzibar, Mbeya</p>
-                  <p>Arusha ↔ Serengeti, Dar es Salaam, Zanzibar</p>
-                  <p>Zanzibar ↔ Dar es Salaam, Pemba</p>
-                </div>
+      <div className="px-6 -mt-6">
+        <div className="bg-white rounded-3xl p-6 shadow-xl space-y-4">
+          {(currentMode === 'flights' || currentMode === 'bus' || currentMode === 'ferry' || currentMode === 'train') && (
+            <>
+              <div>
+                <Label className="text-gray-900 font-semibold mb-2 block flex items-center gap-2">
+                  <MapPin className="size-4 text-green-600" />
+                  From
+                </Label>
+                <Input
+                  type="text"
+                  placeholder="Enter city"
+                  value={searchData.from}
+                  onChange={(e) => setSearchData({ ...searchData, from: e.target.value })}
+                  className="h-12 rounded-xl border-2 focus:border-green-500"
+                  list="cities-from"
+                />
+                <datalist id="cities-from">
+                  {tanzaniaCities.map(city => <option key={city} value={city} />)}
+                </datalist>
               </div>
-            )}
-            {currentMode === 'flights' && mockFlights.map((flight) => (
-              <button
-                key={flight.id}
-                onClick={() => handleSelectBooking(flight)}
-                className="w-full bg-white rounded-2xl p-5 shadow-md hover:shadow-lg transition-all text-left border border-gray-100"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm text-gray-500">{flight.airline}</p>
-                  <p className="text-green-600 text-lg">{formatCurrency(flight.price)}</p>
-                </div>
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <p className="text-2xl">{flight.departure}</p>
-                    <p className="text-sm text-gray-500">{flight.from}</p>
-                  </div>
-                  <div className="flex-1 mx-4">
-                    <div className="border-t-2 border-dashed border-gray-300 relative">
-                      <Plane className="size-5 text-gray-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white" />
-                    </div>
-                    <p className="text-xs text-center text-gray-500 mt-1">{flight.duration}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl">{flight.arrival}</p>
-                    <p className="text-sm text-gray-500">{flight.to}</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">{flight.seats} seats available</span>
-                  <span className="text-green-600">Select →</span>
-                </div>
-              </button>
-            ))}
 
-            {currentMode === 'bus' && mockBuses.map((bus) => (
-              <button
-                key={bus.id}
-                onClick={() => handleSelectBooking(bus)}
-                className="w-full bg-white rounded-2xl p-5 shadow-md hover:shadow-lg transition-all text-left border border-gray-100"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm text-gray-500">{bus.company}</p>
-                  <p className="text-green-600 text-lg">{formatCurrency(bus.price)}</p>
-                </div>
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <p className="text-2xl">{bus.departure}</p>
-                    <p className="text-sm text-gray-500">{bus.from}</p>
-                  </div>
-                  <div className="flex-1 mx-4">
-                    <div className="border-t-2 border-dashed border-gray-300 relative">
-                      <Bus className="size-5 text-gray-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white" />
-                    </div>
-                    <p className="text-xs text-center text-gray-500 mt-1">{bus.duration}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl">{bus.arrival}</p>
-                    <p className="text-sm text-gray-500">{bus.to}</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs">{bus.type}</span>
-                  <span className="text-gray-500">{bus.seats} seats</span>
-                  <span className="text-green-600">Select →</span>
-                </div>
-              </button>
-            ))}
+              <div>
+                <Label className="text-gray-900 font-semibold mb-2 block flex items-center gap-2">
+                  <MapPin className="size-4 text-green-600" />
+                  To
+                </Label>
+                <Input
+                  type="text"
+                  placeholder="Enter destination"
+                  value={searchData.to}
+                  onChange={(e) => setSearchData({ ...searchData, to: e.target.value })}
+                  className="h-12 rounded-xl border-2 focus:border-green-500"
+                  list="cities-to"
+                />
+                <datalist id="cities-to">
+                  {tanzaniaCities.map(city => <option key={city} value={city} />)}
+                </datalist>
+              </div>
 
-            {currentMode === 'ferry' && mockFerries.map((ferry) => (
-              <button
-                key={ferry.id}
-                onClick={() => handleSelectBooking(ferry)}
-                className="w-full bg-white rounded-2xl p-5 shadow-md hover:shadow-lg transition-all text-left border border-gray-100"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm text-gray-500">{ferry.company}</p>
-                  <p className="text-green-600 text-lg">{formatCurrency(ferry.price)}</p>
-                </div>
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <p className="text-2xl">{ferry.departure}</p>
-                    <p className="text-sm text-gray-500">{ferry.from}</p>
-                  </div>
-                  <div className="flex-1 mx-4">
-                    <div className="border-t-2 border-dashed border-gray-300 relative">
-                      <Ship className="size-5 text-gray-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white" />
-                    </div>
-                    <p className="text-xs text-center text-gray-500 mt-1">{ferry.duration}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl">{ferry.arrival}</p>
-                    <p className="text-sm text-gray-500">{ferry.to}</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-xs">{ferry.type}</span>
-                  <span className="text-gray-500">{ferry.seats} seats</span>
-                  <span className="text-green-600">Select →</span>
-                </div>
-              </button>
-            ))}
+              <div>
+                <Label className="text-gray-900 font-semibold mb-2 block flex items-center gap-2">
+                  <Calendar className="size-4 text-green-600" />
+                  Departure Date
+                </Label>
+                <Input
+                  type="date"
+                  value={searchData.departDate}
+                  onChange={(e) => setSearchData({ ...searchData, departDate: e.target.value })}
+                  className="h-12 rounded-xl border-2 focus:border-green-500"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
 
-            {currentMode === 'train' && mockTrains.map((train) => (
-              <button
-                key={train.id}
-                onClick={() => handleSelectBooking(train)}
-                className="w-full bg-white rounded-2xl p-5 shadow-md hover:shadow-lg transition-all text-left border border-gray-100"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm text-gray-500">SGR Express</p>
-                  <p className="text-green-600 text-lg">{formatCurrency(train.price)}</p>
-                </div>
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <p className="text-2xl">{train.departure}</p>
-                    <p className="text-sm text-gray-500">{train.from}</p>
-                  </div>
-                  <div className="flex-1 mx-4">
-                    <div className="border-t-2 border-dashed border-gray-300 relative">
-                      <Train className="size-5 text-gray-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white" />
-                    </div>
-                    <p className="text-xs text-center text-gray-500 mt-1">{train.duration}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl">{train.arrival}</p>
-                    <p className="text-sm text-gray-500">{train.to}</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs">{train.class}</span>
-                  <span className="text-gray-500">{train.seats} seats</span>
-                  <span className="text-green-600">Select →</span>
-                </div>
-              </button>
-            ))}
+              <div>
+                <Label className="text-gray-900 font-semibold mb-2 block flex items-center gap-2">
+                  <Users className="size-4 text-green-600" />
+                  Passengers
+                </Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={searchData.passengers}
+                  onChange={(e) => setSearchData({ ...searchData, passengers: parseInt(e.target.value) || 1 })}
+                  className="h-12 rounded-xl border-2 focus:border-green-500"
+                />
+              </div>
+            </>
+          )}
 
-            {currentMode === 'hotels' && mockHotels.map((hotel) => (
-              <button
-                key={hotel.id}
-                onClick={() => handleSelectBooking(hotel)}
-                className="w-full bg-white rounded-2xl p-5 shadow-md hover:shadow-lg transition-all text-left border border-gray-100"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex-1">
-                    <p className="text-lg mb-1">{hotel.name}</p>
-                    <div className="flex items-center gap-2 mb-2">
-                      <MapPin className="size-4 text-gray-400" />
-                      <span className="text-sm text-gray-500">{hotel.location}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {[...Array(hotel.rating)].map((_, i) => (
-                        <Star key={i} className="size-4 text-yellow-500 fill-yellow-500" />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-green-600 text-lg">{formatCurrency(hotel.price)}</p>
-                    <p className="text-xs text-gray-500">per night</p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {hotel.amenities.slice(0, 3).map((amenity) => (
-                    <span key={amenity} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
-                      {amenity}
-                    </span>
-                  ))}
-                </div>
-                <div className="text-green-600 text-sm text-right">Select →</div>
-              </button>
-            ))}
+          {currentMode === 'hotels' && (
+            <>
+              <div>
+                <Label className="text-gray-900 font-semibold mb-2 block flex items-center gap-2">
+                  <MapPin className="size-4 text-green-600" />
+                  Location
+                </Label>
+                <Input
+                  type="text"
+                  placeholder="Enter city or hotel name"
+                  value={searchData.from}
+                  onChange={(e) => setSearchData({ ...searchData, from: e.target.value })}
+                  className="h-12 rounded-xl border-2 focus:border-green-500"
+                  list="cities-hotels"
+                />
+                <datalist id="cities-hotels">
+                  {tanzaniaCities.map(city => <option key={city} value={city} />)}
+                </datalist>
+              </div>
 
-            {currentMode === 'parks' && mockParks.map((park) => (
-              <button
-                key={park.id}
-                onClick={() => handleSelectBooking(park)}
-                className="w-full bg-white rounded-2xl p-5 shadow-md hover:shadow-lg transition-all text-left border border-gray-100"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex-1">
-                    <p className="text-lg mb-1">{park.name}</p>
-                    <div className="flex items-center gap-2 mb-2">
-                      <MapPin className="size-4 text-gray-400" />
-                      <span className="text-sm text-gray-500">{park.location}</span>
-                    </div>
-                    <p className="text-sm text-gray-600">{park.description}</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                  <span className="text-sm text-gray-500">Entrance fee</span>
-                  <div className="text-right">
-                    <p className="text-green-600 text-lg">{formatCurrency(park.entrance)}</p>
-                    <p className="text-xs text-gray-500">per person</p>
-                  </div>
-                </div>
-              </button>
-            ))}
+              <div>
+                <Label className="text-gray-900 font-semibold mb-2 block flex items-center gap-2">
+                  <Calendar className="size-4 text-green-600" />
+                  Check-in Date
+                </Label>
+                <Input
+                  type="date"
+                  value={searchData.checkIn}
+                  onChange={(e) => setSearchData({ ...searchData, checkIn: e.target.value })}
+                  className="h-12 rounded-xl border-2 focus:border-green-500"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+
+              <div>
+                <Label className="text-gray-900 font-semibold mb-2 block flex items-center gap-2">
+                  <Calendar className="size-4 text-green-600" />
+                  Check-out Date
+                </Label>
+                <Input
+                  type="date"
+                  value={searchData.checkOut}
+                  onChange={(e) => setSearchData({ ...searchData, checkOut: e.target.value })}
+                  className="h-12 rounded-xl border-2 focus:border-green-500"
+                  min={searchData.checkIn || new Date().toISOString().split('T')[0]}
+                />
+              </div>
+
+              <div>
+                <Label className="text-gray-900 font-semibold mb-2 block flex items-center gap-2">
+                  <Hotel className="size-4 text-green-600" />
+                  Number of Rooms
+                </Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={searchData.rooms}
+                  onChange={(e) => setSearchData({ ...searchData, rooms: parseInt(e.target.value) || 1 })}
+                  className="h-12 rounded-xl border-2 focus:border-green-500"
+                />
+              </div>
+            </>
+          )}
+
+          {currentMode === 'parks' && (
+            <>
+              <div>
+                <Label className="text-gray-900 font-semibold mb-2 block flex items-center gap-2">
+                  <Mountain className="size-4 text-green-600" />
+                  Select Park
+                </Label>
+                <Input
+                  type="text"
+                  placeholder="Enter park name"
+                  value={searchData.parkName}
+                  onChange={(e) => setSearchData({ ...searchData, parkName: e.target.value })}
+                  className="h-12 rounded-xl border-2 focus:border-green-500"
+                  list="parks-list"
+                />
+                <datalist id="parks-list">
+                  {mockParks.map(park => <option key={park.id} value={park.name} />)}
+                </datalist>
+              </div>
+
+              <div>
+                <Label className="text-gray-900 font-semibold mb-2 block flex items-center gap-2">
+                  <Calendar className="size-4 text-green-600" />
+                  Visit Date
+                </Label>
+                <Input
+                  type="date"
+                  value={searchData.departDate}
+                  onChange={(e) => setSearchData({ ...searchData, departDate: e.target.value })}
+                  className="h-12 rounded-xl border-2 focus:border-green-500"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+
+              <div>
+                <Label className="text-gray-900 font-semibold mb-2 block flex items-center gap-2">
+                  <Users className="size-4 text-green-600" />
+                  Number of Visitors
+                </Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={searchData.visitors}
+                  onChange={(e) => setSearchData({ ...searchData, visitors: parseInt(e.target.value) || 1 })}
+                  className="h-12 rounded-xl border-2 focus:border-green-500"
+                />
+              </div>
+            </>
+          )}
+
+          <Button
+            onClick={handleSearch}
+            className="w-full h-14 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-2xl text-lg font-bold shadow-lg hover:shadow-xl transition-all mt-6"
+          >
+            <Search className="size-5 mr-2" />
+            Search {currentMode}
+          </Button>
+        </div>
+
+        {/* Quick Tips */}
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 mt-4 flex items-start gap-3">
+          <Info className="size-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-blue-900">
+            <p className="font-semibold mb-1">Travel Tip</p>
+            <p>
+              {currentMode === 'flights' && 'Book early for the best fares. Peak season is June-September.'}
+              {currentMode === 'bus' && 'VIP buses offer more comfort for long journeys.'}
+              {currentMode === 'ferry' && 'Fast ferries save time but cost more than standard ferries.'}
+              {currentMode === 'train' && 'Business class offers more space and amenities.'}
+              {currentMode === 'hotels' && 'Book during off-peak season for better rates.'}
+              {currentMode === 'parks' && 'Hire a guide for the best wildlife spotting experience.'}
+            </p>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

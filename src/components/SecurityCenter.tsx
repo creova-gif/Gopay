@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 interface SecurityCenterProps {
   onBack: () => void;
-  onNavigate: (page: 'advanced' | 'fraud' | 'kyc') => void;
+  onNavigate: (page: 'advancedsecurity' | 'frauddetection' | 'enhancedkyc') => void;
 }
 
 export function SecurityCenter({ onBack, onNavigate }: SecurityCenterProps) {
@@ -95,7 +95,7 @@ export function SecurityCenter({ onBack, onNavigate }: SecurityCenterProps) {
       subtitle: 'Manage auth, devices, transactions',
       icon: Settings,
       color: 'bg-gradient-to-br from-blue-600 to-blue-700',
-      action: () => onNavigate('advanced')
+      action: () => onNavigate('advancedsecurity')
     },
     {
       id: 'fraud',
@@ -103,7 +103,7 @@ export function SecurityCenter({ onBack, onNavigate }: SecurityCenterProps) {
       subtitle: 'View alerts & patterns',
       icon: AlertTriangle,
       color: 'bg-gradient-to-br from-purple-600 to-purple-700',
-      action: () => onNavigate('fraud')
+      action: () => onNavigate('frauddetection')
     },
     {
       id: 'kyc',
@@ -111,7 +111,7 @@ export function SecurityCenter({ onBack, onNavigate }: SecurityCenterProps) {
       subtitle: 'Identity & compliance',
       icon: FileText,
       color: 'bg-gradient-to-br from-green-600 to-green-700',
-      action: () => onNavigate('kyc')
+      action: () => onNavigate('enhancedkyc')
     }
   ];
 

@@ -8,6 +8,7 @@ import { ArrowLeft, Zap, Droplet, FileText, GraduationCap, Shield, Smartphone } 
 import { projectId } from '../utils/supabase/info';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { getDemoBalance, setDemoBalance, addDemoTransaction, DEMO_WALLET } from '../utils/demoData';
 
 interface PaymentsPageProps {
   user: User;
@@ -23,6 +24,9 @@ export function PaymentsPage({ user, accessToken, onBack }: PaymentsPageProps) {
     amount: '',
     pin: '',
   });
+
+  // Check if in demo mode
+  const isDemoMode = accessToken.startsWith('demo-token');
 
   const paymentCategories = [
     {
@@ -96,6 +100,52 @@ export function PaymentsPage({ user, accessToken, onBack }: PaymentsPageProps) {
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Demo mode: Handle payment offline
+    if (isDemoMode) {
+      try {
+        const amount = parseInt(paymentData.amount);
+        const balance = getDemoBalance();
+
+        // Validate PIN
+        if (paymentData.pin !== DEMO_WALLET.pin) {
+          alert('❌ Invalid PIN. Try 1234');
+          return;
+        }
+
+        // Check balance
+        if (balance < amount) {
+          alert('❌ Insufficient balance');
+          return;
+        }
+
+        // Process payment
+        const newBalance = balance - amount;
+        setDemoBalance(newBalance);
+
+        // Add transaction
+        const reference = `PAY${Date.now()}`;
+        addDemoTransaction({
+          id: `tx-${Date.now()}`,
+          type: 'debit',
+          amount: amount,
+          description: `${paymentType} - ${paymentData.accountNumber}`,
+          timestamp: new Date().toISOString(),
+          status: 'completed',
+          category: 'bill_payment',
+          reference: reference,
+        });
+
+        setShowPayment(false);
+        setPaymentData({ accountNumber: '', amount: '', pin: '' });
+        alert(`✅ Payment successful!\nReference: ${reference}\nNew Balance: TZS ${newBalance.toLocaleString()}`);
+      } catch (error) {
+        console.error('Error processing demo payment:', error);
+        alert('❌ Payment failed. Please try again.');
+      }
+      return;
+    }
+
+    // Production mode: Call backend
     try {
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/payments/process`,
@@ -116,14 +166,14 @@ export function PaymentsPage({ user, accessToken, onBack }: PaymentsPageProps) {
         const result = await response.json();
         setShowPayment(false);
         setPaymentData({ accountNumber: '', amount: '', pin: '' });
-        alert(`Payment successful! Reference: ${result.reference}`);
+        alert(`✅ Payment successful! Reference: ${result.reference}`);
       } else {
         const error = await response.json();
-        alert(error.error || 'Payment failed');
+        alert(`❌ ${error.error || 'Payment failed'}`);
       }
     } catch (error) {
       console.error('Error processing payment:', error);
-      alert('An error occurred');
+      alert('❌ An error occurred. Please try again.');
     }
   };
 

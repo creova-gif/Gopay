@@ -139,7 +139,7 @@ export function InsightsPage({ user, accessToken, onBack }: InsightsPageProps) {
               <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full">
                 <ArrowLeft className="size-6" />
               </button>
-              <h1 className="text-xl font-bold">Financial Insights</h1>
+              <h1 className="text-xl font-bold text-[rgb(248,248,249)]">Financial Insights</h1>
             </div>
             <button
               onClick={exportData}
@@ -178,14 +178,14 @@ export function InsightsPage({ user, accessToken, onBack }: InsightsPageProps) {
                 <ArrowDownRight className="size-4 text-red-300" />
                 <span className="text-xs text-green-100">Total Spent</span>
               </div>
-              <p className="text-2xl font-bold">{formatCurrency(insights.totalSpent)}</p>
+              <p className="text-2xl font-bold text-[rgb(245,248,255)]">{formatCurrency(insights.totalSpent)}</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <ArrowUpRight className="size-4 text-green-300" />
                 <span className="text-xs text-green-100">Total Earned</span>
               </div>
-              <p className="text-2xl font-bold">{formatCurrency(insights.totalEarned)}</p>
+              <p className="text-2xl font-bold text-[rgb(245,248,255)]">{formatCurrency(insights.totalEarned)}</p>
             </div>
           </div>
         </div>
@@ -258,13 +258,13 @@ export function InsightsPage({ user, accessToken, onBack }: InsightsPageProps) {
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl p-4">
             <Target className="size-8 mb-2 opacity-80" />
-            <p className="text-xs opacity-90 mb-1">Savings Rate</p>
-            <p className="text-2xl font-bold">{insights.savingsRate}%</p>
+            <p className="text-xs opacity-90 mb-1 text-[rgb(244,247,254)]">Savings Rate</p>
+            <p className="text-2xl font-bold text-[rgb(239,243,253)]">{insights.savingsRate}%</p>
           </div>
           <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-2xl p-4">
             <TrendingDown className="size-8 mb-2 opacity-80" />
-            <p className="text-xs opacity-90 mb-1">Spending Change</p>
-            <p className="text-2xl font-bold">{insights.trends.spendingChange}%</p>
+            <p className="text-xs opacity-90 mb-1 text-[rgb(245,248,255)]">Spending Change</p>
+            <p className="text-2xl font-bold text-[rgb(236,240,249)]">{insights.trends.spendingChange}%</p>
           </div>
         </div>
 

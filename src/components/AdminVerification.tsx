@@ -120,7 +120,7 @@ export function AdminVerification({ user, accessToken, onBack }: AdminVerificati
               <ArrowLeft className="size-6" />
             </button>
             <div className="flex-1">
-              <h1 className="text-xl font-bold">{selectedApplication.businessName}</h1>
+              <h1 className="text-xl font-bold text-gray-900">{selectedApplication.businessName}</h1>
               <p className="text-sm text-gray-500">Application Review</p>
             </div>
           </div>

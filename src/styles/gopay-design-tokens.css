@@ -1,0 +1,407 @@
+/**
+ * goPay East Africa Design System
+ * Version: 3.0.0 - Fintech Super App
+ * Last Updated: January 19, 2026
+ * 
+ * Production-ready design tokens for Tanzania, Kenya, Uganda, Rwanda, Burundi
+ */
+
+:root {
+  /* ========================================
+     PRIMARY COLORS - goPay Green Brand
+     ======================================== */
+  
+  --color-primary-900: #0E3B2E;   /* Primary dark – headers, active states */
+  --color-primary-800: #165943;   /* Intermediate dark */
+  --color-primary-700: #1F6F54;   /* Main brand green */
+  --color-primary-600: #2A8566;   /* Intermediate */
+  --color-primary-500: #3FA27A;   /* Highlights, icons */
+  --color-primary-400: #6BB794;   /* Light highlights */
+  --color-primary-300: #9ED9C1;   /* Background accents */
+  --color-primary-200: #C6E8DB;   /* Very light */
+  --color-primary-100: #E8F5EF;   /* Light backgrounds */
+  --color-primary-50: #F4FAF7;    /* Lightest */
+  
+  /* ========================================
+     NEUTRAL COLORS - Text & Backgrounds
+     ======================================== */
+  
+  --color-neutral-900: #111827;   /* Primary text */
+  --color-neutral-800: #1F2937;   /* Dark text */
+  --color-neutral-700: #374151;   /* Secondary text */
+  --color-neutral-600: #4B5563;   /* Tertiary text */
+  --color-neutral-500: #6B7280;   /* Helper text */
+  --color-neutral-400: #9CA3AF;   /* Disabled text */
+  --color-neutral-300: #D1D5DB;   /* Dividers, borders */
+  --color-neutral-200: #E5E7EB;   /* Light borders */
+  --color-neutral-100: #F9FAFB;   /* Page backgrounds */
+  --color-neutral-50: #FFFFFF;    /* Pure white */
+  
+  /* ========================================
+     SEMANTIC COLORS - Status & Feedback
+     ======================================== */
+  
+  /* Success - Green */
+  --color-success-700: #15803D;
+  --color-success-600: #16A34A;
+  --color-success-500: #22C55E;
+  --color-success-400: #4ADE80;
+  --color-success-100: #DCFCE7;
+  --color-success-50: #F0FDF4;
+  
+  /* Warning - Amber */
+  --color-warning-700: #B45309;
+  --color-warning-600: #D97706;
+  --color-warning-500: #F59E0B;
+  --color-warning-400: #FBBF24;
+  --color-warning-100: #FEF3C7;
+  --color-warning-50: #FFFBEB;
+  
+  /* Error - Red */
+  --color-error-700: #B91C1C;
+  --color-error-600: #DC2626;
+  --color-error-500: #EF4444;
+  --color-error-400: #F87171;
+  --color-error-100: #FEE2E2;
+  --color-error-50: #FEF2F2;
+  
+  /* Info - Blue */
+  --color-info-700: #1D4ED8;
+  --color-info-600: #2563EB;
+  --color-info-500: #3B82F6;
+  --color-info-400: #60A5FA;
+  --color-info-100: #DBEAFE;
+  --color-info-50: #EFF6FF;
+  
+  /* ========================================
+     TYPOGRAPHY - East Africa Optimized
+     ======================================== */
+  
+  /* Font Families */
+  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+  
+  /* Display XL - Hero sections */
+  --text-display-xl-size: 32px;
+  --text-display-xl-line: 40px;
+  --text-display-xl-weight: 600;  /* Semibold */
+  
+  /* Heading 1 - Page titles */
+  --text-h1-size: 24px;
+  --text-h1-line: 32px;
+  --text-h1-weight: 600;  /* Semibold */
+  
+  /* Heading 2 - Section titles */
+  --text-h2-size: 20px;
+  --text-h2-line: 28px;
+  --text-h2-weight: 500;  /* Medium */
+  
+  /* Heading 3 - Subsection titles */
+  --text-h3-size: 18px;
+  --text-h3-line: 26px;
+  --text-h3-weight: 500;  /* Medium */
+  
+  /* Body Large - DEFAULT */
+  --text-body-l-size: 16px;
+  --text-body-l-line: 24px;
+  --text-body-l-weight: 400;  /* Regular */
+  
+  /* Body Medium */
+  --text-body-m-size: 14px;
+  --text-body-m-line: 22px;
+  --text-body-m-weight: 400;  /* Regular */
+  
+  /* Body Small */
+  --text-body-s-size: 13px;
+  --text-body-s-line: 20px;
+  --text-body-s-weight: 400;  /* Regular */
+  
+  /* Caption - Helper text */
+  --text-caption-size: 12px;
+  --text-caption-line: 18px;
+  --text-caption-weight: 400;  /* Regular */
+  
+  /* Button text */
+  --text-button-size: 14px;
+  --text-button-size-lg: 16px;
+  --text-button-weight: 500;  /* Medium */
+  
+  /* ========================================
+     SPACING SCALE - 4px base
+     ======================================== */
+  
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  
+  /* ========================================
+     BORDER RADIUS - Fintech-grade
+     ======================================== */
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  
+  /* ========================================
+     SHADOWS - Depth system
+     ======================================== */
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  
+  /* ========================================
+     COMPONENT TOKENS - Semantic Usage
+     ======================================== */
+  
+  /* Buttons */
+  --button-primary-bg: var(--color-primary-700);
+  --button-primary-hover: var(--color-primary-800);
+  --button-primary-active: var(--color-primary-900);
+  --button-primary-text: var(--color-neutral-50);
+  
+  --button-secondary-bg: var(--color-neutral-100);
+  --button-secondary-hover: var(--color-neutral-200);
+  --button-secondary-active: var(--color-neutral-300);
+  --button-secondary-text: var(--color-neutral-900);
+  
+  /* Inputs */
+  --input-bg: var(--color-neutral-50);
+  --input-border: var(--color-neutral-300);
+  --input-border-focus: var(--color-primary-500);
+  --input-border-error: var(--color-error-600);
+  --input-text: var(--color-neutral-900);
+  --input-placeholder: var(--color-neutral-500);
+  
+  /* Cards */
+  --card-bg: var(--color-neutral-50);
+  --card-border: var(--color-neutral-200);
+  --card-shadow: var(--shadow-sm);
+  
+  /* Navigation */
+  --nav-bg: var(--color-neutral-50);
+  --nav-border: var(--color-neutral-200);
+  --nav-text: var(--color-neutral-700);
+  --nav-text-active: var(--color-primary-700);
+  --nav-bg-active: var(--color-primary-100);
+  
+  /* Status badges */
+  --badge-success-bg: var(--color-success-100);
+  --badge-success-text: var(--color-success-700);
+  --badge-warning-bg: var(--color-warning-100);
+  --badge-warning-text: var(--color-warning-700);
+  --badge-error-bg: var(--color-error-100);
+  --badge-error-text: var(--color-error-700);
+  --badge-info-bg: var(--color-info-100);
+  --badge-info-text: var(--color-info-700);
+  
+  /* ========================================
+     ANIMATION & TRANSITIONS
+     ======================================== */
+  
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+  
+  /* ========================================
+     ACCESSIBILITY - Touch Targets
+     ======================================== */
+  
+  --touch-target-min: 44px;  /* WCAG minimum */
+  --touch-target-recommended: 48px;
+  
+  /* ========================================
+     Z-INDEX SCALE - Layering
+     ======================================== */
+  
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+}
+
+/* ========================================
+   UTILITY CLASSES - Production Ready
+   ======================================== */
+
+/* Typography */
+.text-display-xl {
+  font-size: var(--text-display-xl-size);
+  line-height: var(--text-display-xl-line);
+  font-weight: var(--text-display-xl-weight);
+  color: var(--color-neutral-900);
+}
+
+.text-h1 {
+  font-size: var(--text-h1-size);
+  line-height: var(--text-h1-line);
+  font-weight: var(--text-h1-weight);
+  color: var(--color-neutral-900);
+}
+
+.text-h2 {
+  font-size: var(--text-h2-size);
+  line-height: var(--text-h2-line);
+  font-weight: var(--text-h2-weight);
+  color: var(--color-neutral-900);
+}
+
+.text-h3 {
+  font-size: var(--text-h3-size);
+  line-height: var(--text-h3-line);
+  font-weight: var(--text-h3-weight);
+  color: var(--color-neutral-900);
+}
+
+.text-body-l {
+  font-size: var(--text-body-l-size);
+  line-height: var(--text-body-l-line);
+  font-weight: var(--text-body-l-weight);
+  color: var(--color-neutral-900);
+}
+
+.text-body-m {
+  font-size: var(--text-body-m-size);
+  line-height: var(--text-body-m-line);
+  font-weight: var(--text-body-m-weight);
+  color: var(--color-neutral-900);
+}
+
+.text-body-s {
+  font-size: var(--text-body-s-size);
+  line-height: var(--text-body-s-line);
+  font-weight: var(--text-body-s-weight);
+  color: var(--color-neutral-900);
+}
+
+.text-caption {
+  font-size: var(--text-caption-size);
+  line-height: var(--text-caption-line);
+  font-weight: var(--text-caption-weight);
+  color: var(--color-neutral-700);
+}
+
+/* Color utilities */
+.text-primary { color: var(--color-primary-700); }
+.text-secondary { color: var(--color-neutral-700); }
+.text-tertiary { color: var(--color-neutral-500); }
+.text-success { color: var(--color-success-600); }
+.text-warning { color: var(--color-warning-600); }
+.text-error { color: var(--color-error-600); }
+.text-info { color: var(--color-info-600); }
+
+.bg-primary { background-color: var(--color-primary-700); }
+.bg-primary-light { background-color: var(--color-primary-100); }
+.bg-neutral { background-color: var(--color-neutral-100); }
+.bg-success { background-color: var(--color-success-600); }
+.bg-warning { background-color: var(--color-warning-600); }
+.bg-error { background-color: var(--color-error-600); }
+.bg-info { background-color: var(--color-info-600); }
+
+/* Touch targets - Accessibility */
+.touch-target {
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  padding: var(--space-3);
+}
+
+.touch-target-lg {
+  min-width: var(--touch-target-recommended);
+  min-height: var(--touch-target-recommended);
+  padding: var(--space-4);
+}
+
+/* Loading States */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-neutral-200) 0%,
+    var(--color-neutral-300) 50%,
+    var(--color-neutral-200) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Live indicator */
+.live-indicator {
+  position: relative;
+}
+
+.live-indicator::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-success-600);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+/* Accessibility - Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus visible - WCAG AA */
+.focus-visible:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Swahili language - increased line height */
+[lang="sw"] {
+  line-height: 1.6;
+}
+
+/* Low bandwidth mode */
+.low-bandwidth-mode img {
+  filter: grayscale(20%);
+  compression: high;
+}
+
+/* Offline mode indicator */
+.offline-indicator {
+  background-color: var(--color-warning-100);
+  color: var(--color-warning-700);
+  padding: var(--space-2) var(--space-4);
+  text-align: center;
+  font-size: var(--text-caption-size);
+  font-weight: 500;
+}

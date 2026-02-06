@@ -1,416 +1,342 @@
-// Custom SVG Icons for goPay - Modern, consistent design system
+// Custom branded icons for goPay Tanzania
+// Unique designs that don't look AI-generated
 
 interface IconProps {
   className?: string;
-  size?: number;
 }
 
-export function VerifiedBadgeIcon({ className = "", size = 24 }: IconProps) {
+// Wallet Icon - Custom gradient design
+export function WalletIcon({ className = "w-6 h-6" }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <path
-        d="M9 12L11 14L15 10M12 2L15.09 4.26L18.75 3.27L19.74 6.93L22 10.02L19.74 13.11L18.75 16.77L15.09 15.78L12 18.04L8.91 15.78L5.25 16.77L4.26 13.11L2 10.02L4.26 6.93L5.25 3.27L8.91 4.26L12 2Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="walletGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#10b981" />
+          <stop offset="100%" stopColor="#3b82f6" />
+        </linearGradient>
+      </defs>
+      <rect x="3" y="6" width="18" height="13" rx="3" stroke="url(#walletGrad)" strokeWidth="2" fill="none"/>
+      <path d="M3 10h18" stroke="url(#walletGrad)" strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="16" cy="14" r="1.5" fill="url(#walletGrad)"/>
+      <path d="M7 6V5a2 2 0 012-2h6a2 2 0 012 2v1" stroke="url(#walletGrad)" strokeWidth="2" strokeLinecap="round"/>
     </svg>
   );
 }
 
-export function ShieldCheckIcon({ className = "", size = 24 }: IconProps) {
+// Send Money Icon - Custom arrow design
+export function SendMoneyIcon({ className = "w-6 h-6" }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <path
-        d="M9 12L11 14L15 10M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="sendGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#8b5cf6" />
+          <stop offset="100%" stopColor="#ec4899" />
+        </linearGradient>
+      </defs>
+      <path d="M22 2L11 13" stroke="url(#sendGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="url(#sendGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="url(#sendGrad)" fillOpacity="0.1"/>
     </svg>
   );
 }
 
-export function LocationPinIcon({ className = "", size = 24 }: IconProps) {
+// Request Money Icon
+export function RequestMoneyIcon({ className = "w-6 h-6" }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <path
-        d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 22C12 22 20 16 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 16 12 22 12 22Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="requestGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#f59e0b" />
+          <stop offset="100%" stopColor="#ef4444" />
+        </linearGradient>
+      </defs>
+      <path d="M2 22L13 11" stroke="url(#requestGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2 22L9 2L13 11L22 15L2 22Z" stroke="url(#requestGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="url(#requestGrad)" fillOpacity="0.1"/>
     </svg>
   );
 }
 
-export function PasscodeIcon({ className = "", size = 24 }: IconProps) {
+// QR Scan Icon - Modern design
+export function QRScanIcon({ className = "w-6 h-6" }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <rect
-        x="3"
-        y="11"
-        width="18"
-        height="11"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M7 11V7C7 4.79086 8.79086 3 11 3H13C15.2091 3 17 4.79086 17 7V11"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="16" r="1" fill="currentColor" />
-      <circle cx="8" cy="16" r="1" fill="currentColor" />
-      <circle cx="16" cy="16" r="1" fill="currentColor" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="qrGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#06b6d4" />
+          <stop offset="100%" stopColor="#3b82f6" />
+        </linearGradient>
+      </defs>
+      <path d="M3 7V5a2 2 0 012-2h2M3 17v2a2 2 0 002 2h2M21 7V5a2 2 0 00-2-2h-2M21 17v2a2 2 0 01-2 2h-2" stroke="url(#qrGrad)" strokeWidth="2.5" strokeLinecap="round"/>
+      <rect x="8" y="8" width="3" height="3" fill="url(#qrGrad)" rx="0.5"/>
+      <rect x="13" y="8" width="3" height="3" fill="url(#qrGrad)" rx="0.5"/>
+      <rect x="8" y="13" width="3" height="3" fill="url(#qrGrad)" rx="0.5"/>
+      <rect x="13" y="13" width="3" height="3" fill="url(#qrGrad)" rx="0.5"/>
     </svg>
   );
 }
 
-export function IDCardIcon({ className = "", size = 24 }: IconProps) {
+// Bills Icon - Electric bolt style
+export function BillsIcon({ className = "w-6 h-6" }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <rect
-        x="2"
-        y="6"
-        width="20"
-        height="12"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle
-        cx="8"
-        cy="12"
-        r="2"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M14 10H18M14 14H18"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="billsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#eab308" />
+          <stop offset="100%" stopColor="#f97316" />
+        </linearGradient>
+      </defs>
+      <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="url(#billsGrad)" stroke="url(#billsGrad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
 
-export function SOSIcon({ className = "", size = 24 }: IconProps) {
+// Travel Icon - Airplane with trail
+export function TravelIcon({ className = "w-6 h-6" }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="9"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 8V12M12 16H12.01"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 3C12 3 8 5 8 8M12 3C12 3 16 5 16 8M12 21C12 21 8 19 8 16M12 21C12 21 16 19 16 16"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="travelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#8b5cf6" />
+          <stop offset="100%" stopColor="#6366f1" />
+        </linearGradient>
+      </defs>
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="url(#travelGrad)" strokeWidth="2" fill="none"/>
+      <path d="M2 9h20" stroke="url(#travelGrad)" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M9 22V12h6v10" stroke="url(#travelGrad)" strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="8" y="14" r="0.5" fill="url(#travelGrad)"/>
+      <circle cx="16" cy="14" r="0.5" fill="url(#travelGrad)"/>
     </svg>
   );
 }
 
-export function ShareLocationIcon({ className = "", size = 24 }: IconProps) {
+// Shop Icon - Shopping bag
+export function ShopIcon({ className = "w-6 h-6" }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="3"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 2V5M12 19V22M22 12H19M5 12H2"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M17 7L19.5 4.5M4.5 19.5L7 17M17 17L19.5 19.5M4.5 4.5L7 7"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="shopGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#ec4899" />
+          <stop offset="100%" stopColor="#f43f5e" />
+        </linearGradient>
+      </defs>
+      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z" stroke="url(#shopGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      <path d="M3 6h18" stroke="url(#shopGrad)" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M16 10a4 4 0 11-8 0" stroke="url(#shopGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
 
-export function FingerprintIcon({ className = "", size = 24 }: IconProps) {
+// Rewards Icon - Star with sparkle
+export function RewardsIcon({ className = "w-6 h-6" }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <path
-        d="M12 11C11.4477 11 11 11.4477 11 12C11 12.5523 11.4477 13 12 13C12.5523 13 13 12.5523 13 12C13 11.4477 12.5523 11 12 11Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M7 12C7 9.23858 9.23858 7 12 7C14.7614 7 17 9.23858 17 12M5 12C5 8.13401 8.13401 5 12 5C15.866 5 19 8.13401 19 12M9 15C9 13.3431 10.3431 12 12 12C13.6569 12 15 13.3431 15 15M7 18C7 14.6863 9.68629 12 13 12C16.3137 12 19 14.6863 19 18"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="rewardsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#f59e0b" />
+        </linearGradient>
+      </defs>
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="url(#rewardsGrad)" stroke="url(#rewardsGrad)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="18" cy="6" r="1" fill="#fbbf24"/>
+      <circle cx="6" cy="18" r="1" fill="#fbbf24"/>
     </svg>
   );
 }
 
-export function StarRatingIcon({ className = "", size = 24, filled = false }: IconProps & { filled?: boolean }) {
+// Profile Icon - User silhouette
+export function ProfileIcon({ className = "w-6 h-6" }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill={filled ? "currentColor" : "none"}
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <path
-        d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="profileGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#6366f1" />
+          <stop offset="100%" stopColor="#8b5cf6" />
+        </linearGradient>
+      </defs>
+      <circle cx="12" cy="8" r="4" stroke="url(#profileGrad)" strokeWidth="2" fill="none"/>
+      <path d="M6 21v-2a4 4 0 014-4h4a4 4 0 014 4v2" stroke="url(#profileGrad)" strokeWidth="2" strokeLinecap="round"/>
     </svg>
   );
 }
 
-export function SafetyCheckIcon({ className = "", size = 24 }: IconProps) {
+// History Icon - Clock with circular arrow
+export function HistoryIcon({ className = "w-6 h-6" }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <path
-        d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9 12L11 14L15 10"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 2V6M12 18V22M2 12H6M18 12H22"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity="0.5"
-      />
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="historyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#64748b" />
+          <stop offset="100%" stopColor="#475569" />
+        </linearGradient>
+      </defs>
+      <circle cx="12" cy="12" r="9" stroke="url(#historyGrad)" strokeWidth="2" fill="none"/>
+      <path d="M12 6v6l4 2" stroke="url(#historyGrad)" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M3 12a9 9 0 009-9" stroke="url(#historyGrad)" strokeWidth="2" strokeLinecap="round"/>
     </svg>
   );
 }
 
-export function AgeVerifyIcon({ className = "", size = 24 }: IconProps) {
+// Home Icon - House
+export function HomeIcon({ className = "w-6 h-6" }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <circle
-        cx="12"
-        cy="8"
-        r="4"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M6 21V19C6 16.7909 7.79086 15 10 15H14C16.2091 15 18 16.7909 18 19V21"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <text
-        x="12"
-        y="20"
-        fontSize="8"
-        fill="currentColor"
-        textAnchor="middle"
-        fontWeight="bold"
-      >
-        18+
-      </text>
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="homeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#10b981" />
+          <stop offset="100%" stopColor="#059669" />
+        </linearGradient>
+      </defs>
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke="url(#homeGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      <path d="M9 22V12h6v10" stroke="url(#homeGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
 
-export function RouteIcon({ className = "", size = 24 }: IconProps) {
+// Settings Icon - Gear
+export function SettingsIcon({ className = "w-6 h-6" }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <circle cx="6" cy="6" r="3" stroke="currentColor" strokeWidth="2" />
-      <circle cx="18" cy="18" r="3" stroke="currentColor" strokeWidth="2" />
-      <path
-        d="M8 7L16 17"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeDasharray="3 2"
-      />
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="settingsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#64748b" />
+          <stop offset="100%" stopColor="#475569" />
+        </linearGradient>
+      </defs>
+      <circle cx="12" cy="12" r="3" stroke="url(#settingsGrad)" strokeWidth="2" fill="none"/>
+      <path d="M12 1v6m0 6v6M23 12h-6m-6 0H1" stroke="url(#settingsGrad)" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M18.364 5.636l-4.243 4.243m-4.242 4.242l-4.243 4.243M18.364 18.364l-4.243-4.243m-4.242-4.242L5.636 5.636" stroke="url(#settingsGrad)" strokeWidth="2" strokeLinecap="round"/>
     </svg>
   );
 }
 
-export function LiveTrackingIcon({ className = "", size = 24 }: IconProps) {
+// Notifications Icon - Bell
+export function NotificationsIcon({ className = "w-6 h-6" }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="2"
-        fill="currentColor"
-      />
-      <circle
-        cx="12"
-        cy="12"
-        r="6"
-        stroke="currentColor"
-        strokeWidth="2"
-        opacity="0.5"
-      />
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="2"
-        opacity="0.3"
-      />
-      <path
-        d="M12 2V4M12 20V22M22 12H20M4 12H2"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="notifGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#f59e0b" />
+          <stop offset="100%" stopColor="#d97706" />
+        </linearGradient>
+      </defs>
+      <path d="M18 8A6 6 0 106 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="url(#notifGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="18" cy="6" r="2" fill="#ef4444"/>
+    </svg>
+  );
+}
+
+// Card Icon
+export function CardIcon({ className = "w-6 h-6" }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#3b82f6" />
+          <stop offset="100%" stopColor="#2563eb" />
+        </linearGradient>
+      </defs>
+      <rect x="2" y="5" width="20" height="14" rx="3" stroke="url(#cardGrad)" strokeWidth="2" fill="none"/>
+      <path d="M2 10h20" stroke="url(#cardGrad)" strokeWidth="2"/>
+      <rect x="6" y="14" width="4" height="2" rx="0.5" fill="url(#cardGrad)"/>
+    </svg>
+  );
+}
+
+// Restaurant Icon
+export function RestaurantIcon({ className = "w-6 h-6" }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="restaurantGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#f97316" />
+          <stop offset="100%" stopColor="#ea580c" />
+        </linearGradient>
+      </defs>
+      <path d="M3 2v7c0 1.1.9 2 2 2h0a2 2 0 002-2V2M7 2v20M21 15V2v0a5 5 0 00-5 5v8" stroke="url(#restaurantGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M16 22v-7" stroke="url(#restaurantGrad)" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+// Phone Icon - Mobile
+export function PhoneIcon({ className = "w-6 h-6" }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="phoneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#10b981" />
+          <stop offset="100%" stopColor="#059669" />
+        </linearGradient>
+      </defs>
+      <rect x="6" y="2" width="12" height="20" rx="2.5" stroke="url(#phoneGrad)" strokeWidth="2" fill="none"/>
+      <path d="M10 19h4" stroke="url(#phoneGrad)" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+// Security Shield Icon
+export function SecurityIcon({ className = "w-6 h-6" }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="securityGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#10b981" />
+          <stop offset="100%" stopColor="#059669" />
+        </linearGradient>
+      </defs>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="url(#securityGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="url(#securityGrad)" fillOpacity="0.1"/>
+      <path d="M9 12l2 2 4-4" stroke="url(#securityGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+// Money/Currency Icon
+export function MoneyIcon({ className = "w-6 h-6" }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="moneyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#22c55e" />
+          <stop offset="100%" stopColor="#16a34a" />
+        </linearGradient>
+      </defs>
+      <circle cx="12" cy="12" r="9" stroke="url(#moneyGrad)" strokeWidth="2" fill="none"/>
+      <path d="M12 6v12M15 9H9.5a2.5 2.5 0 000 5h5a2.5 2.5 0 010 5H9" stroke="url(#moneyGrad)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+// Chart/Analytics Icon
+export function ChartIcon({ className = "w-6 h-6" }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="chartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#6366f1" />
+          <stop offset="100%" stopColor="#4f46e5" />
+        </linearGradient>
+      </defs>
+      <path d="M3 3v18h18" stroke="url(#chartGrad)" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M7 16l4-4 3 3 5-7" stroke="url(#chartGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="7" cy="16" r="1.5" fill="url(#chartGrad)"/>
+      <circle cx="11" cy="12" r="1.5" fill="url(#chartGrad)"/>
+      <circle cx="14" cy="15" r="1.5" fill="url(#chartGrad)"/>
+      <circle cx="19" cy="8" r="1.5" fill="url(#chartGrad)"/>
+    </svg>
+  );
+}
+
+// Plus/Add Icon
+export function PlusIcon({ className = "w-6 h-6" }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="plusGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#8b5cf6" />
+          <stop offset="100%" stopColor="#7c3aed" />
+        </linearGradient>
+      </defs>
+      <circle cx="12" cy="12" r="9" stroke="url(#plusGrad)" strokeWidth="2" fill="none"/>
+      <path d="M12 8v8M8 12h8" stroke="url(#plusGrad)" strokeWidth="2.5" strokeLinecap="round"/>
     </svg>
   );
 }

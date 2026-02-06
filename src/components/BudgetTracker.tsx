@@ -196,7 +196,7 @@ export function BudgetTracker({ user, accessToken, onBack }: BudgetTrackerProps)
               <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full">
                 <ArrowLeft className="size-6" />
               </button>
-              <h1 className="text-xl font-bold">Budget Tracker</h1>
+              <h1 className="text-xl font-bold text-[rgb(247,249,255)]">Budget Tracker</h1>
             </div>
             <button
               onClick={() => setShowAddBudget(true)}
@@ -214,7 +214,7 @@ export function BudgetTracker({ user, accessToken, onBack }: BudgetTrackerProps)
             </div>
             <div className="flex items-end justify-between mb-2">
               <div>
-                <p className="text-3xl font-bold">{formatCurrency(totalSpent)}</p>
+                <p className="text-3xl font-bold text-[rgb(244,248,255)]">{formatCurrency(totalSpent)}</p>
                 <p className="text-green-100 text-sm">of {formatCurrency(totalLimit)}</p>
               </div>
               <Target className="size-8 opacity-80" />

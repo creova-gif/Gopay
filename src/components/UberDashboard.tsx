@@ -20,7 +20,7 @@ import {
 interface UberDashboardProps {
   user: User;
   accessToken: string;
-  onNavigate: (page: 'wallet' | 'payments' | 'billpayments' | 'merchant' | 'travel' | 'gosafari' | 'cards' | 'export' | 'transactions' | 'rewards' | 'shop' | 'international' | 'subscriptions' | 'shopping' | 'sendmoney' | 'qr' | 'merchantonboarding' | 'merchantdash' | 'admin' | 'security' | 'movies' | 'membership' | 'restaurants' | 'rides' | 'rentals' | 'profile' | 'notifications' | 'insights' | 'budget' | 'gofood' | 'promos' | 'tourism' | 'privacy' | 'governmentservices' | 'aiassistant' | 'emergencysos' | 'digitaladdress' | 'smebusinesssuite' | 'offlineqrpayment') => void;
+  onNavigate: (page: 'wallet' | 'payments' | 'billpayments' | 'merchant' | 'travel' | 'gosafari' | 'cards' | 'export' | 'transactions' | 'rewards' | 'shop' | 'international' | 'subscriptions' | 'shopping' | 'sendmoney' | 'qr' | 'merchantonboarding' | 'merchantdash' | 'admin' | 'security' | 'movies' | 'membership' | 'restaurants' | 'rides' | 'rentals' | 'profile' | 'notifications' | 'insights' | 'budget' | 'gofood' | 'promos' | 'tourism' | 'privacy' | 'governmentservices' | 'aiassistant' | 'emergencysos' | 'digitaladdress' | 'smebusinesssuite' | 'offlineqrpayment' | 'securitycenter') => void;
   onLogout: () => void;
 }
 
@@ -446,7 +446,12 @@ export function UberDashboard({ user, accessToken, onNavigate, onLogout }: UberD
         <div className="px-4 pb-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">Featured</h2>
-            <button className="text-sm font-semibold">See all</button>
+            <button
+              onClick={() => onNavigate('shopping')}
+              className="text-sm font-semibold"
+            >
+              See all
+            </button>
           </div>
           <div className="space-y-3">
             {featuredServices.map((service) => (
@@ -526,7 +531,10 @@ export function UberDashboard({ user, accessToken, onNavigate, onLogout }: UberD
                 <p className="text-sm opacity-90 mb-1">Limited Offer</p>
                 <h3 className="text-2xl font-bold mb-2">Get 10% Cashback</h3>
                 <p className="text-sm opacity-90 mb-4">On all shopping & food orders this week</p>
-                <button className="bg-white text-purple-600 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition-all">
+                <button
+                  onClick={() => onNavigate('shopping')}
+                  className="bg-white text-purple-600 px-6 py-2 rounded-full font-semibold hover:bg-gray-100 transition-all"
+                >
                   Shop Now
                 </button>
               </div>
@@ -958,6 +966,19 @@ export function UberDashboard({ user, accessToken, onNavigate, onLogout }: UberD
           <h3 className="text-lg font-bold mb-3">Settings</h3>
           <div className="space-y-2">
             <button
+              onClick={() => onNavigate('securitycenter')}
+              className="w-full bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-2xl p-4 flex items-center justify-between hover:from-red-600 hover:to-rose-700 transition-all shadow-md"
+            >
+              <div className="flex items-center gap-3">
+                <Shield className="size-6" />
+                <div className="text-left">
+                  <p className="font-bold">Security Center</p>
+                  <p className="text-xs opacity-90">Bank-grade protection & fraud detection</p>
+                </div>
+              </div>
+              <ChevronRight className="size-5" />
+            </button>
+            <button
               onClick={() => onNavigate('security')}
               className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl p-4 flex items-center justify-between hover:from-blue-600 hover:to-blue-700 transition-all shadow-md"
             >
@@ -983,11 +1004,17 @@ export function UberDashboard({ user, accessToken, onNavigate, onLogout }: UberD
               </div>
               <ChevronRight className="size-5" />
             </button>
-            <button className="w-full bg-gray-50 rounded-2xl p-4 flex items-center justify-between hover:bg-gray-100 transition-all">
+            <button
+              onClick={() => onNavigate('profile')}
+              className="w-full bg-gray-50 rounded-2xl p-4 flex items-center justify-between hover:bg-gray-100 transition-all"
+            >
               <span className="font-medium">Notifications</span>
               <ChevronRight className="size-5 text-gray-400" />
             </button>
-            <button className="w-full bg-gray-50 rounded-2xl p-4 flex items-center justify-between hover:bg-gray-100 transition-all">
+            <button
+              onClick={() => onNavigate('profile')}
+              className="w-full bg-gray-50 rounded-2xl p-4 flex items-center justify-between hover:bg-gray-100 transition-all"
+            >
               <span className="font-medium">Help & Support</span>
               <ChevronRight className="size-5 text-gray-400" />
             </button>

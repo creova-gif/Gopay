@@ -24,6 +24,7 @@ import flightsApp from './flights.tsx';
 import hotelsApp from './hotels.tsx';
 import carsApp from './cars.tsx';
 import complianceApp from './compliance.tsx';
+import paymentAggregatorApp from './payment-aggregator.tsx';
 
 const app = new Hono();
 
@@ -31,68 +32,16 @@ const app = new Hono();
 app.use('*', cors());
 app.use('*', logger(console.log));
 
-// Mount shopping routes
-app.route('/make-server-69a10ee8/shopping', shoppingApp);
+// Mount payment aggregator routes
+app.route('/make-server-69a10ee8/payment-aggregator', paymentAggregatorApp);
 
-// Mount merchant routes
-app.route('/make-server-69a10ee8/merchant', merchantApp);
+// Mount performance routes
+import performanceApp from './performance.tsx';
+app.route('/make-server-69a10ee8/performance', performanceApp);
 
-// Mount admin routes
-app.route('/make-server-69a10ee8/admin', adminApp);
-
-// Mount security routes
-app.route('/make-server-69a10ee8/security', securityApp);
-
-// Mount movies routes
-app.route('/make-server-69a10ee8/movies', moviesApp);
-
-// Mount bills routes
-app.route('/make-server-69a10ee8/bills', billsApp);
-
-// Mount membership routes
-app.route('/make-server-69a10ee8/membership', membershipApp);
-
-// Mount restaurants routes
-app.route('/make-server-69a10ee8/restaurants', restaurantsApp);
-
-// Mount rides routes
-app.route('/make-server-69a10ee8/rides', ridesApp);
-
-// Mount profile routes
-app.route('/make-server-69a10ee8/profile', profileApp);
-
-// Mount rentals routes
-app.route('/make-server-69a10ee8/rentals', rentalsApp);
-
-// Mount drivers routes
-app.route('/make-server-69a10ee8/drivers', driversApp);
-
-// Mount user routes
-app.route('/make-server-69a10ee8/user', userApp);
-
-// Mount notifications routes
-app.route('/make-server-69a10ee8/notifications', notificationsApp);
-
-// Mount analytics routes
-app.route('/make-server-69a10ee8/analytics', analyticsApp);
-
-// Mount budgets routes
-app.route('/make-server-69a10ee8/budgets', budgetsApp);
-
-// Mount gosafari routes
-app.route('/make-server-69a10ee8/gosafari', gosafariApp);
-
-// Mount flights routes
-app.route('/make-server-69a10ee8/flights', flightsApp);
-
-// Mount hotels routes
-app.route('/make-server-69a10ee8/hotels', hotelsApp);
-
-// Mount cars routes
-app.route('/make-server-69a10ee8/cars', carsApp);
-
-// Mount compliance routes
-app.route('/make-server-69a10ee8/compliance', complianceApp);
+// Mount integrations routes
+import integrationsApp from './integrations.tsx';
+app.route('/make-server-69a10ee8/integrations', integrationsApp);
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;

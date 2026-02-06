@@ -1,13 +1,7 @@
-import { useState } from 'react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { supabase } from '../utils/supabase/client';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
 import { Wallet, Smartphone, Shield } from 'lucide-react';
-import { GoPayLogo } from './branding/GoPayLogo';
+import { GoPayLogo, GoPayAppIcon } from './branding/GoPayLogo';
 import { useInvisibleBotDetection, InvisibleBotProtection } from './InvisibleBotDetection';
 import { SeamlessBotChallenge, HoneypotField } from './SeamlessBotChallenge';
 
@@ -46,6 +40,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
   const handleDemoMode = () => {
     // Create a demo token for testing
     const demoToken = 'demo-token-' + Date.now();
+    localStorage.setItem('demo-mode', 'active');
     onAuthSuccess(demoToken);
   };
 
@@ -133,11 +128,9 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
       <div className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-6 py-8">
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <div className="bg-white p-5 rounded-2xl shadow-lg">
-              <Wallet className="size-16 text-blue-600" />
-            </div>
+            <GoPayAppIcon size={64} />
           </div>
-          <h1 className="text-white text-4xl mb-3">goPay</h1>
+          <GoPayLogo variant="wordmark-only" size={60} className="mx-auto mb-3" />
           <p className="text-blue-100 text-lg">Your everyday, all-in-one payment app</p>
         </div>
       </div>

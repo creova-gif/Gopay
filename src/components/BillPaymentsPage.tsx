@@ -721,6 +721,15 @@ export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPage
     { id: 'stanbic', name: 'Stanbic', icon: CreditCard, balance: null, color: 'text-red-600' },
   ];
 
+  // Helper function to initialize form data for a provider
+  const initializeFormData = (provider: ServiceProvider, initialValues: Record<string, string> = {}) => {
+    const initialData: Record<string, string> = {};
+    provider.fields.forEach(field => {
+      initialData[field.name] = initialValues[field.name] || '';
+    });
+    return initialData;
+  };
+
   useEffect(() => {
     fetchBalance();
   }, []);
@@ -738,15 +747,6 @@ export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPage
     } catch (error) {
       console.error('Error fetching balance:', error);
     }
-  };
-
-  // Helper function to initialize form data for a provider
-  const initializeFormData = (provider: ServiceProvider, initialValues: Record<string, string> = {}) => {
-    const initialData: Record<string, string> = {};
-    provider.fields.forEach(field => {
-      initialData[field.name] = initialValues[field.name] || '';
-    });
-    return initialData;
   };
 
   const formatCurrency = (amount: number) => {
@@ -888,15 +888,23 @@ export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPage
             </div>
 
             {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-gray-400" />
+            <div className="relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-gray-400 group-focus-within:text-green-600 transition-colors duration-300" />
               <input
                 type="text"
-                placeholder="Search billers..."
+                placeholder="Search for electricity, water, internet..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-12 pl-12 pr-4 bg-gray-100 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full h-14 pl-14 pr-12 bg-white border-2 border-gray-200 rounded-2xl text-base placeholder:text-gray-400 focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-300 shadow-sm hover:shadow-md hover:border-gray-300"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-gray-200 hover:bg-gray-300 rounded-full transition-all duration-200 active:scale-95"
+                >
+                  <X className="size-4 text-gray-600" />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -905,30 +913,46 @@ export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPage
           {/* Saved Billers */}
           {savedBillers.length > 0 && (
             <div className="px-4 py-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold text-gray-900">Saved Billers</h2>
-                <button className="text-sm text-green-600 font-semibold">Manage</button>
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h2 className="font-bold text-gray-900 text-lg">Saved Billers</h2>
+                  <p className="text-xs text-gray-500 mt-0.5">Quick pay your favorites</p>
+                </div>
+                <button className="text-sm text-green-600 font-semibold hover:text-green-700 transition-colors">Manage</button>
               </div>
               <div className="grid grid-cols-1 gap-3">
-                {savedBillers.map((biller) => (
+                {savedBillers.map((biller, index) => (
                   <button
                     key={biller.id}
                     onClick={() => payFavorite(biller)}
-                    className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all"
+                    className="group relative bg-gradient-to-br from-white to-gray-50 rounded-3xl p-5 shadow-md border-2 border-gray-100 hover:border-green-300 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 overflow-hidden"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center text-2xl">
-                        <biller.icon className="size-6 text-white" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-green-500/5 to-green-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    <div className="relative z-10 flex items-center gap-4">
+                      <div className="relative">
+                        <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                          <biller.icon className="size-7 text-white" />
+                        </div>
+                        <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-1 shadow-lg">
+                          <Star className="size-3 fill-white text-white" />
+                        </div>
                       </div>
+                      
                       <div className="flex-1 text-left">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-gray-900">{biller.provider}</h3>
-                          <Star className="size-4 fill-yellow-400 text-yellow-400" />
+                          <h3 className="font-bold text-gray-900 text-base">{biller.provider}</h3>
                         </div>
-                        <p className="text-sm text-gray-600">{biller.nickname} • {biller.accountNumber.slice(-4).padStart(biller.accountNumber.length, '•')}</p>
-                        <p className="text-xs text-gray-500 mt-1">Last payment: {formatCurrency(biller.lastAmount)}</p>
+                        <p className="text-sm text-gray-600 font-medium mb-1">{biller.nickname}</p>
+                        <div className="flex items-center gap-3">
+                          <p className="text-xs text-gray-500 font-mono">{biller.accountNumber.slice(-4).padStart(biller.accountNumber.length, '•')}</p>
+                          <span className="text-xs text-gray-400">•</span>
+                          <p className="text-xs text-green-600 font-semibold">{formatCurrency(biller.lastAmount)}</p>
+                        </div>
                       </div>
-                      <ChevronRight className="size-5 text-gray-400" />
+                      
+                      <ChevronRight className="size-6 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all duration-300" />
                     </div>
                   </button>
                 ))}
@@ -938,33 +962,49 @@ export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPage
 
           {/* Recent Payments */}
           {recentPayments.length > 0 && (
-            <div className="px-4 py-6 bg-white">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold text-gray-900">Recent Payments</h2>
-                <button className="text-sm text-green-600 font-semibold">See all</button>
+            <div className="px-4 py-6 bg-gradient-to-br from-gray-50 to-white">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <div className="bg-blue-100 p-2 rounded-xl">
+                    <Clock className="size-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-gray-900 text-lg">Recent Payments</h2>
+                    <p className="text-xs text-gray-500">Tap to repeat payment</p>
+                  </div>
+                </div>
+                <button className="text-sm text-green-600 font-semibold hover:text-green-700 transition-colors">See all</button>
               </div>
-              <div className="space-y-3">
-                {recentPayments.map((payment) => (
+              <div className="space-y-2">
+                {recentPayments.map((payment, index) => (
                   <button
                     key={payment.id}
                     onClick={() => repeatPayment(payment)}
-                    className="w-full flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-all"
+                    className="group w-full flex items-center gap-4 p-4 bg-white hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 rounded-2xl border-2 border-gray-100 hover:border-green-300 transition-all duration-300 shadow-sm hover:shadow-md"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-xl">
-                      <payment.icon className="size-6 text-gray-500" />
+                    <div className="relative">
+                      <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <payment.icon className="size-6 text-gray-600" />
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-0.5">
+                        <Check className="size-3 text-white" />
+                      </div>
                     </div>
+                    
                     <div className="flex-1 text-left">
-                      <h3 className="font-medium text-gray-900">{payment.provider}</h3>
-                      <p className="text-xs text-gray-500">
-                        {new Date(payment.date).toLocaleDateString()} • {payment.accountNumber.slice(-4).padStart(10, '•')}
-                      </p>
+                      <h3 className="font-semibold text-gray-900 mb-0.5">{payment.provider}</h3>
+                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <span>{new Date(payment.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        <span>•</span>
+                        <span className="font-mono">{payment.accountNumber.slice(-4).padStart(10, '•')}</span>
+                      </div>
                     </div>
+                    
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">{formatCurrency(payment.amount)}</p>
-                      <div className={`flex items-center gap-1 text-xs ${
-                        payment.status === 'success' ? 'text-green-600' : 'text-gray-500'
-                      }`}>
-                        <Check className="size-3" />
+                      <p className="font-bold text-gray-900 mb-0.5">{formatCurrency(payment.amount)}</p>
+                      <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                         <span>Paid</span>
                       </div>
                     </div>
@@ -976,9 +1016,12 @@ export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPage
 
           {/* Categories */}
           <div className="px-4 py-6">
-            <h2 className="font-bold text-gray-900 mb-4">All Categories</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {categories.map((category) => {
+            <div className="mb-5">
+              <h2 className="font-bold text-gray-900 text-lg mb-1">All Categories</h2>
+              <p className="text-sm text-gray-500">Choose a service type</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {categories.map((category, index) => {
                 const IconComponent = category.icon;
                 return (
                   <button
@@ -987,13 +1030,32 @@ export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPage
                       setSelectedCategory(category.id as BillCategory);
                       setActiveView('category');
                     }}
-                    className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all"
+                    className="group relative bg-white rounded-3xl p-6 shadow-lg border-2 border-gray-100 hover:border-green-300 hover:shadow-2xl transition-all duration-500 overflow-hidden active:scale-95 min-h-[160px]"
+                    style={{ animationDelay: `${index * 75}ms` }}
                   >
-                    <div className={`${category.color} w-12 h-12 rounded-xl flex items-center justify-center mb-3`}>
-                      <IconComponent className="size-6 text-white" />
+                    <div className={`absolute inset-0 ${category.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                    
+                    <div className="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-white/20 to-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+                    <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-xl"></div>
+                    
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                      <div>
+                        <div className={`${category.color} w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-300`}>
+                          <IconComponent className="size-7 text-white" />
+                        </div>
+                        <h3 className="font-bold text-base text-gray-900 group-hover:text-white mb-1 transition-colors duration-300">{category.name}</h3>
+                        <p className="text-sm text-gray-600 group-hover:text-white/90 font-medium transition-colors duration-300">{category.count} providers</p>
+                      </div>
+                      
+                      <div className="flex items-center justify-between mt-4">
+                        <div className="flex gap-1">
+                          <div className="w-1 h-1 bg-gray-300 group-hover:bg-white rounded-full transition-colors duration-300"></div>
+                          <div className="w-6 h-1 bg-gray-900 group-hover:bg-white rounded-full transition-colors duration-300"></div>
+                          <div className="w-1 h-1 bg-gray-300 group-hover:bg-white rounded-full transition-colors duration-300"></div>
+                        </div>
+                        <ChevronRight className="size-5 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all duration-300" />
+                      </div>
                     </div>
-                    <h3 className="font-semibold text-sm text-gray-900 mb-1">{category.name}</h3>
-                    <p className="text-xs text-gray-600">{category.count} providers</p>
                   </button>
                 );
               })}
@@ -1001,10 +1063,13 @@ export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPage
           </div>
 
           {/* Popular Providers */}
-          <div className="px-4 py-6 bg-white">
-            <h2 className="font-bold text-gray-900 mb-4">Popular Providers</h2>
+          <div className="px-4 py-6 bg-gradient-to-br from-white to-gray-50">
+            <div className="mb-5">
+              <h2 className="font-bold text-gray-900 text-lg mb-1">Popular Providers</h2>
+              <p className="text-sm text-gray-500">Most used services</p>
+            </div>
             <div className="grid grid-cols-4 gap-3">
-              {popularProviders.map((provider) => (
+              {popularProviders.map((provider, index) => (
                 <button
                   key={provider.id}
                   onClick={() => {
@@ -1013,12 +1078,14 @@ export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPage
                     setAmount('');
                     setActiveView('provider');
                   }}
-                  className="flex flex-col items-center gap-2"
+                  className="group flex flex-col items-center gap-2"
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center text-2xl hover:bg-gray-200 transition-all">
-                    <provider.icon className="size-6 text-gray-600" />
+                  <div className="relative w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center hover:from-green-500 hover:to-emerald-600 transition-all duration-300 shadow-md hover:shadow-xl hover:shadow-green-500/30 group-hover:scale-110 group-hover:-rotate-6">
+                    <provider.icon className="size-7 text-gray-600 group-hover:text-white transition-colors duration-300" />
+                    <div className="absolute inset-0 rounded-2xl border-2 border-green-500 opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300"></div>
                   </div>
-                  <span className="text-xs text-gray-900 font-medium text-center line-clamp-2">{provider.name}</span>
+                  <span className="text-xs text-gray-900 font-semibold text-center line-clamp-2 group-hover:text-green-600 transition-colors">{provider.name}</span>
                 </button>
               ))}
             </div>
@@ -1052,6 +1119,8 @@ export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPage
               <input
                 type="text"
                 placeholder="Search providers..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full h-12 pl-12 pr-4 bg-gray-100 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>

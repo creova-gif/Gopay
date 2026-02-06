@@ -7,7 +7,7 @@ import {
   ChevronRight, Filter, Heart, Share2, Calendar, Check,
   UtensilsCrossed, Bike, Store, Navigation, TrendingUp,
   Plus, Minus, Tag, Truck, ShoppingCart, X, AlertCircle,
-  Info, Percent, Zap, Award, Crown, Package, DollarSign
+  Info, Percent, Zap, Award, Crown, Package, DollarSign, Coffee
 } from 'lucide-react';
 import { projectId } from '../utils/supabase/info';
 import { ImageWithFallback } from './figma/ImageWithFallback';

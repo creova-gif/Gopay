@@ -639,12 +639,8 @@ export function RestaurantsPage({ user, accessToken, onBack }: RestaurantsPagePr
 
           <div className="space-y-4">
             {filteredRestaurants.map((restaurant) => (
-              <button
+              <div
                 key={restaurant.id}
-                onClick={() => {
-                  setSelectedRestaurant(restaurant);
-                  setActiveView('details');
-                }}
                 className="w-full bg-white rounded-2xl shadow-md hover:shadow-xl transition-all overflow-hidden border border-gray-100"
               >
                 <div className="relative h-48">
@@ -669,7 +665,7 @@ export function RestaurantsPage({ user, accessToken, onBack }: RestaurantsPagePr
                       e.stopPropagation();
                       toggleFavorite(restaurant.id);
                     }}
-                    className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm p-2 rounded-full"
+                    className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm p-2 rounded-full hover:bg-white transition-all"
                   >
                     <Heart 
                       className={`size-5 ${
@@ -681,7 +677,13 @@ export function RestaurantsPage({ user, accessToken, onBack }: RestaurantsPagePr
                   </button>
                 </div>
 
-                <div className="p-4">
+                <div 
+                  onClick={() => {
+                    setSelectedRestaurant(restaurant);
+                    setActiveView('details');
+                  }}
+                  className="p-4 cursor-pointer"
+                >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
                       <h3 className="font-bold text-lg mb-1">{restaurant.name}</h3>
@@ -717,7 +719,7 @@ export function RestaurantsPage({ user, accessToken, onBack }: RestaurantsPagePr
                     ))}
                   </div>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         </div>

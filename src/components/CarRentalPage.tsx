@@ -708,7 +708,7 @@ export function CarRentalPage({ user, accessToken, onBack }: CarRentalPageProps)
             <button onClick={() => setActiveView('details')} className="p-2 hover:bg-gray-100 rounded-full">
               <ArrowLeft className="size-6" />
             </button>
-            <h1 className="text-xl font-bold">Book Rental</h1>
+            <h1 className="text-xl font-bold text-gray-900">Book Rental</h1>
           </div>
         </div>
 

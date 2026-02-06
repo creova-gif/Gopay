@@ -1,0 +1,361 @@
+/**
+ * goPay Design Tokens - CSS Custom Properties
+ * Version: 2.0.0
+ * Last Updated: January 19, 2026
+ * 
+ * Usage: Import this file in your main CSS/global styles
+ * @import './design-tokens.css';
+ */
+
+:root {
+  /* ========================================
+     COLOR TOKENS
+     ======================================== */
+  
+  /* Primary - Emerald Green */
+  --color-primary-50: #ECFDF5;
+  --color-primary-100: #D1FAE5;
+  --color-primary-200: #A7F3D0;
+  --color-primary-300: #6EE7B7;
+  --color-primary-400: #34D399;
+  --color-primary-500: #10B981;
+  --color-primary-600: #059669;
+  --color-primary-700: #047857;
+  --color-primary-800: #065F46;
+  --color-primary-900: #064E3B;
+  
+  /* Secondary - Tanzanite Blue */
+  --color-secondary-50: #EEF2FF;
+  --color-secondary-100: #E0E7FF;
+  --color-secondary-200: #C7D2FE;
+  --color-secondary-300: #A5B4FC;
+  --color-secondary-400: #818CF8;
+  --color-secondary-500: #6366F1;
+  --color-secondary-600: #4F46E5;
+  --color-secondary-700: #4338CA;
+  --color-secondary-800: #3730A3;
+  --color-secondary-900: #312E81;
+  
+  /* Accent - Serengeti Gold */
+  --color-accent-50: #FFFBEB;
+  --color-accent-100: #FEF3C7;
+  --color-accent-200: #FDE68A;
+  --color-accent-300: #FCD34D;
+  --color-accent-400: #FBBF24;
+  --color-accent-500: #F59E0B;
+  --color-accent-600: #D97706;
+  --color-accent-700: #B45309;
+  --color-accent-800: #92400E;
+  --color-accent-900: #78350F;
+  
+  /* Semantic Colors */
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+  
+  /* Neutral - Grayscale */
+  --color-gray-50: #F9FAFB;
+  --color-gray-100: #F3F4F6;
+  --color-gray-200: #E5E7EB;
+  --color-gray-300: #D1D5DB;
+  --color-gray-400: #9CA3AF;
+  --color-gray-500: #6B7280;
+  --color-gray-600: #4B5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1F2937;
+  --color-gray-900: #111827;
+  
+  /* Transaction Status */
+  --color-pending: #F59E0B;
+  --color-processing: #3B82F6;
+  --color-completed: #22C55E;
+  --color-failed: #EF4444;
+  --color-refunded: #8B5CF6;
+  --color-cancelled: #6B7280;
+  
+  /* Mobile Money Providers */
+  --color-mpesa: #00A859;
+  --color-tigopesa: #0066CC;
+  --color-airtelmoney: #ED1C24;
+  --color-halopesa: #6B2B8E;
+  
+  /* ========================================
+     TYPOGRAPHY TOKENS
+     ======================================== */
+  
+  /* Font Families */
+  --font-primary: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  --font-secondary: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+  
+  /* Font Sizes */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  --text-3xl: 1.875rem;  /* 30px */
+  --text-4xl: 2.25rem;   /* 36px */
+  --text-5xl: 3rem;      /* 48px */
+  --text-6xl: 3.75rem;   /* 60px */
+  --text-7xl: 4.5rem;    /* 72px */
+  
+  /* Line Heights */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+  
+  /* Font Weights */
+  --font-light: 300;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  
+  /* Letter Spacing */
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  
+  /* ========================================
+     SPACING TOKENS
+     ======================================== */
+  
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+  --space-24: 6rem;     /* 96px */
+  
+  /* ========================================
+     BORDER TOKENS
+     ======================================== */
+  
+  --border-width-0: 0;
+  --border-width-1: 1px;
+  --border-width-2: 2px;
+  --border-width-4: 4px;
+  --border-width-8: 8px;
+  
+  --radius-none: 0;
+  --radius-sm: 0.125rem;   /* 2px */
+  --radius-base: 0.25rem;  /* 4px */
+  --radius-md: 0.375rem;   /* 6px */
+  --radius-lg: 0.5rem;     /* 8px */
+  --radius-xl: 0.75rem;    /* 12px */
+  --radius-2xl: 1rem;      /* 16px */
+  --radius-3xl: 1.5rem;    /* 24px */
+  --radius-full: 9999px;
+  
+  /* ========================================
+     SHADOW TOKENS
+     ======================================== */
+  
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-base: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-2xl: 0 35px 60px -15px rgba(0, 0, 0, 0.3);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+  
+  /* ========================================
+     COMPONENT-SPECIFIC TOKENS
+     ======================================== */
+  
+  /* Buttons */
+  --button-primary-bg: var(--color-primary-600);
+  --button-primary-hover: var(--color-primary-700);
+  --button-primary-active: var(--color-primary-800);
+  --button-primary-text: #FFFFFF;
+  
+  --button-secondary-bg: var(--color-gray-100);
+  --button-secondary-hover: var(--color-gray-200);
+  --button-secondary-active: var(--color-gray-300);
+  --button-secondary-text: var(--color-gray-900);
+  
+  --button-danger-bg: var(--color-error);
+  --button-danger-hover: #DC2626;
+  --button-danger-active: #B91C1C;
+  --button-danger-text: #FFFFFF;
+  
+  /* Inputs */
+  --input-bg: #FFFFFF;
+  --input-border: var(--color-gray-300);
+  --input-border-focus: var(--color-primary-500);
+  --input-border-error: var(--color-error);
+  --input-text: var(--color-gray-900);
+  --input-placeholder: var(--color-gray-500);
+  
+  /* Cards */
+  --card-bg: #FFFFFF;
+  --card-border: var(--color-gray-200);
+  --card-shadow: var(--shadow-sm);
+  --card-radius: var(--radius-lg);
+  
+  /* Navigation */
+  --nav-bg: #FFFFFF;
+  --nav-border: var(--color-gray-200);
+  --nav-text: var(--color-gray-700);
+  --nav-text-active: var(--color-primary-700);
+  --nav-active-bg: var(--color-primary-50);
+  
+  /* ========================================
+     ANIMATION TOKENS
+     ======================================== */
+  
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --duration-slow: 500ms;
+  
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* ========================================
+     Z-INDEX SCALE
+     ======================================== */
+  
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-notification: 1080;
+}
+
+/* ========================================
+   DARK MODE TOKENS
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg-primary: #0F172A;
+    --color-bg-secondary: #1E293B;
+    --color-bg-tertiary: #334155;
+    
+    --color-text-primary: #F1F5F9;
+    --color-text-secondary: #CBD5E1;
+    --color-text-tertiary: #94A3B8;
+    
+    --color-border: #334155;
+    --color-divider: #1E293B;
+    
+    /* Override component tokens for dark mode */
+    --card-bg: var(--color-bg-secondary);
+    --card-border: var(--color-border);
+    --input-bg: var(--color-bg-tertiary);
+    --input-border: var(--color-border);
+    --nav-bg: var(--color-bg-primary);
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY - REDUCED MOTION
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0.01ms;
+    --duration-base: 0.01ms;
+    --duration-slow: 0.01ms;
+  }
+  
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Typography */
+.text-display-xl { font-size: var(--text-7xl); line-height: var(--leading-tight); font-weight: var(--font-bold); }
+.text-display-lg { font-size: var(--text-6xl); line-height: var(--leading-tight); font-weight: var(--font-bold); }
+.text-display-md { font-size: var(--text-5xl); line-height: var(--leading-tight); font-weight: var(--font-bold); }
+.text-display-sm { font-size: var(--text-4xl); line-height: var(--leading-snug); font-weight: var(--font-semibold); }
+
+.text-h1 { font-size: var(--text-3xl); line-height: var(--leading-tight); font-weight: var(--font-semibold); }
+.text-h2 { font-size: var(--text-2xl); line-height: var(--leading-snug); font-weight: var(--font-semibold); }
+.text-h3 { font-size: var(--text-xl); line-height: var(--leading-snug); font-weight: var(--font-semibold); }
+.text-h4 { font-size: var(--text-lg); line-height: var(--leading-normal); font-weight: var(--font-semibold); }
+.text-h5 { font-size: var(--text-base); line-height: var(--leading-normal); font-weight: var(--font-semibold); }
+.text-h6 { font-size: var(--text-sm); line-height: var(--leading-normal); font-weight: var(--font-semibold); }
+
+.text-body { font-size: var(--text-base); line-height: var(--leading-normal); font-weight: var(--font-regular); }
+.text-small { font-size: var(--text-sm); line-height: var(--leading-normal); font-weight: var(--font-regular); }
+.text-tiny { font-size: var(--text-xs); line-height: var(--leading-normal); font-weight: var(--font-regular); }
+
+/* Swahili-optimized text */
+.text-swahili {
+  font-family: var(--font-secondary);
+  line-height: var(--leading-relaxed);
+  letter-spacing: 0.01em;
+  word-break: break-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+/* Colors */
+.text-primary { color: var(--color-primary-600); }
+.text-secondary { color: var(--color-secondary-600); }
+.text-success { color: var(--color-success); }
+.text-warning { color: var(--color-warning); }
+.text-error { color: var(--color-error); }
+.text-info { color: var(--color-info); }
+
+.bg-primary { background-color: var(--color-primary-600); }
+.bg-secondary { background-color: var(--color-secondary-600); }
+.bg-success { background-color: var(--color-success); }
+.bg-warning { background-color: var(--color-warning); }
+.bg-error { background-color: var(--color-error); }
+.bg-info { background-color: var(--color-info); }
+
+/* Accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.focus-visible:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Touch targets (BoT compliance) */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-4);
+}

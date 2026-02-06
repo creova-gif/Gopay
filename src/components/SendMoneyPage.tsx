@@ -21,11 +21,13 @@ type TransferMethod = 'gopay' | 'mobile' | 'bank';
 export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps) {
   const [transferMethod, setTransferMethod] = useState<TransferMethod>('gopay');
   const [step, setStep] = useState<'select' | 'details' | 'confirm' | 'success'>('select');
+  const [transferType, setTransferType] = useState<'regular' | 'gift' | 'request'>('regular');
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState('');
   const [pin, setPin] = useState('');
   const [transactionRef, setTransactionRef] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Recent contacts
   const recentContacts = [
@@ -470,6 +472,8 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
           <Search className="size-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
           <Input
             placeholder="Search contacts or enter number"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-12 h-12 bg-white/10 border-white/20 text-white placeholder:text-white/60"
           />
         </div>
@@ -488,13 +492,25 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
               </div>
               <span className="text-xs text-gray-700">Send Money</span>
             </button>
-            <button className="flex flex-col items-center gap-2 p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-all">
+            <button 
+              onClick={() => {
+                setTransferType('gift');
+                setStep('details');
+              }}
+              className="flex flex-col items-center gap-2 p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-all"
+            >
               <div className="bg-blue-600 p-3 rounded-full">
                 <Gift className="size-5 text-white" />
               </div>
               <span className="text-xs text-gray-700">Send Gift</span>
             </button>
-            <button className="flex flex-col items-center gap-2 p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-all">
+            <button 
+              onClick={() => {
+                setTransferType('request');
+                setStep('details');
+              }}
+              className="flex flex-col items-center gap-2 p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-all"
+            >
               <div className="bg-purple-600 p-3 rounded-full">
                 <Heart className="size-5 text-white" />
               </div>
