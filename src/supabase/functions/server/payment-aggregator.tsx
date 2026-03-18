@@ -9,7 +9,7 @@ paymentAggregatorApp.use('*', cors());
 // ============================================
 // PAYMENT AGGREGATOR INTEGRATION
 // ============================================
-// Supports: Selcom, Pesapal, PayChangu, Jenga API, N-Lynx
+// Supports: Selcom, Pesapal, ClickPesa, PayChangu, Jenga API, N-Lynx
 // Direct APIs: M-Pesa Daraja, Airtel Money, TigoPesa, Halopesa
 // ============================================
 
@@ -551,6 +551,121 @@ async function processPesapal(payment: PaymentRequest): Promise<PaymentResponse>
 }
 
 // ============================================
+// 7. CLICKPESA INTEGRATION
+// ============================================
+// ClickPesa: Tanzania payment gateway
+// Supports: M-Pesa, Airtel Money, Tigo Pesa, Halopesa, Cards
+// Docs: https://developer.clickpesa.com
+
+async function processClickPesa(payment: PaymentRequest): Promise<PaymentResponse> {
+  const clickpesaApiKey = Deno.env.get('CLICKPESA_API_KEY');
+  const clickpesaSecretKey = Deno.env.get('CLICKPESA_SECRET_KEY');
+  const clickpesaMerchantId = Deno.env.get('CLICKPESA_MERCHANT_ID') || 'GOPAY';
+
+  if (!clickpesaApiKey || !clickpesaSecretKey) {
+    throw new Error('ClickPesa API credentials not configured. Please contact support.');
+  }
+
+  try {
+    const transactionId = `GO-CLICKPESA-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    // Map payment method to ClickPesa channel
+    let paymentChannel = '';
+    switch (payment.paymentMethod) {
+      case 'mpesa':
+        paymentChannel = 'MPESA';
+        break;
+      case 'airtel':
+        paymentChannel = 'AIRTELMONEY';
+        break;
+      case 'tigo':
+        paymentChannel = 'TIGOPESA';
+        break;
+      case 'halopesa':
+        paymentChannel = 'HALOPESA';
+        break;
+      case 'card':
+        paymentChannel = 'CARD';
+        break;
+      default:
+        paymentChannel = 'MPESA';
+    }
+
+    // Clean phone number (remove country code if present, ClickPesa expects local format)
+    const cleanPhone = payment.phoneNumber?.replace(/\D/g, '').replace(/^255/, '0') || '';
+
+    const requestBody = {
+      merchant_reference: transactionId,
+      amount: payment.amount,
+      currency: payment.currency || 'TZS',
+      payment_channel: paymentChannel,
+      phone_number: cleanPhone,
+      email: `user-${payment.userId}@gopay.tz`,
+      first_name: 'GoPay',
+      last_name: 'User',
+      description: payment.description || 'Payment via GoPay',
+      callback_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/make-server-69a10ee8/payment/clickpesa-callback`,
+    };
+
+    console.log('ClickPesa payment request:', { 
+      transactionId, 
+      amount: payment.amount, 
+      channel: paymentChannel,
+      phone: cleanPhone 
+    });
+
+    const response = await fetch('https://api.clickpesa.com/v1/payments/request', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${clickpesaApiKey}`,
+        'X-API-Key': clickpesaApiKey,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    const result = await response.json();
+    console.log('ClickPesa API response:', { status: response.status, result });
+
+    if (response.ok && result.status === 'success') {
+      // Store transaction
+      await kv.set(`transaction:${transactionId}`, {
+        transactionId,
+        userId: payment.userId,
+        amount: payment.amount,
+        currency: payment.currency || 'TZS',
+        paymentMethod: payment.paymentMethod,
+        status: 'pending',
+        aggregator: 'clickpesa',
+        reference: payment.reference,
+        clickpesaTransactionId: result.data?.transaction_id || result.transaction_id,
+        clickpesaCheckoutUrl: result.data?.checkout_url || result.checkout_url,
+        description: payment.description,
+        phoneNumber: cleanPhone,
+        createdAt: new Date().toISOString(),
+      });
+
+      return {
+        success: true,
+        transactionId,
+        status: 'pending',
+        message: payment.paymentMethod === 'card' 
+          ? 'Redirecting to card payment page...' 
+          : 'Angalia simu yako ili kukamilisha malipo',
+        aggregator: 'clickpesa',
+      };
+    } else {
+      const errorMessage = result.message || result.error || 'ClickPesa payment request failed';
+      console.error('ClickPesa payment failed:', errorMessage, result);
+      throw new Error(`Malipo yameshindikana: ${errorMessage}`);
+    }
+  } catch (error: any) {
+    console.error('ClickPesa payment error:', error);
+    throw new Error(`Hitilafu ya malipo: ${error.message}`);
+  }
+}
+
+// ============================================
 // UNIFIED PAYMENT PROCESSOR
 // ============================================
 
@@ -569,28 +684,41 @@ paymentAggregatorApp.post('/process-payment', async (c) => {
 
     let result: PaymentResponse;
 
-    // Route to appropriate aggregator based on preference
-    const preferredAggregator = Deno.env.get('PREFERRED_AGGREGATOR') || 'selcom';
-
-    if (preferredAggregator === 'selcom') {
-      result = await processSelcomPayment(payment);
+    // ALL MOBILE MONEY PAYMENTS GO THROUGH CLICKPESA
+    // M-Pesa, Airtel Money, Tigo Pesa, Halopesa, Cards → ClickPesa Gateway
+    const mobileMoneyMethods = ['mpesa', 'airtel', 'tigo', 'halopesa', 'card'];
+    
+    if (mobileMoneyMethods.includes(payment.paymentMethod)) {
+      // Use ClickPesa for all mobile money and card payments
+      result = await processClickPesa(payment);
     } else {
-      // Direct API routing
-      switch (payment.paymentMethod) {
-        case 'mpesa':
-          result = await processMpesaDaraja(payment);
-          break;
-        case 'airtel':
-          result = await processAirtelMoney(payment);
-          break;
-        case 'tigo':
-          result = await processTigoPesa(payment);
-          break;
-        case 'halopesa':
-          result = await processHaloPesa(payment);
-          break;
-        default:
-          result = await processPesapal(payment);
+      // Fallback for other payment methods (bank transfers, etc.)
+      const preferredAggregator = Deno.env.get('PREFERRED_AGGREGATOR') || 'clickpesa';
+
+      if (preferredAggregator === 'clickpesa') {
+        result = await processClickPesa(payment);
+      } else if (preferredAggregator === 'selcom') {
+        result = await processSelcomPayment(payment);
+      } else if (preferredAggregator === 'pesapal') {
+        result = await processPesapal(payment);
+      } else {
+        // Direct API routing (legacy, not used for mobile money)
+        switch (payment.paymentMethod) {
+          case 'mpesa':
+            result = await processMpesaDaraja(payment);
+            break;
+          case 'airtel':
+            result = await processAirtelMoney(payment);
+            break;
+          case 'tigo':
+            result = await processTigoPesa(payment);
+            break;
+          case 'halopesa':
+            result = await processHaloPesa(payment);
+            break;
+          default:
+            result = await processPesapal(payment);
+        }
       }
     }
 
@@ -694,6 +822,56 @@ paymentAggregatorApp.post('/selcom-webhook', async (c) => {
   } catch (error) {
     console.error('Selcom webhook error:', error);
     return c.json({ status: 'error' }, 500);
+  }
+});
+
+// ClickPesa webhook
+paymentAggregatorApp.post('/clickpesa-callback', async (c) => {
+  try {
+    const callback = await c.req.json();
+    console.log('ClickPesa callback received:', callback);
+
+    // Verify signature
+    const clickpesaSecretKey = Deno.env.get('CLICKPESA_SECRET_KEY');
+    if (clickpesaSecretKey && callback.signature) {
+      const expectedSignature = await generateHMAC(
+        `${callback.merchant_reference}${callback.status}${callback.amount}`,
+        clickpesaSecretKey
+      );
+      
+      if (callback.signature !== expectedSignature) {
+        console.error('ClickPesa signature verification failed');
+        return c.json({ status: 'signature_mismatch' }, 401);
+      }
+    }
+
+    // Update transaction status
+    if (callback.status === 'success' || callback.status === 'completed') {
+      const transaction = await kv.get(`transaction:${callback.merchant_reference}`);
+      if (transaction) {
+        await kv.set(`transaction:${callback.merchant_reference}`, {
+          ...transaction,
+          status: 'completed',
+          clickpesaPaymentId: callback.payment_id,
+          completedAt: new Date().toISOString(),
+        });
+      }
+    } else if (callback.status === 'failed' || callback.status === 'cancelled') {
+      const transaction = await kv.get(`transaction:${callback.merchant_reference}`);
+      if (transaction) {
+        await kv.set(`transaction:${callback.merchant_reference}`, {
+          ...transaction,
+          status: 'failed',
+          failureReason: callback.message || 'Payment failed',
+          failedAt: new Date().toISOString(),
+        });
+      }
+    }
+
+    return c.json({ status: 'received', message: 'Callback processed successfully' });
+  } catch (error) {
+    console.error('ClickPesa callback error:', error);
+    return c.json({ status: 'error', message: 'Callback processing failed' }, 500);
   }
 });
 

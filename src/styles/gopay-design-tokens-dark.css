@@ -1,0 +1,334 @@
+/**
+ * goPay Tanzania - DARK MODE Design System
+ * Version: 4.0.0 - App Store Ready + BoT Compliant
+ * Based on: GoPay Figma AI Prompts (Prompt 0)
+ * 
+ * CRITICAL: This is the OFFICIAL dark mode system for investor demos
+ * and Bank of Tanzania regulatory submission.
+ */
+
+:root {
+  /* ========================================
+     DARK MODE COLORS - Figma AI Spec EXACT
+     Background: #080d08 (Product Bible)
+     ======================================== */
+  
+  /* Green Palette - Figma AI Exact Match */
+  --dark-green-900: #052e16;    /* Splash gradient start, balance gradient end */
+  --dark-green-800: #14532d;    /* Balance card gradient start */
+  --dark-green-700: #15803d;    /* Active segments, tabs */
+  --dark-green-600: #16a34a;    /* PRIMARY BUTTON, links */
+  --dark-green-400: #4ade80;    /* Icons, credit amounts, highlights */
+  
+  /* Neutral/Background - Figma AI Exact Match */
+  --dark-neutral-900: #0a0a0a;  /* Text primary variant */
+  --dark-neutral-800: #080d08;  /* SCREEN BACKGROUND (Product Bible) */
+  
+  /* Surface Colors - Figma AI Exact Match */
+  --dark-surface-card: rgba(255, 255, 255, 0.04);      /* Card fill */
+  --dark-surface-border: rgba(255, 255, 255, 0.08);    /* Card border */
+  --dark-surface-input: rgba(255, 255, 255, 0.05);     /* Input backgrounds */
+  --dark-surface-hover: rgba(255, 255, 255, 0.10);     /* Hover states */
+  
+  /* Text Colors - Figma AI Exact Match */
+  --dark-text-primary: #ffffff;                        /* Main text */
+  --dark-text-secondary: rgba(255, 255, 255, 0.50);    /* Secondary text */
+  --dark-text-tertiary: rgba(255, 255, 255, 0.30);     /* Tertiary text */
+  --dark-text-placeholder: rgba(255, 255, 255, 0.20);  /* Placeholder */
+  
+  /* ========================================
+     TYPOGRAPHY - Figma AI Exact Match
+     Display: Syne (Google Fonts)
+     Body: DM Sans (Google Fonts)
+     ======================================== */
+  
+  /* Display/Heading Font - Syne */
+  --font-display: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  /* Body/UI Font - DM Sans */
+  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  /* Typography Scale - Figma AI Exact */
+  /* display/hero: Syne 42px 800 white -2px letter-spacing */
+  --text-display-hero-size: 42px;
+  --text-display-hero-line: 48px;
+  --text-display-hero-weight: 800;
+  --text-display-hero-spacing: -2px;
+  
+  /* heading/xl: Syne 32px 700 white -1px */
+  --text-heading-xl-size: 32px;
+  --text-heading-xl-line: 40px;
+  --text-heading-xl-weight: 700;
+  --text-heading-xl-spacing: -1px;
+  
+  /* heading/l: Syne 26px 700 white -0.5px */
+  --text-heading-l-size: 26px;
+  --text-heading-l-line: 34px;
+  --text-heading-l-weight: 700;
+  --text-heading-l-spacing: -0.5px;
+  
+  /* heading/m: Syne 24px 700 white */
+  --text-heading-m-size: 24px;
+  --text-heading-m-line: 32px;
+  --text-heading-m-weight: 700;
+  
+  /* heading/s: Syne 20px 700 white */
+  --text-heading-s-size: 20px;
+  --text-heading-s-line: 28px;
+  --text-heading-s-weight: 700;
+  
+  /* body/default: DM Sans 15px 400 white */
+  --text-body-default-size: 15px;
+  --text-body-default-line: 24px;
+  --text-body-default-weight: 400;
+  
+  /* body/small: DM Sans 14px 300 rgba(255,255,255,0.50) */
+  --text-body-small-size: 14px;
+  --text-body-small-line: 22px;
+  --text-body-small-weight: 300;
+  
+  /* body/xs: DM Sans 13px 400 rgba(255,255,255,0.40) */
+  --text-body-xs-size: 13px;
+  --text-body-xs-line: 20px;
+  --text-body-xs-weight: 400;
+  
+  /* label/caps: DM Sans 11px 500 uppercase 0.8px spacing rgba(255,255,255,0.30) */
+  --text-label-caps-size: 11px;
+  --text-label-caps-line: 16px;
+  --text-label-caps-weight: 500;
+  --text-label-caps-spacing: 0.8px;
+  
+  /* ========================================
+     BORDER RADIUS - Figma AI Exact
+     ======================================== */
+  
+  --dark-radius-button: 18px;      /* Button border radius */
+  --dark-radius-card: 20px;        /* Card border radius */
+  --dark-radius-small-card: 16px;  /* Small card border radius */
+  --dark-radius-input: 14px;       /* Input border radius */
+  
+  /* ========================================
+     SPACING - Figma AI Exact
+     Horizontal margin: 24px
+     Base unit: 8px
+     ======================================== */
+  
+  --dark-screen-margin: 24px;      /* Horizontal screen margin */
+  --dark-space-base: 8px;          /* Base spacing unit */
+  
+  /* ========================================
+     ICON SYSTEM - Figma AI Exact
+     ======================================== */
+  
+  --dark-icon-stroke: 1.5px;       /* Icon stroke width */
+  /* Icon style: Line icons, round caps & joins */
+  
+  /* ========================================
+     COMPONENT TOKENS - Semantic Usage
+     ======================================== */
+  
+  /* Primary Button - Figma AI Spec */
+  --dark-button-primary-bg: var(--dark-green-600);     /* #16a34a solid (NO gradient) */
+  --dark-button-primary-text: var(--dark-text-primary);
+  --dark-button-primary-height: 56px;
+  --dark-button-primary-radius: var(--dark-radius-button);
+  
+  /* Ghost Button */
+  --dark-button-ghost-bg: transparent;
+  --dark-button-ghost-border: rgba(255, 255, 255, 0.10);
+  --dark-button-ghost-text: rgba(255, 255, 255, 0.70);
+  
+  /* Back Button */
+  --dark-button-back-size: 40px;
+  --dark-button-back-bg: rgba(255, 255, 255, 0.04);
+  --dark-button-back-border: rgba(255, 255, 255, 0.08);
+  --dark-button-back-radius: 14px;
+  
+  /* Balance Card - ONE GRADIENT HERO */
+  --dark-balance-gradient-start: var(--dark-green-800);  /* #14532d */
+  --dark-balance-gradient-end: var(--dark-green-900);    /* #052e16 */
+  
+  /* Splash Background Gradient */
+  --dark-splash-gradient-start: var(--dark-green-900);   /* #052e16 */
+  
+  /* Quick Actions */
+  --dark-action-bg: rgba(255, 255, 255, 0.04);
+  --dark-action-border: rgba(255, 255, 255, 0.07);
+  --dark-action-icon-bg: rgba(34, 197, 94, 0.12);
+  --dark-action-icon-color: var(--dark-green-400);
+  
+  /* Inputs */
+  --dark-input-bg: var(--dark-surface-input);
+  --dark-input-border: var(--dark-surface-border);
+  --dark-input-focus-border: var(--dark-green-600);
+  --dark-input-focus-bg: rgba(34, 197, 94, 0.05);
+  
+  /* ========================================
+     STATUS COLORS - Semantic Only
+     ======================================== */
+  
+  /* Success/Credit */
+  --dark-success-bg: rgba(22, 163, 74, 0.1);
+  --dark-success-text: var(--dark-green-400);
+  
+  /* Error/Debit */
+  --dark-error-bg: rgba(220, 38, 38, 0.10);
+  --dark-error-border: rgba(220, 38, 38, 0.20);
+  --dark-error-text: #f87171;
+  
+  /* Warning/Offline */
+  --dark-warning-bg: rgba(220, 38, 38, 0.10);
+  --dark-warning-border: rgba(220, 38, 38, 0.20);
+  --dark-warning-text: rgba(255, 255, 255, 0.6);
+  
+  /* ========================================
+     ANIMATION - Figma AI Spec
+     ======================================== */
+  
+  --dark-transition-fast: 150ms ease;
+  --dark-transition-base: 250ms ease;
+  --dark-transition-slow: 400ms ease;
+}
+
+/* ========================================
+   DARK MODE UTILITY CLASSES
+   ======================================== */
+
+/* Backgrounds */
+.dark-bg-screen { background-color: var(--dark-neutral-800); }
+.dark-bg-card { background-color: var(--dark-surface-card); }
+.dark-border-card { border: 1px solid var(--dark-surface-border); }
+
+/* Typography - Syne for headings */
+.dark-text-display-hero {
+  font-family: var(--font-display);
+  font-size: var(--text-display-hero-size);
+  line-height: var(--text-display-hero-line);
+  font-weight: var(--text-display-hero-weight);
+  letter-spacing: var(--text-display-hero-spacing);
+  color: var(--dark-text-primary);
+}
+
+.dark-text-heading-xl {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-xl-size);
+  line-height: var(--text-heading-xl-line);
+  font-weight: var(--text-heading-xl-weight);
+  letter-spacing: var(--text-heading-xl-spacing);
+  color: var(--dark-text-primary);
+}
+
+.dark-text-heading-l {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-l-size);
+  line-height: var(--text-heading-l-line);
+  font-weight: var(--text-heading-l-weight);
+  letter-spacing: var(--text-heading-l-spacing);
+  color: var(--dark-text-primary);
+}
+
+.dark-text-heading-m {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-m-size);
+  line-height: var(--text-heading-m-line);
+  font-weight: var(--text-heading-m-weight);
+  color: var(--dark-text-primary);
+}
+
+.dark-text-heading-s {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-s-size);
+  line-height: var(--text-heading-s-line);
+  font-weight: var(--text-heading-s-weight);
+  color: var(--dark-text-primary);
+}
+
+/* Typography - DM Sans for body */
+.dark-text-body-default {
+  font-family: var(--font-body);
+  font-size: var(--text-body-default-size);
+  line-height: var(--text-body-default-line);
+  font-weight: var(--text-body-default-weight);
+  color: var(--dark-text-primary);
+}
+
+.dark-text-body-small {
+  font-family: var(--font-body);
+  font-size: var(--text-body-small-size);
+  line-height: var(--text-body-small-line);
+  font-weight: var(--text-body-small-weight);
+  color: var(--dark-text-secondary);
+}
+
+.dark-text-body-xs {
+  font-family: var(--font-body);
+  font-size: var(--text-body-xs-size);
+  line-height: var(--text-body-xs-line);
+  font-weight: var(--text-body-xs-weight);
+  color: rgba(255, 255, 255, 0.40);
+}
+
+.dark-text-label-caps {
+  font-family: var(--font-body);
+  font-size: var(--text-label-caps-size);
+  line-height: var(--text-label-caps-line);
+  font-weight: var(--text-label-caps-weight);
+  letter-spacing: var(--text-label-caps-spacing);
+  text-transform: uppercase;
+  color: var(--dark-text-tertiary);
+}
+
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+/* Apply fonts globally when dark mode is active */
+.dark-mode {
+  font-family: var(--font-body);
+}
+
+.dark-mode h1, 
+.dark-mode h2, 
+.dark-mode h3,
+.dark-mode h4,
+.dark-mode h5,
+.dark-mode h6 {
+  font-family: var(--font-display);
+}
+
+/* Skeleton Loading - Dark Mode */
+.dark-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-dark 1.5s ease-in-out infinite;
+  border-radius: var(--dark-radius-small-card);
+}
+
+@keyframes shimmer-dark {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Live Pulse Indicator - Dark Mode */
+.dark-live-pulse {
+  width: 5px;
+  height: 5px;
+  background-color: rgba(34, 197, 94, 0.8);
+  border-radius: 50%;
+  animation: pulse-dark 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dark {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+  50% { 
+    opacity: 0.5; 
+    transform: scale(1.2); 
+  }
+}

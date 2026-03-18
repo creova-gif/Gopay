@@ -1,9 +1,15 @@
+import { useState } from 'react';
 import { supabase } from '../utils/supabase/client';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
 import { Wallet, Smartphone, Shield } from 'lucide-react';
 import { GoPayLogo, GoPayAppIcon } from './branding/GoPayLogo';
 import { useInvisibleBotDetection, InvisibleBotProtection } from './InvisibleBotDetection';
 import { SeamlessBotChallenge, HoneypotField } from './SeamlessBotChallenge';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface AuthPageProps {
   onAuthSuccess: (accessToken: string) => void;
@@ -124,86 +130,229 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-6 py-8">
-        <div className="text-center">
-          <div className="flex justify-center mb-6">
-            <GoPayAppIcon size={64} />
+      {/* Header - Splash Screen Design */}
+      <div 
+        className="text-white px-6 py-12 relative overflow-hidden"
+        style={{
+          backgroundColor: '#080d08'
+        }}
+      >
+        <div className="text-center relative z-10">
+          {/* Logo mark: 64×64px rounded square, subtle green background, wallet icon */}
+          <div className="flex justify-center mb-5">
+            <div 
+              className="w-16 h-16 flex items-center justify-center rounded-2xl"
+              style={{ 
+                backgroundColor: 'rgba(22, 163, 74, 0.12)',
+                border: '1px solid rgba(22, 163, 74, 0.2)'
+              }}
+            >
+              <Wallet className="w-8 h-8 text-[#16a34a]" strokeWidth={2.5} />
+            </div>
           </div>
-          <GoPayLogo variant="wordmark-only" size={60} className="mx-auto mb-3" />
-          <p className="text-blue-100 text-lg">Your everyday, all-in-one payment app</p>
+
+          {/* App name: Syne font, 36px, 700 weight, white */}
+          <h1 
+            className="text-white mb-2"
+            style={{
+              fontFamily: 'Syne, -apple-system, sans-serif',
+              fontSize: '36px',
+              fontWeight: 700,
+              letterSpacing: '-1px',
+              lineHeight: '1.1'
+            }}
+          >
+            GoPay
+          </h1>
+
+          {/* Tagline: 13px, rgba(255,255,255,0.5), weight 400 */}
+          <p 
+            style={{
+              fontSize: '13px',
+              fontWeight: 400,
+              color: 'rgba(255, 255, 255, 0.5)',
+              lineHeight: '1.4'
+            }}
+          >
+            Your complete financial life in one secure app
+          </p>
         </div>
       </div>
 
       {/* Features Banner */}
-      <div className="bg-gradient-to-r from-blue-500 to-cyan-400 text-white py-6">
+      <div 
+        className="text-white py-8 border-y"
+        style={{
+          backgroundColor: '#080d08',
+          borderColor: 'rgba(255, 255, 255, 0.08)'
+        }}
+      >
         <div className="px-6">
-          <div className="grid grid-cols-3 gap-6 text-center">
-            <div>
-              <Wallet className="size-8 mx-auto mb-2 opacity-90" />
-              <p className="text-sm">Digital Wallet</p>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div 
+              className="flex flex-col items-center gap-2 p-3 rounded-2xl border"
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                borderColor: 'rgba(255, 255, 255, 0.08)'
+              }}
+            >
+              <div 
+                className="w-10 h-10 flex items-center justify-center rounded-xl"
+                style={{ backgroundColor: 'rgba(22, 163, 74, 0.15)' }}
+              >
+                <Wallet className="w-5 h-5 text-[#16a34a]" strokeWidth={2} />
+              </div>
+              <p 
+                className="text-white"
+                style={{ fontSize: '11px', fontWeight: 500 }}
+              >
+                Pochi ya Dijitali
+              </p>
             </div>
-            <div>
-              <Shield className="size-8 mx-auto mb-2 opacity-90" />
-              <p className="text-sm">Secure & Safe</p>
+            <div 
+              className="flex flex-col items-center gap-2 p-3 rounded-2xl border"
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                borderColor: 'rgba(255, 255, 255, 0.08)'
+              }}
+            >
+              <div 
+                className="w-10 h-10 flex items-center justify-center rounded-xl"
+                style={{ backgroundColor: 'rgba(22, 163, 74, 0.15)' }}
+              >
+                <Shield className="w-5 h-5 text-[#16a34a]" strokeWidth={2} />
+              </div>
+              <p 
+                className="text-white"
+                style={{ fontSize: '11px', fontWeight: 500 }}
+              >
+                Salama & Imara
+              </p>
             </div>
-            <div>
-              <Smartphone className="size-8 mx-auto mb-2 opacity-90" />
-              <p className="text-sm">Easy Payments</p>
+            <div 
+              className="flex flex-col items-center gap-2 p-3 rounded-2xl border"
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                borderColor: 'rgba(255, 255, 255, 0.08)'
+              }}
+            >
+              <div 
+                className="w-10 h-10 flex items-center justify-center rounded-xl"
+                style={{ backgroundColor: 'rgba(22, 163, 74, 0.15)' }}
+              >
+                <Smartphone className="w-5 h-5 text-[#16a34a]" strokeWidth={2} />
+              </div>
+              <p 
+                className="text-white"
+                style={{ fontSize: '11px', fontWeight: 500 }}
+              >
+                Malipo Rahisi
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Auth Card */}
-      <div className="flex-1 bg-gray-50 px-6 py-8">
+      {/* Auth Forms Section */}
+      <div className="flex-1 px-6 py-8" style={{ backgroundColor: '#080d08' }}>
         <div className="max-w-md mx-auto">
-          {/* Demo Mode - Big Prominent Button */}
-          <div className="mb-6">
+          {/* Demo Mode - Minimal Clean Button */}
+          <div className="mb-8">
             <Button
               onClick={handleDemoMode}
-              className="w-full h-16 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-2xl shadow-2xl text-lg"
+              className="w-full h-14 rounded-2xl border"
+              style={{
+                backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                borderColor: 'rgba(22, 163, 74, 0.2)',
+                color: '#16a34a'
+              }}
             >
               <div className="flex items-center justify-center gap-3">
-                <span className="text-2xl">🚀</span>
-                <div className="text-left">
-                  <div>Try Demo Mode</div>
-                  <div className="text-xs text-purple-100">Skip sign in - Explore the app instantly</div>
+                <div className="text-center">
+                  <div style={{ fontSize: '15px', fontWeight: 600 }}>Jaribu Demo</div>
+                  <div style={{ fontSize: '12px', fontWeight: 400, opacity: 0.7 }}>
+                    Explore instantly without signing in
+                  </div>
                 </div>
               </div>
             </Button>
           </div>
 
-          <div className="relative mb-6">
+          <div className="relative mb-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+              <div className="w-full border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.08)' }}></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-gray-50 text-gray-500">Or sign in with your account</span>
+              <span className="px-4" style={{ backgroundColor: '#080d08', color: 'rgba(255, 255, 255, 0.4)', fontSize: '13px' }}>
+                Au ingia na akaunti yako
+              </span>
             </div>
           </div>
 
-          <Card className="border-none shadow-xl">
+          <Card className="border" style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)', borderColor: 'rgba(255, 255, 255, 0.08)' }}>
             <CardHeader className="space-y-1 pb-6">
-              <CardTitle className="text-2xl text-center">Welcome</CardTitle>
-              <CardDescription className="text-center">Sign in or create a new account to get started</CardDescription>
+              <CardTitle 
+                className="text-center text-white"
+                style={{ 
+                  fontSize: '24px', 
+                  fontWeight: 700
+                }}
+              >
+                Karibu GoPay
+              </CardTitle>
+              <CardDescription 
+                className="text-center"
+                style={{ 
+                  fontSize: '14px',
+                  color: 'rgba(255, 255, 255, 0.5)'
+                }}
+              >
+                Ingia au fungua akaunti mpya kuanza
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="signin" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="signin" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Sign In</TabsTrigger>
-                  <TabsTrigger value="signup" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">Sign Up</TabsTrigger>
+                <TabsList 
+                  className="grid w-full grid-cols-2 mb-6"
+                  style={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)'
+                  }}
+                >
+                  <TabsTrigger 
+                    value="signin"
+                    className="data-[state=active]:bg-[#16a34a] data-[state=active]:text-white"
+                    style={{
+                      fontWeight: 500,
+                      color: 'rgba(255, 255, 255, 0.6)'
+                    }}
+                  >
+                    Ingia
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="signup"
+                    className="data-[state=active]:bg-[#16a34a] data-[state=active]:text-white"
+                    style={{
+                      fontWeight: 500,
+                      color: 'rgba(255, 255, 255, 0.6)'
+                    }}
+                  >
+                    Fungua Akaunti
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="signin">
                   <form onSubmit={handleSignIn} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="signin-email">Email Address</Label>
+                      <Label htmlFor="signin-email" style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.9)' }}>
+                        Barua Pepe
+                      </Label>
                       <Input
                         id="signin-email"
                         type="email"
-                        placeholder="your@email.com"
-                        className="h-12"
+                        placeholder="mfano@email.com"
+                        className="h-12 border bg-transparent text-white placeholder:text-white/40"
+                        style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}
                         value={signInData.email}
                         onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
                         required
@@ -214,28 +363,43 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signin-password">Password</Label>
+                      <Label htmlFor="signin-password" style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.9)' }}>
+                        Neno la Siri
+                      </Label>
                       <Input
                         id="signin-password"
                         type="password"
-                        placeholder="Enter your password"
-                        className="h-12"
+                        placeholder="Weka neno lako la siri"
+                        className="h-12 border bg-transparent text-white placeholder:text-white/40"
+                        style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}
                         value={signInData.password}
                         onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
                         required
                       />
                     </div>
                     {error && (
-                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                      <div 
+                        className="border px-4 py-3 rounded-lg"
+                        style={{
+                          backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                          borderColor: 'rgba(220, 38, 38, 0.3)',
+                          color: '#fca5a5',
+                          fontSize: '13px'
+                        }}
+                      >
                         {error}
                       </div>
                     )}
                     <Button 
                       type="submit" 
-                      className="w-full h-12 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white" 
+                      className="w-full h-12 text-white rounded-xl"
+                      style={{
+                        backgroundColor: '#16a34a',
+                        fontWeight: 600
+                      }}
                       disabled={isLoading}
                     >
-                      {isLoading ? 'Signing in...' : 'Sign In'}
+                      {isLoading ? 'Inasubiri...' : 'Ingia'}
                     </Button>
                   </form>
                 </TabsContent>
@@ -243,45 +407,57 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
                 <TabsContent value="signup">
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="signup-name">Full Name</Label>
+                      <Label htmlFor="signup-name" style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.9)' }}>
+                        Jina Kamili
+                      </Label>
                       <Input
                         id="signup-name"
-                        placeholder="John Doe"
-                        className="h-12"
+                        placeholder="Jina lako kamili"
+                        className="h-12 border bg-transparent text-white placeholder:text-white/40"
+                        style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}
                         value={signUpData.name}
                         onChange={(e) => setSignUpData({ ...signUpData, name: e.target.value })}
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-phone">Phone Number</Label>
+                      <Label htmlFor="signup-phone" style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.9)' }}>
+                        Namba ya Simu
+                      </Label>
                       <Input
                         id="signup-phone"
                         placeholder="+255 XXX XXX XXX"
-                        className="h-12"
+                        className="h-12 border bg-transparent text-white placeholder:text-white/40"
+                        style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}
                         value={signUpData.phone}
                         onChange={(e) => setSignUpData({ ...signUpData, phone: e.target.value })}
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-nida">NIDA Number</Label>
+                      <Label htmlFor="signup-nida" style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.9)' }}>
+                        Namba ya NIDA
+                      </Label>
                       <Input
                         id="signup-nida"
-                        placeholder="National ID Number"
-                        className="h-12"
+                        placeholder="Namba ya Kitambulisho"
+                        className="h-12 border bg-transparent text-white placeholder:text-white/40"
+                        style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}
                         value={signUpData.nida}
                         onChange={(e) => setSignUpData({ ...signUpData, nida: e.target.value })}
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email Address</Label>
+                      <Label htmlFor="signup-email" style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.9)' }}>
+                        Barua Pepe
+                      </Label>
                       <Input
                         id="signup-email"
                         type="email"
-                        placeholder="your@email.com"
-                        className="h-12"
+                        placeholder="mfano@email.com"
+                        className="h-12 border bg-transparent text-white placeholder:text-white/40"
+                        style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}
                         value={signUpData.email}
                         onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
                         required
@@ -292,56 +468,49 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-password">Password</Label>
+                      <Label htmlFor="signup-password" style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.9)' }}>
+                        Neno la Siri
+                      </Label>
                       <Input
                         id="signup-password"
                         type="password"
-                        placeholder="Create a password"
-                        className="h-12"
+                        placeholder="Tengeneza neno la siri"
+                        className="h-12 border bg-transparent text-white placeholder:text-white/40"
+                        style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}
                         value={signUpData.password}
                         onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
                         required
                       />
                     </div>
                     {error && (
-                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                      <div 
+                        className="border px-4 py-3 rounded-lg"
+                        style={{
+                          backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                          borderColor: 'rgba(220, 38, 38, 0.3)',
+                          color: '#fca5a5',
+                          fontSize: '13px'
+                        }}
+                      >
                         {error}
                       </div>
                     )}
                     <Button 
                       type="submit" 
-                      className="w-full h-12 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white" 
+                      className="w-full h-12 text-white rounded-xl"
+                      style={{
+                        backgroundColor: '#16a34a',
+                        fontWeight: 600
+                      }}
                       disabled={isLoading}
                     >
-                      {isLoading ? 'Creating account...' : 'Create Account'}
+                      {isLoading ? 'Inafungua akaunti...' : 'Fungua Akaunti'}
                     </Button>
                   </form>
                 </TabsContent>
               </Tabs>
             </CardContent>
           </Card>
-
-          {/* Info Cards */}
-          <div className="mt-8 space-y-4">
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <Shield className="size-5 text-blue-600 mt-0.5" />
-                <div>
-                  <p className="text-sm text-blue-900">Bank-level Security</p>
-                  <p className="text-xs text-blue-600">Your money and data are protected with encryption</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-green-50 border border-green-100 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <Smartphone className="size-5 text-green-600 mt-0.5" />
-                <div>
-                  <p className="text-sm text-green-900">Accepted Nationwide</p>
-                  <p className="text-xs text-green-600">Use at 100,000+ merchants across Tanzania</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GoPay Tanzania — Complete Super App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --g900:#052e16;--g800:#14532d;--g700:#15803d;--g600:#16a34a;
+  --g500:#22c55e;--g400:#4ade80;--g100:#dcfce7;
+  --n900:#0a0a0a;--n800:#171717;--n700:#262626;--n600:#404040;
+  --n500:#737373;--n400:#a3a3a3;--n200:#e5e5e5;--n100:#f5f5f5;
+  --bg:#080d08;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);
+  --text:rgba(255,255,255,1);--text2:rgba(255,255,255,0.5);--text3:rgba(255,255,255,0.25);
+  --red:#dc2626;--amber:#d97706;--blue:#2563eb;
+  --fd:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
+}
+body{font-family:var(--fb);background:#040804;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:24px 16px 80px}
+h1{font-family:var(--fd);color:rgba(255,255,255,0.15);font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+
+/* NAV MENU */
+.screen-nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;max-width:390px;justify-content:center}
+.snav-btn{padding:6px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.4);font-size:11px;font-family:var(--fb);cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.snav-btn:hover{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.3);color:#4ade80}
+.snav-btn.active{background:var(--g700);border-color:var(--g700);color:#fff}
+
+/* DEVICE */
+.device{width:390px;border-radius:50px;background:#080d08;border:2px solid rgba(255,255,255,0.06);overflow:hidden;box-shadow:0 60px 120px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.04)}
+.notch{width:120px;height:34px;background:#080d08;border-radius:0 0 20px 20px;position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:100;pointer-events:none}
+.device-inner{position:relative}
+.status{display:flex;justify-content:space-between;padding:14px 28px 0;font-size:12px;color:rgba(255,255,255,0.5);font-weight:500}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;min-height:820px;overflow-y:auto;scrollbar-width:none;animation:su 0.35s cubic-bezier(0.16,1,0.3,1) both}
+.screen::-webkit-scrollbar{display:none}
+.screen.active{display:flex}
+@keyframes su{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── SHARED ── */
+.back{width:40px;height:40px;border-radius:14px;border:1px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--text2);flex-shrink:0}
+.pg-header{padding:52px 24px 20px;display:flex;align-items:center;gap:14px}
+.pg-title{font-family:var(--fd);font-size:24px;font-weight:700;color:#fff;letter-spacing:-0.5px}
+.pg-sub{font-size:13px;color:var(--text2);font-weight:300;margin-top:2px}
+.section-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sec-label{font-size:11px;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;font-weight:500}
+.see-all{font-size:12px;color:var(--g400);background:none;border:none;font-family:var(--fb);cursor:pointer}
+.pad{padding:0 24px}
+.mb16{margin-bottom:16px}
+.mb24{margin-bottom:24px}
+.safe{height:88px}
+
+/* BUTTONS */
+.btn{width:100%;padding:17px;border:none;border-radius:16px;font-size:15px;font-weight:500;font-family:var(--fb);cursor:pointer;transition:all 0.15s;letter-spacing:0.1px}
+.btn:active{transform:scale(0.98)}
+.btn-g{background:var(--g600);color:#fff}
+.btn-g:active{background:var(--g700)}
+.btn-ghost{background:var(--card);border:1px solid var(--border);color:rgba(255,255,255,0.7)}
+.btn-red{background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.2);color:#f87171}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px}
+.card-sm{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
+
+/* FIELDS */
+.field{margin-bottom:14px}
+.field-lbl{font-size:11px;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;font-weight:500;margin-bottom:7px;display:block}
+.field-in{width:100%;padding:14px 16px;border-radius:13px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:#fff;font-size:14px;font-family:var(--fb);outline:none;transition:all 0.2s}
+.field-in::placeholder{color:var(--text3)}
+.field-in:focus{border-color:var(--g600);background:rgba(34,197,94,0.05)}
+
+/* BOTTOM NAV */
+.bnav{display:flex;background:rgba(8,13,8,0.97);border-top:1px solid rgba(255,255,255,0.06);padding:10px 0 26px;position:sticky;bottom:0}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px}
+.bnav-item svg{width:22px;height:22px;stroke:rgba(255,255,255,0.25);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transition:stroke 0.2s}
+.bnav-item.on svg{stroke:var(--g400)}
+.bnav-lbl{font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:0.2px;transition:color 0.2s}
+.bnav-item.on .bnav-lbl{color:var(--g400)}
+
+/* ─────────────────────────────────────
+   SCREEN: SPLASH
+───────────────────────────────────── */
+.splash{background:linear-gradient(160deg,#052e16 0%,#0a1a0a 55%,#080d08 100%);padding-bottom:48px}
+.splash-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 32px 40px;position:relative}
+.splash-glow{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(34,197,94,0.1) 0%,transparent 70%);top:40%;left:50%;transform:translate(-50%,-50%)}
+.logo-box{width:80px;height:80px;border-radius:26px;border:1.5px solid rgba(34,197,94,0.25);display:flex;align-items:center;justify-content:center;margin-bottom:22px;animation:lp 4s ease-in-out infinite}
+@keyframes lp{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.08)}50%{box-shadow:0 0 0 14px rgba(34,197,94,0.03)}}
+.logo-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.logo-sq{border-radius:6px;background:var(--g500)}
+.logo-sq:nth-child(1){width:20px;height:20px;opacity:0.9}
+.logo-sq:nth-child(2){width:20px;height:20px;opacity:0.5}
+.logo-sq:nth-child(3){width:20px;height:20px;opacity:0.5}
+.logo-sq:nth-child(4){width:20px;height:20px;opacity:0.2}
+.brand{font-family:var(--fd);font-size:44px;font-weight:800;letter-spacing:-2.5px;color:#fff;margin-bottom:8px}
+.brand-tag{font-size:14px;color:rgba(255,255,255,0.35);font-weight:300;text-align:center;margin-bottom:48px}
+.trust-pills{display:flex;gap:8px;margin-bottom:48px;flex-wrap:wrap;justify-content:center}
+.trust-pill{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,0.3);padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.07)}
+.trust-dot{width:5px;height:5px;border-radius:50%;background:var(--g500)}
+.splash-btns{width:100%;display:flex;flex-direction:column;gap:10px}
+.comply{text-align:center;font-size:11px;color:rgba(255,255,255,0.15);padding:16px 32px 0;letter-spacing:0.3px}
+
+/* ─────────────────────────────────────
+   SCREEN: SIGN IN / SIGN UP
+───────────────────────────────────── */
+.auth-bg{background:var(--bg)}
+.auth-hd{padding:52px 24px 24px}
+.auth-title{font-family:var(--fd);font-size:30px;font-weight:700;letter-spacing:-1px;color:#fff;line-height:1.2;margin-bottom:6px}
+.auth-sub{font-size:14px;color:var(--text2);font-weight:300}
+.seg{display:flex;background:rgba(255,255,255,0.05);border-radius:14px;padding:4px;margin-bottom:24px}
+.seg-btn{flex:1;padding:11px;border:none;border-radius:10px;font-size:14px;font-family:var(--fb);cursor:pointer;color:var(--text2);background:transparent;transition:all 0.2s}
+.seg-btn.on{background:var(--g700);color:#fff;font-weight:500}
+.divider-row{display:flex;align-items:center;gap:10px;margin:18px 0}
+.div-line{flex:1;height:1px;background:rgba(255,255,255,0.07)}
+.div-txt{font-size:12px;color:var(--text3)}
+.soc-row{display:flex;gap:10px;margin-bottom:20px}
+.soc-btn{flex:1;padding:13px;border-radius:12px;background:var(--card);border:1px solid var(--border);color:rgba(255,255,255,0.6);font-size:13px;font-weight:500;font-family:var(--fb);cursor:pointer;text-align:center}
+.switch-row{text-align:center;font-size:13px;color:var(--text3)}
+.switch-lnk{color:var(--g400);background:none;border:none;font-family:var(--fb);font-size:13px;cursor:pointer}
+
+/* ─────────────────────────────────────
+   SCREEN: HOME
+───────────────────────────────────── */
+.home-bg{background:var(--bg)}
+.home-hd{padding:52px 24px 16px;display:flex;justify-content:space-between;align-items:center}
+.home-greet{font-size:13px;color:var(--text2);font-weight:300}
+.home-name{font-family:var(--fd);font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.5px}
+.hd-icons{display:flex;gap:8px}
+.ic-btn{width:40px;height:40px;border-radius:12px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+.ic-btn svg{width:18px;height:18px;stroke:rgba(255,255,255,0.5);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.notif-pip{position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--g500);border:2px solid var(--bg)}
+/* balance */
+.bal-card{margin:0 24px 20px;border-radius:24px;background:linear-gradient(135deg,#14532d 0%,#052e16 100%);padding:26px;position:relative;overflow:hidden;cursor:pointer}
+.bal-card::before{content:'';position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(34,197,94,0.07);top:-50px;right:-50px}
+.bal-lbl{font-size:12px;color:rgba(255,255,255,0.45);letter-spacing:0.4px;margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.live{width:5px;height:5px;border-radius:50%;background:var(--g400);animation:lv 2s ease-in-out infinite}
+@keyframes lv{0%,100%{opacity:1}50%{opacity:0.3}}
+.bal-amt{font-family:var(--fd);font-size:38px;font-weight:800;color:#fff;letter-spacing:-2px;margin-bottom:3px}
+.bal-cur{font-size:13px;color:rgba(255,255,255,0.4);font-weight:300;margin-bottom:18px}
+.bal-foot{display:flex;justify-content:space-between}
+.bal-stat{font-size:12px;color:rgba(255,255,255,0.35)}
+.bal-stat span{color:rgba(255,255,255,0.75);font-weight:500}
+/* actions */
+.qa-row{display:flex;gap:8px;padding:0 24px;margin-bottom:20px}
+.qa-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 6px;background:var(--card);border:1px solid var(--border);border-radius:15px;cursor:pointer;transition:all 0.12s}
+.qa-item:active{background:rgba(255,255,255,0.07)}
+.qa-ico{width:36px;height:36px;border-radius:10px;background:rgba(34,197,94,0.1);display:flex;align-items:center;justify-content:center}
+.qa-ico svg{width:18px;height:18px;stroke:var(--g400);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.qa-lbl{font-size:10px;color:rgba(255,255,255,0.4);text-align:center}
+/* mm wallets */
+.mm-row{display:flex;gap:8px;padding:0 24px;margin-bottom:20px}
+.mm-c{flex:1;padding:13px;background:var(--card);border:1px solid var(--border);border-radius:13px;cursor:pointer}
+.mm-n{font-size:10px;color:var(--text3);margin-bottom:3px}
+.mm-b{font-size:13px;color:#fff;font-weight:500}
+/* transactions */
+.tx-list{padding:0 24px}
+.tx-item{display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer}
+.tx-item:last-child{border-bottom:none}
+.tx-ico{width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.tx-inf{flex:1}
+.tx-name{font-size:14px;color:#fff;font-weight:400;margin-bottom:2px}
+.tx-date{font-size:11px;color:var(--text3)}
+.tx-amt{font-size:14px;font-weight:500}
+.debit{color:rgba(255,255,255,0.65)}
+.credit{color:var(--g400)}
+
+/* ─────────────────────────────────────
+   SEND MONEY
+───────────────────────────────────── */
+.send-bg{background:var(--bg)}
+.contacts-row{display:flex;gap:12px;padding:0 24px;overflow-x:auto;margin-bottom:20px;scrollbar-width:none}
+.contacts-row::-webkit-scrollbar{display:none}
+.ct-item{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:52px;cursor:pointer}
+.ct-av{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--g800),var(--g600));display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:15px;font-weight:700;color:#fff}
+.ct-nm{font-size:10px;color:var(--text3);text-align:center;white-space:nowrap}
+.ct-add{width:48px;height:48px;border-radius:50%;background:var(--card);border:1.5px dashed rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text3)}
+.search-bar{display:flex;align-items:center;gap:10px;padding:13px 16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:13px;margin:0 24px 20px}
+.search-bar svg{width:16px;height:16px;stroke:var(--text3);fill:none;stroke-width:1.5;flex-shrink:0}
+.search-bar input{background:none;border:none;outline:none;font-size:14px;color:#fff;font-family:var(--fb);flex:1}
+.search-bar input::placeholder{color:var(--text3)}
+.numpad-wrap{padding:0 24px;flex:1}
+.amt-display{text-align:center;margin-bottom:28px}
+.amt-lbl{font-size:12px;color:var(--text3);margin-bottom:6px}
+.amt-val{font-family:var(--fd);font-size:52px;font-weight:800;color:#fff;letter-spacing:-3px}
+.amt-cur{font-size:18px;color:var(--text2);font-weight:300}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.num{padding:17px;border:none;border-radius:15px;background:rgba(255,255,255,0.05);color:#fff;font-size:22px;font-family:var(--fd);cursor:pointer;text-align:center;transition:all 0.1s}
+.num:active{background:rgba(255,255,255,0.1);transform:scale(0.96)}
+.num.del{font-size:17px;color:var(--text2)}
+
+/* ─────────────────────────────────────
+   PAYMENT CONFIRM + SUCCESS
+───────────────────────────────────── */
+.confirm-card{margin:0 24px 16px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px}
+.cfm-row{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.cfm-row:last-child{border-bottom:none}
+.cfm-lbl{font-size:13px;color:var(--text2)}
+.cfm-val{font-size:13px;color:#fff;font-weight:500}
+.total-card{margin:0 24px 16px;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.18);border-radius:15px;padding:18px;display:flex;justify-content:space-between;align-items:center}
+.total-lbl{font-size:13px;color:var(--text2)}
+.total-amt{font-family:var(--fd);font-size:26px;font-weight:800;color:var(--g400);letter-spacing:-1px}
+.bio-row{margin:0 24px 20px;display:flex;align-items:center;gap:12px;padding:14px;background:rgba(255,255,255,0.03);border-radius:13px}
+.bio-ic{width:36px;height:36px;border-radius:10px;background:rgba(34,197,94,0.1);display:flex;align-items:center;justify-content:center;font-size:18px}
+.bio-txt{font-size:13px;color:var(--text2)}
+.success-bg{background:linear-gradient(160deg,#052e16 0%,var(--bg) 55%);align-items:center;justify-content:center;padding:60px 32px;text-align:center}
+.suc-ico{width:96px;height:96px;border-radius:30px;background:linear-gradient(135deg,var(--g700),var(--g900));border:1px solid rgba(34,197,94,0.25);display:flex;align-items:center;justify-content:center;margin-bottom:24px;animation:sp 0.5s cubic-bezier(0.16,1,0.3,1) both 0.1s}
+@keyframes sp{from{transform:scale(0.7);opacity:0}to{transform:scale(1);opacity:1}}
+.suc-ico svg{width:44px;height:44px;stroke:var(--g400);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.suc-title{font-family:var(--fd);font-size:32px;font-weight:800;color:#fff;letter-spacing:-1px;margin-bottom:8px}
+.suc-sub{font-size:14px;color:var(--text2);font-weight:300;line-height:1.6;margin-bottom:36px}
+.receipt{width:100%;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:28px}
+.rcpt-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.rcpt-row:last-child{border-bottom:none}
+.rcpt-lbl{font-size:12px;color:var(--text3)}
+.rcpt-val{font-size:12px;color:rgba(255,255,255,0.8);font-weight:500}
+.suc-btns{width:100%;display:flex;flex-direction:column;gap:10px}
+
+/* ─────────────────────────────────────
+   QR SCANNER
+───────────────────────────────────── */
+.qr-bg{background:#000;align-items:center}
+.qr-frame{width:320px;height:320px;position:relative;margin:80px auto 32px}
+.qr-corner{position:absolute;width:30px;height:30px;border-color:var(--g400);border-style:solid}
+.qr-corner.tl{top:0;left:0;border-width:3px 0 0 3px;border-radius:6px 0 0 0}
+.qr-corner.tr{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 6px 0 0}
+.qr-corner.bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 6px}
+.qr-corner.br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 6px 0}
+.qr-scan-line{position:absolute;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--g400),transparent);top:50%;animation:scan 2s ease-in-out infinite}
+@keyframes scan{0%{top:0}50%{top:100%}100%{top:0}}
+.qr-inner-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:rgba(255,255,255,0.3)}
+.qr-hint{font-size:14px;color:rgba(255,255,255,0.5);text-align:center;margin-bottom:32px;line-height:1.5}
+.qr-actions{padding:0 32px;width:100%;display:flex;gap:10px}
+
+/* ─────────────────────────────────────
+   BILLS & UTILITIES
+───────────────────────────────────── */
+.bills-bg{background:var(--bg)}
+.bill-cats{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 24px;margin-bottom:20px}
+.bill-cat{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px;cursor:pointer;display:flex;align-items:center;gap:12px}
+.bill-cat:active{background:rgba(255,255,255,0.07)}
+.bill-ic{width:38px;height:38px;border-radius:11px;background:rgba(34,197,94,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bill-ic svg{width:20px;height:20px;stroke:var(--g400);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.bill-nm{font-size:13px;color:#fff;font-weight:500;margin-bottom:2px}
+.bill-desc{font-size:11px;color:var(--text3)}
+.bill-form{padding:0 24px}
+.pending-bills{padding:0 24px;margin-bottom:20px}
+.pb-item{display:flex;align-items:center;gap:13px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;cursor:pointer}
+.pb-ico{width:38px;height:38px;border-radius:11px;background:rgba(217,119,6,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.pb-inf{flex:1}
+.pb-name{font-size:13px;color:#fff;font-weight:500;margin-bottom:2px}
+.pb-due{font-size:11px;color:var(--amber)}
+.pb-amt{font-size:14px;color:#fff;font-weight:600}
+
+/* ─────────────────────────────────────
+   GOVERNMENT SERVICES
+───────────────────────────────────── */
+.gov-bg{background:var(--bg)}
+.gov-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 24px;margin-bottom:20px}
+.gov-card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px;cursor:pointer}
+.gov-card:active{background:rgba(255,255,255,0.07)}
+.gov-badge{display:inline-block;font-size:9px;color:var(--g400);background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:4px;padding:2px 7px;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px}
+.gov-name{font-size:13px;color:#fff;font-weight:500;margin-bottom:2px}
+.gov-desc{font-size:11px;color:var(--text3)}
+
+/* ─────────────────────────────────────
+   SERVICES HUB
+───────────────────────────────────── */
+.svc-bg{background:var(--bg)}
+.featured-card{margin:0 24px 20px;border-radius:20px;background:linear-gradient(135deg,var(--g800),var(--g900));padding:22px;position:relative;overflow:hidden;cursor:pointer}
+.featured-card::after{content:'';position:absolute;width:100px;height:100px;border-radius:50%;background:rgba(34,197,94,0.08);bottom:-20px;right:-20px}
+.feat-badge{display:inline-block;background:rgba(34,197,94,0.2);border:1px solid rgba(34,197,94,0.25);border-radius:5px;padding:2px 9px;font-size:10px;color:var(--g400);letter-spacing:0.6px;text-transform:uppercase;margin-bottom:8px}
+.feat-name{font-family:var(--fd);font-size:18px;font-weight:700;color:#fff;margin-bottom:3px}
+.feat-desc{font-size:12px;color:rgba(255,255,255,0.45);font-weight:300}
+.svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:0 24px;margin-bottom:20px}
+.svc-card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px;cursor:pointer;transition:all 0.12s}
+.svc-card:active{background:rgba(255,255,255,0.07)}
+.svc-ico{width:36px;height:36px;border-radius:10px;background:rgba(34,197,94,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:9px}
+.svc-ico svg{width:19px;height:19px;stroke:var(--g400);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.svc-name{font-size:13px;color:#fff;font-weight:500;margin-bottom:2px}
+.svc-desc{font-size:11px;color:var(--text3)}
+
+/* ─────────────────────────────────────
+   BOOKINGS
+───────────────────────────────────── */
+.book-bg{background:var(--bg)}
+.book-tabs-row{display:flex;gap:7px;padding:0 24px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
+.book-tabs-row::-webkit-scrollbar{display:none}
+.btab{padding:7px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;color:var(--text2);background:transparent;font-family:var(--fb);cursor:pointer;white-space:nowrap;transition:all 0.15s}
+.btab.on{background:var(--g700);border-color:var(--g700);color:#fff;font-weight:500}
+.route-card{margin:0 24px 14px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px}
+.route-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.route-f{flex:1;padding:12px;background:rgba(255,255,255,0.05);border-radius:11px}
+.route-lbl{font-size:10px;color:var(--text3);letter-spacing:0.4px;text-transform:uppercase;margin-bottom:3px}
+.route-val{font-size:15px;color:#fff;font-weight:500}
+.swap-btn{width:34px;height:34px;border-radius:10px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.18);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;cursor:pointer}
+.date-row{display:flex;gap:8px;margin-bottom:14px}
+.date-f{flex:1;padding:11px 12px;background:rgba(255,255,255,0.05);border-radius:11px}
+.results-list{padding:0 24px;display:flex;flex-direction:column;gap:9px}
+.result-item{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px;cursor:pointer;display:flex;align-items:center;gap:13px}
+.result-item:active{background:rgba(255,255,255,0.07)}
+.res-logo{width:42px;height:42px;border-radius:11px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text2);font-weight:600;flex-shrink:0}
+.res-inf{flex:1}
+.res-name{font-size:13px;color:#fff;font-weight:500;margin-bottom:2px}
+.res-detail{font-size:11px;color:var(--text3)}
+.res-vfy{font-size:10px;color:var(--g400);margin-top:2px}
+.res-price{text-align:right}
+.res-amt{font-family:var(--fd);font-size:15px;font-weight:700;color:#fff}
+.res-unit{font-size:10px;color:var(--text3)}
+
+/* ─────────────────────────────────────
+   NATIONAL PARKS
+───────────────────────────────────── */
+.parks-bg{background:var(--bg)}
+.park-card{margin:0 24px 12px;border-radius:18px;background:linear-gradient(160deg,#14532d,#052e16);padding:20px;display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;position:relative;overflow:hidden}
+.park-card::after{content:'';position:absolute;width:80px;height:80px;border-radius:50%;background:rgba(34,197,94,0.07);bottom:-20px;right:-20px}
+.park-name{font-family:var(--fd);font-size:15px;font-weight:700;color:#fff;margin-bottom:4px}
+.park-region{font-size:11px;color:rgba(255,255,255,0.45)}
+.park-price-wrap{text-align:right}
+.park-price{font-family:var(--fd);font-size:14px;font-weight:700;color:var(--g400)}
+.park-unit{font-size:10px;color:var(--text3)}
+.park-tag{display:inline-block;font-size:9px;color:var(--g400);background:rgba(34,197,94,0.1);border-radius:4px;padding:2px 7px;margin-bottom:6px;letter-spacing:0.4px;text-transform:uppercase}
+
+/* ─────────────────────────────────────
+   RIDE HAILING
+───────────────────────────────────── */
+.ride-bg{background:#050a05}
+.map-placeholder{height:240px;background:linear-gradient(160deg,#0a180a,#051005);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.map-grid{position:absolute;inset:0;opacity:0.06;background-image:linear-gradient(rgba(34,197,94,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(34,197,94,0.5) 1px,transparent 1px);background-size:30px 30px}
+.map-pin{font-size:32px;position:relative;z-index:2}
+.map-pulse{position:absolute;width:60px;height:60px;border-radius:50%;border:1px solid rgba(34,197,94,0.3);animation:mp 2s ease-out infinite}
+@keyframes mp{0%{transform:scale(0.8);opacity:0.8}100%{transform:scale(2);opacity:0}}
+.ride-sheet{padding:20px 24px;background:var(--bg)}
+.ride-types{display:flex;gap:8px;margin-bottom:16px}
+.ride-type{flex:1;padding:12px 8px;background:var(--card);border:1px solid var(--border);border-radius:13px;text-align:center;cursor:pointer;transition:all 0.15s}
+.ride-type.on{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.25)}
+.ride-type-ic{font-size:20px;margin-bottom:4px}
+.ride-type-nm{font-size:11px;color:#fff;font-weight:500}
+.ride-type-pr{font-size:10px;color:var(--text3)}
+.dest-field{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:13px;margin-bottom:10px;cursor:pointer}
+.dest-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dest-dot.from{background:var(--g400)}
+.dest-dot.to{background:var(--red)}
+.dest-txt{flex:1;font-size:14px;color:#fff}
+.dest-txt.ph{color:var(--text3)}
+.ride-driver{display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:13px;margin-bottom:16px}
+.driver-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--g800),var(--g600));display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
+.driver-inf{flex:1}
+.driver-name{font-size:14px;color:#fff;font-weight:500;margin-bottom:2px}
+.driver-detail{font-size:12px;color:var(--text3)}
+.driver-rating{font-size:13px;color:#facc15;font-weight:600}
+
+/* ─────────────────────────────────────
+   FOOD DELIVERY
+───────────────────────────────────── */
+.food-bg{background:var(--bg)}
+.food-cats{display:flex;gap:8px;padding:0 24px;overflow-x:auto;margin-bottom:16px;scrollbar-width:none}
+.food-cats::-webkit-scrollbar{display:none}
+.food-cat{padding:8px 16px;border-radius:20px;border:1px solid var(--border);font-size:12px;color:var(--text2);background:transparent;white-space:nowrap;cursor:pointer}
+.food-cat.on{background:var(--g700);border-color:var(--g700);color:#fff}
+.restaurant-card{margin:0 24px 10px;background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer}
+.rest-img{height:100px;background:linear-gradient(135deg,#1a1a0a,#0a100a);display:flex;align-items:center;justify-content:center;font-size:32px}
+.rest-body{padding:14px}
+.rest-name{font-size:14px;color:#fff;font-weight:500;margin-bottom:4px}
+.rest-meta{display:flex;gap:12px}
+.rest-meta-item{font-size:11px;color:var(--text3)}
+.rest-meta-item span{color:var(--g400)}
+
+/* ─────────────────────────────────────
+   EVENTS & TICKETS
+───────────────────────────────────── */
+.events-bg{background:var(--bg)}
+.event-card{margin:0 24px 10px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;display:flex;gap:14px}
+.event-date-box{width:48px;height:52px;border-radius:12px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.event-day{font-family:var(--fd);font-size:18px;font-weight:800;color:var(--g400);line-height:1}
+.event-month{font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.5px}
+.event-inf{flex:1}
+.event-name{font-size:14px;color:#fff;font-weight:500;margin-bottom:3px}
+.event-venue{font-size:12px;color:var(--text3);margin-bottom:4px}
+.event-price{font-size:12px;color:var(--g400);font-weight:500}
+
+/* ─────────────────────────────────────
+   WALLET & FINANCE
+───────────────────────────────────── */
+.wallet-bg{background:var(--bg)}
+.fin-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 24px;margin-bottom:20px}
+.fin-card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px}
+.fin-lbl{font-size:11px;color:var(--text3);margin-bottom:4px}
+.fin-val{font-family:var(--fd);font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.5px}
+.fin-change{font-size:11px;color:var(--g400);margin-top:2px}
+.fin-neg{color:#f87171}
+.savings-bar{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:8px;overflow:hidden}
+.savings-fill{height:100%;background:linear-gradient(90deg,var(--g600),var(--g400));border-radius:2px}
+.loan-card{margin:0 24px 12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px}
+.loan-title{font-size:14px;color:#fff;font-weight:500;margin-bottom:2px}
+.loan-sub{font-size:12px;color:var(--text3);margin-bottom:12px}
+.loan-slider{width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,0.08);margin-bottom:8px;position:relative}
+.loan-fill{height:100%;width:60%;background:linear-gradient(90deg,var(--g600),var(--g400));border-radius:2px}
+.loan-vals{display:flex;justify-content:space-between;font-size:11px;color:var(--text3)}
+
+/* ─────────────────────────────────────
+   NOTIFICATIONS
+───────────────────────────────────── */
+.notif-bg{background:var(--bg)}
+.notif-item{display:flex;gap:13px;padding:14px 24px;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:background 0.12s}
+.notif-item:active{background:rgba(255,255,255,0.03)}
+.notif-item.unread{background:rgba(34,197,94,0.03)}
+.notif-dot-ui{width:8px;height:8px;border-radius:50%;background:var(--g500);margin-top:5px;flex-shrink:0}
+.notif-dot-ui.read{background:transparent;border:1px solid rgba(255,255,255,0.12)}
+.notif-ico{width:40px;height:40px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.notif-inf{flex:1}
+.notif-title{font-size:13px;color:#fff;font-weight:500;margin-bottom:2px}
+.notif-msg{font-size:12px;color:var(--text2);line-height:1.4;margin-bottom:3px}
+.notif-time{font-size:11px;color:var(--text3)}
+
+/* ─────────────────────────────────────
+   TRANSACTION HISTORY
+───────────────────────────────────── */
+.history-bg{background:var(--bg)}
+.filter-row{display:flex;gap:7px;padding:0 24px;overflow-x:auto;margin-bottom:16px;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.filter-pill{padding:7px 14px;border-radius:20px;border:1px solid var(--border);font-size:12px;color:var(--text2);background:transparent;white-space:nowrap;cursor:pointer;font-family:var(--fb)}
+.filter-pill.on{background:var(--g700);border-color:var(--g700);color:#fff}
+.hist-group{padding:0 24px;margin-bottom:16px}
+.hist-date{font-size:11px;color:var(--text3);letter-spacing:0.5px;margin-bottom:8px;font-weight:500}
+.hist-item{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.hist-item:last-child{border-bottom:none}
+.hist-ico{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.hist-inf{flex:1}
+.hist-name{font-size:13px;color:#fff;font-weight:400;margin-bottom:1px}
+.hist-cat{font-size:11px;color:var(--text3)}
+.hist-right{text-align:right}
+.hist-amt{font-size:14px;font-weight:500;margin-bottom:1px}
+.hist-status{font-size:10px;color:var(--g400)}
+.hist-status.pend{color:var(--amber)}
+
+/* ─────────────────────────────────────
+   OFFLINE MODE
+───────────────────────────────────── */
+.offline-bg{background:var(--bg);align-items:center;justify-content:center;padding:60px 32px;text-align:center}
+.offline-ico{width:88px;height:88px;border-radius:28px;background:rgba(115,115,115,0.1);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;margin-bottom:24px}
+.offline-ico svg{width:40px;height:40px;stroke:rgba(255,255,255,0.3);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.offline-title{font-family:var(--fd);font-size:24px;font-weight:700;color:rgba(255,255,255,0.7);margin-bottom:8px}
+.offline-sub{font-size:14px;color:var(--text3);line-height:1.6;margin-bottom:32px}
+.cached-cards{width:100%;display:flex;flex-direction:column;gap:8px;margin-bottom:32px}
+.cached-item{display:flex;align-items:center;gap:12px;padding:14px;background:var(--card);border:1px solid var(--border);border-radius:13px;text-align:left}
+.cached-ico{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.cached-inf{flex:1}
+.cached-name{font-size:13px;color:rgba(255,255,255,0.7);font-weight:400;margin-bottom:1px}
+.cached-detail{font-size:11px;color:var(--text3)}
+.offline-ussd{padding:14px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);border-radius:13px;width:100%;text-align:left}
+.ussd-title{font-size:12px;color:var(--g400);font-weight:500;margin-bottom:4px}
+.ussd-code{font-family:monospace;font-size:20px;color:#fff;letter-spacing:2px}
+.ussd-desc{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* ─────────────────────────────────────
+   MERCHANT DASHBOARD
+───────────────────────────────────── */
+.merch-bg{background:var(--bg)}
+.merch-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 24px;margin-bottom:20px}
+.merch-stat{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:16px}
+.ms-lbl{font-size:11px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px}
+.ms-val{font-family:var(--fd);font-size:22px;font-weight:700;color:#fff;letter-spacing:-0.5px}
+.ms-change{font-size:11px;margin-top:3px}
+.ms-up{color:var(--g400)}
+.ms-dn{color:#f87171}
+.chart-card{margin:0 24px 20px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px}
+.chart-title{font-size:13px;color:#fff;font-weight:500;margin-bottom:16px}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:80px}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.bar{border-radius:4px 4px 0 0;background:rgba(34,197,94,0.25);width:100%;transition:background 0.2s}
+.bar.today{background:var(--g600)}
+.bar-day{font-size:9px;color:var(--text3)}
+.qr-code-card{margin:0 24px 16px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;display:flex;align-items:center;gap:16px}
+.qr-preview{width:64px;height:64px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center}
+.qr-preview svg{width:48px;height:48px}
+.qr-info{flex:1}
+.qr-name{font-size:14px;color:#fff;font-weight:500;margin-bottom:2px}
+.qr-id{font-size:12px;color:var(--text3);font-family:monospace}
+
+/* ─────────────────────────────────────
+   REWARDS
+───────────────────────────────────── */
+.rewards-bg{background:var(--bg)}
+.rwd-hero{margin:0 24px 20px;background:linear-gradient(135deg,var(--g800),var(--g900));border:1px solid rgba(34,197,94,0.18);border-radius:22px;padding:22px}
+.rwd-pts{font-family:var(--fd);font-size:44px;font-weight:800;color:#fff;letter-spacing:-2px;margin-bottom:2px}
+.rwd-lbl{font-size:13px;color:rgba(255,255,255,0.4);font-weight:300;margin-bottom:16px}
+.tier-row{display:flex;align-items:center;gap:10px}
+.tier-badge{display:inline-block;padding:3px 10px;border-radius:5px;font-size:11px;font-weight:600;letter-spacing:0.4px}
+.gold{background:rgba(217,119,6,0.2);color:#fbbf24;border:1px solid rgba(217,119,6,0.25)}
+.tier-bar{flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.tier-fill{height:100%;background:linear-gradient(90deg,var(--g600),var(--g400));border-radius:2px;width:68%}
+.tier-next{font-size:11px;color:var(--text3)}
+.earn-list{padding:0 24px;margin-bottom:20px;display:flex;flex-direction:column;gap:8px}
+.earn-item{display:flex;align-items:center;gap:13px;padding:13px;background:var(--card);border:1px solid var(--border);border-radius:13px}
+.earn-ico{width:36px;height:36px;border-radius:10px;background:rgba(34,197,94,0.1);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.earn-inf{flex:1}
+.earn-nm{font-size:13px;color:#fff;font-weight:400;margin-bottom:1px}
+.earn-rt{font-size:11px;color:var(--text3)}
+.earn-pt{font-size:13px;color:var(--g400);font-weight:500}
+.redeem-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:0 24px;margin-bottom:20px}
+.rdm-card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:15px;cursor:pointer}
+.rdm-val{font-family:var(--fd);font-size:18px;font-weight:700;color:#fff;margin-bottom:2px}
+.rdm-name{font-size:11px;color:var(--text2);margin-bottom:8px}
+.rdm-cost{font-size:11px;color:var(--g400)}
+
+/* ─────────────────────────────────────
+   PROFILE
+───────────────────────────────────── */
+.profile-bg{background:var(--bg)}
+.prof-card{margin:0 24px 20px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;display:flex;align-items:center;gap:14px}
+.prof-av{width:58px;height:58px;border-radius:18px;background:linear-gradient(135deg,var(--g700),var(--g900));display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:20px;font-weight:700;color:#fff;flex-shrink:0}
+.prof-name{font-family:var(--fd);font-size:17px;font-weight:700;color:#fff;margin-bottom:2px}
+.prof-ph{font-size:13px;color:var(--text2)}
+.kyc-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--g400);background:rgba(34,197,94,0.08);padding:2px 7px;border-radius:4px;margin-top:4px;border:1px solid rgba(34,197,94,0.18)}
+.sgrp{margin:0 24px 14px}
+.sgrp-lbl{font-size:10px;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;font-weight:500;margin-bottom:7px;padding:0 2px}
+.slist{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:15px;overflow:hidden}
+.slist-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;transition:background 0.12s}
+.slist-item:last-child{border-bottom:none}
+.slist-item:active{background:rgba(255,255,255,0.04)}
+.s-ico{width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.s-txt{flex:1}
+.s-name{font-size:13px;color:#fff;font-weight:400}
+.s-sub{font-size:11px;color:var(--text3)}
+.s-arr{font-size:15px;color:rgba(255,255,255,0.18)}
+
+</style>
+</head>
+<body>
+
+<h1>GoPay Tanzania — Complete Super App</h1>
+
+<div class="screen-nav" id="navMenu">
+  <button class="snav-btn active" onclick="goTo('splash')">Splash</button>
+  <button class="snav-btn" onclick="goTo('signin')">Sign In</button>
+  <button class="snav-btn" onclick="goTo('home')">Home</button>
+  <button class="snav-btn" onclick="goTo('send')">Send Money</button>
+  <button class="snav-btn" onclick="goTo('confirm')">Confirm Pay</button>
+  <button class="snav-btn" onclick="goTo('success')">Success</button>
+  <button class="snav-btn" onclick="goTo('qr')">QR Scan</button>
+  <button class="snav-btn" onclick="goTo('bills')">Bills</button>
+  <button class="snav-btn" onclick="goTo('gov')">Government</button>
+  <button class="snav-btn" onclick="goTo('services')">Services</button>
+  <button class="snav-btn" onclick="goTo('bookings')">Bookings</button>
+  <button class="snav-btn" onclick="goTo('parks')">Nat. Parks</button>
+  <button class="snav-btn" onclick="goTo('ride')">Ride</button>
+  <button class="snav-btn" onclick="goTo('food')">Food</button>
+  <button class="snav-btn" onclick="goTo('events')">Events</button>
+  <button class="snav-btn" onclick="goTo('wallet')">Wallet</button>
+  <button class="snav-btn" onclick="goTo('rewards')">Rewards</button>
+  <button class="snav-btn" onclick="goTo('notifs')">Notifications</button>
+  <button class="snav-btn" onclick="goTo('history')">History</button>
+  <button class="snav-btn" onclick="goTo('offline')">Offline</button>
+  <button class="snav-btn" onclick="goTo('merchant')">Merchant</button>
+  <button class="snav-btn" onclick="goTo('profile')">Profile</button>
+</div>
+
+<div class="device">
+  <div class="device-inner">
+    <div class="notch"></div>
+    <div class="status"><span>9:41</span><span style="letter-spacing:2px">●●●●</span></div>
+
+<!-- ═══════════════════════════════ SPLASH ═══ -->
+<div class="screen splash active" id="splash">
+  <div class="splash-body">
+    <div class="splash-glow"></div>
+    <div class="logo-box">
+      <div class="logo-grid">
+        <div class="logo-sq" style="width:20px;height:20px"></div>
+        <div class="logo-sq" style="width:20px;height:20px"></div>
+        <div class="logo-sq" style="width:20px;height:20px"></div>
+        <div class="logo-sq" style="width:20px;height:20px"></div>
+      </div>
+    </div>
+    <div class="brand">GoPay</div>
+    <div class="brand-tag">Huduma salama za malipo na safari</div>
+    <div class="trust-pills">
+      <div class="trust-pill"><div class="trust-dot"></div>Salama</div>
+      <div class="trust-pill"><div class="trust-dot"></div>BoT Compliant</div>
+      <div class="trust-pill"><div class="trust-dot"></div>Imesimbwa</div>
+    </div>
+  </div>
+  <div style="padding:0 28px;display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-g" onclick="goTo('home')">Anza</button>
+    <button class="btn btn-ghost" onclick="goTo('signin')">Ingia Akaunti</button>
+  </div>
+  <div class="comply">Imeidhinishwa na Benki Kuu ya Tanzania</div>
+  <div style="height:48px"></div>
+</div>
+
+<!-- ═══════════════════════════════ SIGN IN ═══ -->
+<div class="screen auth-bg" id="signin">
+  <div class="auth-hd">
+    <div class="back" onclick="goTo('splash')">←</div>
+    <div style="height:16px"></div>
+    <div class="auth-title">Karibu Tena</div>
+    <div class="auth-sub">Ingia kwenye akaunti yako ya GoPay</div>
+  </div>
+  <div class="pad">
+    <div class="seg">
+      <button class="seg-btn on" onclick="segSwitch(this)">Barua Pepe</button>
+      <button class="seg-btn" onclick="segSwitch(this)">Simu</button>
+    </div>
+    <div class="field"><label class="field-lbl">Barua Pepe</label><input class="field-in" type="email" placeholder="mfano@email.com"/></div>
+    <div class="field"><label class="field-lbl">Nywila</label><input class="field-in" type="password" placeholder="••••••••"/></div>
+    <div style="text-align:right;margin-bottom:20px"><button style="background:none;border:none;font-size:13px;color:var(--g400);cursor:pointer;font-family:var(--fb)">Umesahau nywila?</button></div>
+    <button class="btn btn-g mb16" onclick="goTo('home')">Ingia</button>
+    <div class="divider-row"><div class="div-line"></div><div class="div-txt">au endelea na</div><div class="div-line"></div></div>
+    <div class="soc-row"><div class="soc-btn">Google</div><div class="soc-btn">Apple</div></div>
+    <div class="switch-row">Huna akaunti? <button class="switch-lnk" onclick="goTo('home')">Jisajili bure</button></div>
+  </div>
+  <div class="safe"></div>
+</div>
+
+<!-- ═══════════════════════════════ HOME ═══ -->
+<div class="screen home-bg" id="home">
+  <div class="home-hd">
+    <div><div class="home-greet">Habari za asubuhi</div><div class="home-name">Justin Mafie</div></div>
+    <div class="hd-icons">
+      <div class="ic-btn notif-pip" onclick="goTo('notifs')"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+      <div class="ic-btn" onclick="goTo('history')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+    </div>
+  </div>
+  <div class="bal-card" onclick="goTo('wallet')">
+    <div class="bal-lbl"><div class="live"></div>Salio Kuu</div>
+    <div class="bal-amt">284,500</div>
+    <div class="bal-cur">Shilingi za Tanzania</div>
+    <div class="bal-foot"><div class="bal-stat"><span>+12,400</span> leo</div><div class="bal-stat">Imesasishwa sasa</div></div>
+  </div>
+  <div class="pad mb16">
+    <div class="section-hd"><span class="sec-label">Vitendo vya Haraka</span></div>
+  </div>
+  <div class="qa-row">
+    <div class="qa-item" onclick="goTo('send')"><div class="qa-ico"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg></div><span class="qa-lbl">Tuma</span></div>
+    <div class="qa-item" onclick="goTo('home')"><div class="qa-ico"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7 7 7-7"/></svg></div><span class="qa-lbl">Pokea</span></div>
+    <div class="qa-item" onclick="goTo('qr')"><div class="qa-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3"/></svg></div><span class="qa-lbl">Skani QR</span></div>
+    <div class="qa-item" onclick="goTo('bills')"><div class="qa-ico"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><span class="qa-lbl">Bili</span></div>
+    <div class="qa-item" onclick="goTo('gov')"><div class="qa-ico"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div><span class="qa-lbl">Serikali</span></div>
+  </div>
+  <div class="pad mb16" style="margin-top:16px">
+    <div class="section-hd"><span class="sec-label">Pesa za Simu</span></div>
+  </div>
+  <div class="mm-row">
+    <div class="mm-c"><div class="mm-n">M-Pesa</div><div class="mm-b">45,200</div></div>
+    <div class="mm-c"><div class="mm-n">Airtel</div><div class="mm-b">12,800</div></div>
+    <div class="mm-c"><div class="mm-n">Tigo Pesa</div><div class="mm-b">8,400</div></div>
+  </div>
+  <div class="pad" style="margin-top:16px">
+    <div class="section-hd"><span class="sec-label">Miamala ya Hivi Karibuni</span><button class="see-all" onclick="goTo('history')">Ona Yote</button></div>
+  </div>
+  <div class="tx-list">
+    <div class="tx-item" onclick="goTo('history')"><div class="tx-ico" style="font-size:16px">⚡</div><div class="tx-inf"><div class="tx-name">Bili ya Umeme</div><div class="tx-date">Leo, 09:14</div></div><div class="tx-amt debit">-12,400</div></div>
+    <div class="tx-item" onclick="goTo('history')"><div class="tx-ico" style="font-size:16px">✈</div><div class="tx-inf"><div class="tx-name">Tiketi ya Ndege</div><div class="tx-date">Jana, 14:30</div></div><div class="tx-amt debit">-185,000</div></div>
+    <div class="tx-item" onclick="goTo('history')"><div class="tx-ico" style="font-size:16px">→</div><div class="tx-inf"><div class="tx-name">Pokea kutoka Amina</div><div class="tx-date">Jana, 11:00</div></div><div class="tx-amt credit">+50,000</div></div>
+  </div>
+  <div class="safe"></div>
+  <div class="bnav">
+    <div class="bnav-item on" onclick="goTo('home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="bnav-lbl">Nyumbani</span></div>
+    <div class="bnav-item" onclick="goTo('send')"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="bnav-lbl">Lipa</span></div>
+    <div class="bnav-item" onclick="goTo('services')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span class="bnav-lbl">Huduma</span></div>
+    <div class="bnav-item" onclick="goTo('rewards')"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="bnav-lbl">Tuzo</span></div>
+    <div class="bnav-item" onclick="goTo('profile')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="bnav-lbl">Wasifu</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SEND ═══ -->
+<div class="screen send-bg" id="send">
+  <div class="pg-header"><div class="back" onclick="goTo('home')">←</div><div><div class="pg-title">Tuma Pesa</div></div></div>
+  <div class="contacts-row">
+    <div class="ct-item"><div class="ct-av">AM</div><span class="ct-nm">Amina</span></div>
+    <div class="ct-item"><div class="ct-av" style="background:linear-gradient(135deg,#1d4ed8,#1e3a8a)">JK</div><span class="ct-nm">John</span></div>
+    <div class="ct-item"><div class="ct-av" style="background:linear-gradient(135deg,#7c3aed,#4c1d95)">SA</div><span class="ct-nm">Sarah</span></div>
+    <div class="ct-item"><div class="ct-av" style="background:linear-gradient(135deg,#b45309,#78350f)">MK</div><span class="ct-nm">Mkoba</span></div>
+    <div class="ct-item"><div class="ct-add">+</div><span class="ct-nm">Ongeza</span></div>
+  </div>
+  <div class="search-bar"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Tafuta jina au namba..."/></div>
+  <div class="numpad-wrap">
+    <div class="amt-display"><div class="amt-lbl">Kiasi cha kutuma</div><div><span class="amt-cur">TZS</span> <span class="amt-val" id="amtVal">0</span></div></div>
+    <div class="numpad">
+      <button class="num" onclick="np('1')">1</button><button class="num" onclick="np('2')">2</button><button class="num" onclick="np('3')">3</button>
+      <button class="num" onclick="np('4')">4</button><button class="num" onclick="np('5')">5</button><button class="num" onclick="np('6')">6</button>
+      <button class="num" onclick="np('7')">7</button><button class="num" onclick="np('8')">8</button><button class="num" onclick="np('9')">9</button>
+      <button class="num" onclick="np('.')">.</button><button class="num" onclick="np('0')">0</button><button class="num del" onclick="nd()">⌫</button>
+    </div>
+    <button class="btn btn-g" onclick="goTo('confirm')">Endelea</button>
+  </div>
+  <div style="height:32px"></div>
+</div>
+
+<!-- ═══════════════════════════════ CONFIRM ═══ -->
+<div class="screen" style="background:var(--bg)" id="confirm">
+  <div class="pg-header"><div class="back" onclick="goTo('send')">←</div><div><div class="pg-title">Thibitisha Malipo</div><div class="pg-sub">Hakikisha maelezo yako</div></div></div>
+  <div class="confirm-card">
+    <div class="cfm-row"><span class="cfm-lbl">Mpokeaji</span><span class="cfm-val">Amina Hassan</span></div>
+    <div class="cfm-row"><span class="cfm-lbl">Namba ya Simu</span><span class="cfm-val">+255 712 *** 890</span></div>
+    <div class="cfm-row"><span class="cfm-lbl">Mtoa Huduma</span><span class="cfm-val">M-Pesa</span></div>
+    <div class="cfm-row"><span class="cfm-lbl">Kiasi</span><span class="cfm-val">TZS 50,000</span></div>
+    <div class="cfm-row"><span class="cfm-lbl">Ada</span><span class="cfm-val">TZS 500</span></div>
+  </div>
+  <div class="total-card"><span class="total-lbl">Jumla Itakayotolewa</span><span class="total-amt">50,500</span></div>
+  <div class="bio-row"><div class="bio-ic">👆</div><div><div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:2px">Thibitisha kwa alama ya vidole</div><div class="bio-txt">au PIN yako</div></div></div>
+  <div class="pad" style="display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-g" onclick="goTo('success')">Tuma TZS 50,500</button>
+    <button class="btn btn-ghost" onclick="goTo('send')">Rudi</button>
+  </div>
+  <div class="safe"></div>
+</div>
+
+<!-- ═══════════════════════════════ SUCCESS ═══ -->
+<div class="screen success-bg" id="success">
+  <div class="suc-ico"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+  <div class="suc-title">Imetumwa.</div>
+  <div class="suc-sub">Pesa yako imefanikiwa kutumwa kwa Amina Hassan.</div>
+  <div class="receipt">
+    <div class="rcpt-row"><span class="rcpt-lbl">Namba ya Kumbukumbu</span><span class="rcpt-val">GP-2026-084721</span></div>
+    <div class="rcpt-row"><span class="rcpt-lbl">Tarehe</span><span class="rcpt-val">12 Mar 2026, 09:41</span></div>
+    <div class="rcpt-row"><span class="rcpt-lbl">Kiasi</span><span class="rcpt-val">TZS 50,000</span></div>
+    <div class="rcpt-row"><span class="rcpt-lbl">Ada</span><span class="rcpt-val">TZS 500</span></div>
+    <div class="rcpt-row"><span class="rcpt-lbl">Hali</span><span class="rcpt-val" style="color:var(--g400)">Imekamilika</span></div>
+  </div>
+  <div class="suc-btns">
+    <button class="btn btn-g" onclick="goTo('home')">Rudi Nyumbani</button>
+    <button class="btn btn-ghost">Pakua Risiti</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ QR SCANNER ═══ -->
+<div class="screen qr-bg" id="qr">
+  <div style="padding:52px 24px 20px;display:flex;align-items:center;gap:14px">
+    <div class="back" style="border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,0.05)" onclick="goTo('home')">←</div>
+    <div class="pg-title" style="color:#fff">Skani QR</div>
+  </div>
+  <div class="qr-frame">
+    <div class="qr-corner tl"></div><div class="qr-corner tr"></div>
+    <div class="qr-corner bl"></div><div class="qr-corner br"></div>
+    <div class="qr-scan-line"></div>
+    <div class="qr-inner-text">Weka QR code ndani ya mfumo</div>
+  </div>
+  <div class="qr-hint">Lipa mfanyabiashara yeyote kwa kuchanganua msimbo wao wa QR</div>
+  <div class="qr-actions">
+    <button class="btn btn-ghost" style="flex:1">Ingiza Namba</button>
+    <button class="btn btn-g" style="flex:1" onclick="goTo('confirm')">Malipo ya Haraka</button>
+  </div>
+  <div class="safe"></div>
+</div>
+
+<!-- ═══════════════════════════════ BILLS ═══ -->
+<div class="screen bills-bg" id="bills">
+  <div class="pg-header"><div class="back" onclick="goTo('home')">←</div><div><div class="pg-title">Bili na Huduma</div><div class="pg-sub">Lipa bili zako kwa urahisi</div></div></div>
+  <div class="pad mb16">
+    <div class="section-hd"><span class="sec-label">Bili Zinazokaribia</span></div>
+  </div>
+  <div class="pending-bills">
+    <div class="pb-item" onclick="goTo('confirm')"><div class="pb-ico">⚡</div><div class="pb-inf"><div class="pb-name">TANESCO — Umeme</div><div class="pb-due">Inakwisha: Mar 15, 2026</div></div><div class="pb-amt">45,000</div></div>
+    <div class="pb-item" onclick="goTo('confirm')"><div class="pb-ico">💧</div><div class="pb-inf"><div class="pb-name">DAWASCO — Maji</div><div class="pb-due">Inakwisha: Mar 20, 2026</div></div><div class="pb-amt">18,500</div></div>
+  </div>
+  <div class="pad mb16"><div class="section-hd"><span class="sec-label">Aina za Bili</span></div></div>
+  <div class="bill-cats">
+    <div class="bill-cat" onclick="goTo('confirm')"><div class="bill-ic"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><div><div class="bill-nm">Umeme</div><div class="bill-desc">TANESCO, Luku</div></div></div>
+    <div class="bill-cat" onclick="goTo('confirm')"><div class="bill-ic"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div><div><div class="bill-nm">Maji</div><div class="bill-desc">DAWASCO, RUWASA</div></div></div>
+    <div class="bill-cat" onclick="goTo('confirm')"><div class="bill-ic"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div><div class="bill-nm">TV ya Nje</div><div class="bill-desc">DSTV, GOtv, Startimes</div></div></div>
+    <div class="bill-cat" onclick="goTo('confirm')"><div class="bill-ic"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 10.9 19.79 19.79 0 0 1 1.08 2.22 2 2 0 0 1 3.05.05h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 7.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 14.12V16.92z"/></svg></div><div><div class="bill-nm">Simu</div><div class="bill-desc">Airtime, Data bundles</div></div></div>
+    <div class="bill-cat" onclick="goTo('confirm')"><div class="bill-ic"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><div><div class="bill-nm">Intaneti</div><div class="bill-desc">TTCL, Liquid, Raha</div></div></div>
+    <div class="bill-cat" onclick="goTo('confirm')"><div class="bill-ic"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><div><div class="bill-nm">Kodi ya Nyumba</div><div class="bill-desc">Pango la nyumba</div></div></div>
+  </div>
+  <div class="safe"></div>
+  <div class="bnav">
+    <div class="bnav-item" onclick="goTo('home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="bnav-lbl">Nyumbani</span></div>
+    <div class="bnav-item on"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="bnav-lbl">Lipa</span></div>
+    <div class="bnav-item" onclick="goTo('services')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span class="bnav-lbl">Huduma</span></div>
+    <div class="bnav-item" onclick="goTo('rewards')"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="bnav-lbl">Tuzo</span></div>
+    <div class="bnav-item" onclick="goTo('profile')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="bnav-lbl">Wasifu</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ GOVERNMENT ═══ -->
+<div class="screen gov-bg" id="gov">
+  <div class="pg-header"><div class="back" onclick="goTo('home')">←</div><div><div class="pg-title">Huduma za Serikali</div><div class="pg-sub">Lipa na udhibiti wa serikali</div></div></div>
+  <div class="pad mb16"><div class="section-hd"><span class="sec-label">Huduma Zote</span></div></div>
+  <div class="gov-grid">
+    <div class="gov-card" onclick="goTo('confirm')"><div class="gov-badge">TRA</div><div class="gov-name">Kodi za Mapato</div><div class="gov-desc">Lipa kodi zako za mwaka</div></div>
+    <div class="gov-card" onclick="goTo('confirm')"><div class="gov-badge">NHIF</div><div class="gov-name">Bima ya Afya</div><div class="gov-desc">Michango ya NHIF</div></div>
+    <div class="gov-card" onclick="goTo('confirm')"><div class="gov-badge">NIDA</div><div class="gov-name">Kitambulisho</div><div class="gov-desc">Huduma za NIDA</div></div>
+    <div class="gov-card" onclick="goTo('confirm')"><div class="gov-badge">POLICE</div><div class="gov-name">Faini za Trafiki</div><div class="gov-desc">Lipa faini zako</div></div>
+    <div class="gov-card" onclick="goTo('confirm')"><div class="gov-badge">BRELA</div><div class="gov-name">Leseni za Biashara</div><div class="gov-desc">Usajili wa biashara</div></div>
+    <div class="gov-card" onclick="goTo('confirm')"><div class="gov-badge">LATRA</div><div class="gov-name">Usajili wa Gari</div><div class="gov-desc">Road license, TLB</div></div>
+    <div class="gov-card" onclick="goTo('confirm')"><div class="gov-badge">NECTA</div><div class="gov-name">Ada za Shule</div><div class="gov-desc">CSEE, ACSEE fees</div></div>
+    <div class="gov-card" onclick="goTo('confirm')"><div class="gov-badge">MUNICIPAL</div><div class="gov-name">Ushuru wa Manispaa</div><div class="gov-desc">Property tax, Kodi</div></div>
+  </div>
+  <div class="safe"></div>
+  <div class="bnav">
+    <div class="bnav-item" onclick="goTo('home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="bnav-lbl">Nyumbani</span></div>
+    <div class="bnav-item" onclick="goTo('bills')"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="bnav-lbl">Lipa</span></div>
+    <div class="bnav-item on" onclick="goTo('services')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span class="bnav-lbl">Huduma</span></div>
+    <div class="bnav-item" onclick="goTo('rewards')"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="bnav-lbl">Tuzo</span></div>
+    <div class="bnav-item" onclick="goTo('profile')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="bnav-lbl">Wasifu</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ SERVICES ═══ -->
+<div class="screen svc-bg" id="services">
+  <div style="padding:52px 24px 16px"><div class="auth-title">Huduma</div><div style="height:12px"></div><div class="search-bar" style="margin:0"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Tafuta huduma..." style="background:none;border:none;outline:none;font-size:14px;color:#fff;font-family:var(--fb);flex:1"/></div></div>
+  <div style="height:12px"></div>
+  <div class="featured-card" onclick="goTo('bookings')">
+    <div class="feat-badge">Inayopendwa</div>
+    <div class="feat-name">Treni ya Mwendo Kasi SGR</div>
+    <div class="feat-desc">Safari salama — Dar hadi Dodoma kwa saa 3</div>
+  </div>
+  <div class="pad mb16"><div class="sec-label">Usafiri</div></div>
+  <div class="svc-grid">
+    <div class="svc-card" onclick="goTo('bookings')"><div class="svc-ico"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.15 10.9 19.79 19.79 0 0 1 1.08 2.22 2 2 0 0 1 3.05.05h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 7.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 14.12V16.92z"/></svg></div><div class="svc-name">Ndege</div><div class="svc-desc">Ndani na nje ya nchi</div></div>
+    <div class="svc-card" onclick="goTo('bookings')"><div class="svc-ico"><svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div><div class="svc-name">Basi la Starehe</div><div class="svc-desc">Safari za mikoa</div></div>
+    <div class="svc-card" onclick="goTo('ride')"><div class="svc-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="svc-name">Usafiri wa Mjini</div><div class="svc-desc">Teksi, Boda</div></div>
+    <div class="svc-card" onclick="goTo('parks')"><div class="svc-ico"><svg viewBox="0 0 24 24"><path d="M3 17l4-8 4 5 3-3 4 6H3z"/><circle cx="17" cy="7" r="2"/></svg></div><div class="svc-name">Mbuga za Taifa</div><div class="svc-desc">Serengeti, Ngorongoro</div></div>
+  </div>
+  <div class="pad mb16"><div class="sec-label">Maisha ya Kila Siku</div></div>
+  <div class="svc-grid">
+    <div class="svc-card" onclick="goTo('food')"><div class="svc-ico"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div><div class="svc-name">Chakula na Mboga</div><div class="svc-desc">Agiza nyumbani</div></div>
+    <div class="svc-card" onclick="goTo('events')"><div class="svc-ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="svc-name">Matukio na Tiketi</div><div class="svc-desc">Sinema, Michezo</div></div>
+    <div class="svc-card" onclick="goTo('gov')"><div class="svc-ico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="svc-name">Serikali</div><div class="svc-desc">TRA, NHIF, Faini</div></div>
+    <div class="svc-card" onclick="goTo('bills')"><div class="svc-ico"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><div class="svc-name">Bili na Huduma</div><div class="svc-desc">Umeme, Maji, TV</div></div>
+  </div>
+  <div class="safe"></div>
+  <div class="bnav">
+    <div class="bnav-item" onclick="goTo('home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="bnav-lbl">Nyumbani</span></div>
+    <div class="bnav-item" onclick="goTo('bills')"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="bnav-lbl">Lipa</span></div>
+    <div class="bnav-item on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span class="bnav-lbl">Huduma</span></div>
+    <div class="bnav-item" onclick="goTo('rewards')"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="bnav-lbl">Tuzo</span></div>
+    <div class="bnav-item" onclick="goTo('profile')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="bnav-lbl">Wasifu</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ BOOKINGS ═══ -->
+<div class="screen book-bg" id="bookings">
+  <div class="pg-header"><div class="back" onclick="goTo('services')">←</div><div><div class="pg-title">Hifadhi Safari</div><div class="pg-sub">Ndege, Basi, SGR, Hoteli, Mbuga</div></div></div>
+  <div class="book-tabs-row">
+    <button class="btab on">Ndege</button><button class="btab">Basi</button><button class="btab">SGR</button><button class="btab">Hoteli</button><button class="btab">Mbuga</button>
+  </div>
+  <div class="route-card">
+    <div class="route-row">
+      <div class="route-f"><div class="route-lbl">Kutoka</div><div class="route-val">DAR</div></div>
+      <div class="swap-btn">⇄</div>
+      <div class="route-f"><div class="route-lbl">Kwenda</div><div class="route-val">ZNZ</div></div>
+    </div>
+    <div class="date-row">
+      <div class="date-f"><div class="route-lbl">Tarehe ya Kwenda</div><div class="route-val" style="font-size:13px">15 Mar 2026</div></div>
+      <div class="date-f"><div class="route-lbl">Abiria</div><div class="route-val" style="font-size:13px">1 Mtu</div></div>
+    </div>
+    <button class="btn btn-g" style="padding:13px">Tafuta Ndege</button>
+  </div>
+  <div class="results-list">
+    <div class="result-item" onclick="goTo('confirm')"><div class="res-logo">PW</div><div class="res-inf"><div class="res-name">Precision Air</div><div class="res-detail">07:30 → 08:15 · 45 min</div><div class="res-vfy">✓ Imethibitishwa na TCAA</div></div><div class="res-price"><div class="res-amt">185,000</div><div class="res-unit">TZS</div></div></div>
+    <div class="result-item" onclick="goTo('confirm')"><div class="res-logo">ZA</div><div class="res-inf"><div class="res-name">Zanair</div><div class="res-detail">10:00 → 10:50 · 50 min</div><div class="res-vfy">✓ Imethibitishwa na TCAA</div></div><div class="res-price"><div class="res-amt">142,000</div><div class="res-unit">TZS</div></div></div>
+    <div class="result-item" onclick="goTo('confirm')"><div class="res-logo">AZ</div><div class="res-inf"><div class="res-name">Auric Air</div><div class="res-detail">14:15 → 15:05 · 50 min</div><div class="res-vfy">✓ Imethibitishwa na TCAA</div></div><div class="res-price"><div class="res-amt">128,000</div><div class="res-unit">TZS</div></div></div>
+  </div>
+  <div class="safe"></div>
+</div>
+
+<!-- ═══════════════════════════════ NATIONAL PARKS ═══ -->
+<div class="screen parks-bg" id="parks">
+  <div class="pg-header"><div class="back" onclick="goTo('services')">←</div><div><div class="pg-title">Mbuga za Taifa</div><div class="pg-sub">Hifadhi nafasi yako leo</div></div></div>
+  <div class="park-card" onclick="goTo('confirm')"><div><div class="park-tag">Inayopendwa</div><div class="park-name">Hifadhi ya Serengeti</div><div class="park-region">Mara, Tanzania Kaskazini</div></div><div class="park-price-wrap"><div class="park-price">$60 USD</div><div class="park-unit">kwa mtu/siku</div></div></div>
+  <div class="park-card" onclick="goTo('confirm')"><div><div class="park-tag">UNESCO</div><div class="park-name">Ngorongoro Conservation</div><div class="park-region">Arusha, Tanzania</div></div><div class="park-price-wrap"><div class="park-price">$70 USD</div><div class="park-unit">kwa mtu/siku</div></div></div>
+  <div class="park-card" onclick="goTo('confirm')"><div><div class="park-tag">Pwani</div><div class="park-name">Hifadhi ya Selous</div><div class="park-region">Morogoro, Lindi</div></div><div class="park-price-wrap"><div class="park-price">$50 USD</div><div class="park-unit">kwa mtu/siku</div></div></div>
+  <div class="park-card" onclick="goTo('confirm')"><div><div class="park-tag">Mlima</div><div class="park-name">Kilimanjaro NP</div><div class="park-region">Kilimanjaro Region</div></div><div class="park-price-wrap"><div class="park-price">$80 USD</div><div class="park-unit">kwa mtu/siku</div></div></div>
+  <div class="safe"></div>
+</div>
+
+<!-- ═══════════════════════════════ RIDE ═══ -->
+<div class="screen ride-bg" id="ride">
+  <div style="padding:52px 24px 16px;display:flex;align-items:center;gap:14px"><div class="back" style="border-color:rgba(255,255,255,0.08)" onclick="goTo('services')">←</div><div class="pg-title">Usafiri wa Mjini</div></div>
+  <div class="map-placeholder"><div class="map-grid"></div><div class="map-pulse"></div><div class="map-pin">📍</div></div>
+  <div class="ride-sheet">
+    <div class="ride-types">
+      <div class="ride-type on"><div class="ride-type-ic">🚗</div><div class="ride-type-nm">GoRide</div><div class="ride-type-pr">~3 min</div></div>
+      <div class="ride-type"><div class="ride-type-ic">🏍</div><div class="ride-type-nm">GoBoda</div><div class="ride-type-pr">~1 min</div></div>
+      <div class="ride-type"><div class="ride-type-ic">🚐</div><div class="ride-type-nm">GoVan</div><div class="ride-type-pr">~5 min</div></div>
+    </div>
+    <div class="dest-field"><div class="dest-dot from"></div><div class="dest-txt">Mahali ulipo sasa</div></div>
+    <div class="dest-field" style="margin-bottom:14px"><div class="dest-dot to"></div><div class="dest-txt ph">Unakwenda wapi?</div></div>
+    <div class="ride-driver">
+      <div class="driver-av">JB</div>
+      <div class="driver-inf"><div class="driver-name">John Baraka</div><div class="driver-detail">Toyota Vitz · T 123 AAA</div></div>
+      <div class="driver-rating">4.9</div>
+    </div>
+    <button class="btn btn-g" onclick="goTo('confirm')">Omba Usafiri — TZS 8,500</button>
+  </div>
+  <div class="safe"></div>
+</div>
+
+<!-- ═══════════════════════════════ FOOD ═══ -->
+<div class="screen food-bg" id="food">
+  <div class="pg-header"><div class="back" onclick="goTo('services')">←</div><div><div class="pg-title">Chakula na Mboga</div><div class="pg-sub">Agiza kwa dakika 30</div></div></div>
+  <div class="search-bar" style="margin:0 24px 16px"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input placeholder="Tafuta mkahawa..." style="background:none;border:none;outline:none;font-size:14px;color:#fff;font-family:var(--fb);flex:1"/></div>
+  <div class="food-cats">
+    <button class="food-cat on">Vyote</button><button class="food-cat">Chakula cha Jioni</button><button class="food-cat">Mboga</button><button class="food-cat">Vinywaji</button><button class="food-cat">Pipi</button>
+  </div>
+  <div class="restaurant-card" onclick="goTo('confirm')"><div class="rest-img">🍛</div><div class="rest-body"><div class="rest-name">Mama Africa Kitchen</div><div class="rest-meta"><div class="rest-meta-item"><span>4.8</span> Nyota</div><div class="rest-meta-item"><span>25-35</span> min</div><div class="rest-meta-item">Bila ada ya usafirishaji</div></div></div></div>
+  <div class="restaurant-card" onclick="goTo('confirm')"><div class="rest-img">🥗</div><div class="rest-body"><div class="rest-name">Zanzibar Spice Garden</div><div class="rest-meta"><div class="rest-meta-item"><span>4.6</span> Nyota</div><div class="rest-meta-item"><span>20-30</span> min</div><div class="rest-meta-item">Ada: 2,000</div></div></div></div>
+  <div class="restaurant-card" onclick="goTo('confirm')"><div class="rest-img">🍕</div><div class="rest-body"><div class="rest-name">Dar Pizza House</div><div class="rest-meta"><div class="rest-meta-item"><span>4.4</span> Nyota</div><div class="rest-meta-item"><span>30-45</span> min</div><div class="rest-meta-item">Ada: 3,500</div></div></div></div>
+  <div class="safe"></div>
+</div>
+
+<!-- ═══════════════════════════════ EVENTS ═══ -->
+<div class="screen events-bg" id="events">
+  <div class="pg-header"><div class="back" onclick="goTo('services')">←</div><div><div class="pg-title">Matukio na Tiketi</div><div class="pg-sub">Sinema, Michezo, Tamasha</div></div></div>
+  <div class="filter-row" style="margin:0 0 16px">
+    <button class="filter-pill on" onclick="filterSwitch(this)">Yote</button>
+    <button class="filter-pill" onclick="filterSwitch(this)">Tamasha</button>
+    <button class="filter-pill" onclick="filterSwitch(this)">Michezo</button>
+    <button class="filter-pill" onclick="filterSwitch(this)">Sinema</button>
+    <button class="filter-pill" onclick="filterSwitch(this)">Burudani</button>
+  </div>
+  <div class="event-card" onclick="goTo('confirm')"><div class="event-date-box"><div class="event-day">20</div><div class="event-month">MAR</div></div><div class="event-inf"><div class="event-name">Sauti Sol Live in Dar</div><div class="event-venue">Diamond Jubilee Hall, Dar es Salaam</div><div class="event-price">TZS 85,000 — 250,000</div></div></div>
+  <div class="event-card" onclick="goTo('confirm')"><div class="event-date-box"><div class="event-day">22</div><div class="event-month">MAR</div></div><div class="event-inf"><div class="event-name">Simba SC vs Yanga SC</div><div class="event-venue">Mkapa Stadium, Dar es Salaam</div><div class="event-price">TZS 20,000 — 150,000</div></div></div>
+  <div class="event-card" onclick="goTo('confirm')"><div class="event-date-box"><div class="event-day">25</div><div class="event-month">MAR</div></div><div class="event-inf"><div class="event-name">Zanzibar International Film Festival</div><div class="event-venue">Forodhani Gardens, Zanzibar</div><div class="event-price">TZS 15,000 — 50,000</div></div></div>
+  <div class="event-card" onclick="goTo('confirm')"><div class="event-date-box"><div class="event-day">28</div><div class="event-month">MAR</div></div><div class="event-inf"><div class="event-name">Comedy Night — Dar Laughs</div><div class="event-venue">Slipway Hotel, Dar es Salaam</div><div class="event-price">TZS 35,000</div></div></div>
+  <div class="safe"></div>
+</div>
+
+<!-- ═══════════════════════════════ WALLET ═══ -->
+<div class="screen wallet-bg" id="wallet">
+  <div class="pg-header"><div class="back" onclick="goTo('home')">←</div><div><div class="pg-title">Fedha Zangu</div><div class="pg-sub">Akaunti, Akiba, Mikopo</div></div></div>
+  <div class="fin-cards">
+    <div class="fin-card"><div class="fin-lbl">Jumla ya Akiba</div><div class="fin-val">284,500</div><div class="fin-change">+8.4% mwezi huu</div><div class="savings-bar"><div class="savings-fill" style="width:68%"></div></div></div>
+    <div class="fin-card"><div class="fin-lbl">Lengo la Akiba</div><div class="fin-val">500,000</div><div class="fin-change" style="color:var(--text3)">57% imekamilika</div><div class="savings-bar"><div class="savings-fill" style="width:57%"></div></div></div>
+    <div class="fin-card"><div class="fin-lbl">Matumizi Leo</div><div class="fin-val">12,400</div><div class="fin-change fin-neg">+2,300 kuliko jana</div></div>
+    <div class="fin-card"><div class="fin-lbl">Akaunti Nyingi</div><div class="fin-val">3</div><div class="fin-change">M-Pesa, Airtel, Tigo</div></div>
+  </div>
+  <div class="pad mb16"><div class="section-hd"><span class="sec-label">Mkopo wa Haraka</span></div></div>
+  <div class="loan-card">
+    <div class="loan-title">GoLoan — Mikopo Midogo</div>
+    <div class="loan-sub">Pata pesa unazohitaji kwa haraka bila dhamana</div>
+    <div class="loan-slider"><div class="loan-fill"></div></div>
+    <div class="loan-vals"><span>TZS 50,000</span><span>TZS 300,000</span><span>TZS 500,000</span></div>
+    <div style="height:12px"></div>
+    <button class="btn btn-g" style="padding:13px" onclick="goTo('confirm')">Omba TZS 300,000</button>
+  </div>
+  <div class="pad mb16"><div class="section-hd"><span class="sec-label">Bima Ndogo</span></div></div>
+  <div style="padding:0 24px;display:flex;flex-direction:column;gap:8px">
+    <div class="card-sm" style="display:flex;align-items:center;gap:12px;cursor:pointer" onclick="goTo('confirm')"><div style="width:36px;height:36px;border-radius:10px;background:rgba(34,197,94,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🛡</div><div style="flex:1"><div style="font-size:13px;color:#fff;font-weight:500;margin-bottom:2px">Bima ya Afya</div><div style="font-size:11px;color:var(--text3)">TZS 5,000/mwezi — Familia yako</div></div><div style="font-size:15px;color:rgba(255,255,255,0.18)">›</div></div>
+    <div class="card-sm" style="display:flex;align-items:center;gap:12px;cursor:pointer" onclick="goTo('confirm')"><div style="width:36px;height:36px;border-radius:10px;background:rgba(34,197,94,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">✈</div><div style="flex:1"><div style="font-size:13px;color:#fff;font-weight:500;margin-bottom:2px">Bima ya Safari</div><div style="font-size:11px;color:var(--text3)">TZS 8,500 — kwa safari moja</div></div><div style="font-size:15px;color:rgba(255,255,255,0.18)">›</div></div>
+  </div>
+  <div class="safe"></div>
+  <div class="bnav">
+    <div class="bnav-item" onclick="goTo('home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="bnav-lbl">Nyumbani</span></div>
+    <div class="bnav-item on"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="bnav-lbl">Lipa</span></div>
+    <div class="bnav-item" onclick="goTo('services')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span class="bnav-lbl">Huduma</span></div>
+    <div class="bnav-item" onclick="goTo('rewards')"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="bnav-lbl">Tuzo</span></div>
+    <div class="bnav-item" onclick="goTo('profile')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="bnav-lbl">Wasifu</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ REWARDS ═══ -->
+<div class="screen rewards-bg" id="rewards">
+  <div class="pg-header"><div class="pg-title">GORewards</div></div>
+  <div class="rwd-hero"><div class="rwd-pts">12,450</div><div class="rwd-lbl">GoPoints zinazoweza kutumiwa</div><div class="tier-row"><div class="tier-badge gold">Dhahabu</div><div class="tier-bar"><div class="tier-fill"></div></div><div class="tier-next">2,550 hadi Platinum</div></div></div>
+  <div class="pad mb16"><div class="section-hd"><span class="sec-label">Jinsi ya Kupata Pointi</span></div></div>
+  <div class="earn-list">
+    <div class="earn-item"><div class="earn-ico">💳</div><div class="earn-inf"><div class="earn-nm">Lipa kwa GoPay Wallet</div><div class="earn-rt">Kwa kila malipo</div></div><span class="earn-pt">+10 pts</span></div>
+    <div class="earn-item"><div class="earn-ico">✈</div><div class="earn-inf"><div class="earn-nm">Hifadhi Tiketi za Safari</div><div class="earn-rt">Kwa kila TZS 10,000</div></div><span class="earn-pt">+50 pts</span></div>
+    <div class="earn-item"><div class="earn-ico">🏛</div><div class="earn-inf"><div class="earn-nm">Lipa Huduma za Serikali</div><div class="earn-rt">Kwa kila malipo</div></div><span class="earn-pt">+25 pts</span></div>
+    <div class="earn-item"><div class="earn-ico">⚡</div><div class="earn-inf"><div class="earn-nm">Lipa Bili</div><div class="earn-rt">Umeme, Maji, TV</div></div><span class="earn-pt">+15 pts</span></div>
+  </div>
+  <div class="pad mb16"><div class="section-hd"><span class="sec-label">Tumia Pointi Zako</span></div></div>
+  <div class="redeem-grid">
+    <div class="rdm-card" onclick="goTo('confirm')"><div class="rdm-val">TZS 5,000</div><div class="rdm-name">Pesa Taslimu</div><div class="rdm-cost">5,000 pts</div></div>
+    <div class="rdm-card" onclick="goTo('confirm')"><div class="rdm-val">1GB Data</div><div class="rdm-name">Intaneti ya Simu</div><div class="rdm-cost">2,500 pts</div></div>
+    <div class="rdm-card" onclick="goTo('confirm')"><div class="rdm-val">20% Punguzo</div><div class="rdm-name">Tiketi ya Ndege</div><div class="rdm-cost">8,000 pts</div></div>
+    <div class="rdm-card" onclick="goTo('confirm')"><div class="rdm-val">Usiku 1</div><div class="rdm-name">Malazi ya Hoteli</div><div class="rdm-cost">15,000 pts</div></div>
+  </div>
+  <div class="safe"></div>
+  <div class="bnav">
+    <div class="bnav-item" onclick="goTo('home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="bnav-lbl">Nyumbani</span></div>
+    <div class="bnav-item" onclick="goTo('bills')"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="bnav-lbl">Lipa</span></div>
+    <div class="bnav-item" onclick="goTo('services')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span class="bnav-lbl">Huduma</span></div>
+    <div class="bnav-item on"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="bnav-lbl">Tuzo</span></div>
+    <div class="bnav-item" onclick="goTo('profile')"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="bnav-lbl">Wasifu</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ NOTIFICATIONS ═══ -->
+<div class="screen notif-bg" id="notifs">
+  <div class="pg-header"><div class="back" onclick="goTo('home')">←</div><div><div class="pg-title">Arifa</div></div></div>
+  <div class="notif-item unread"><div class="notif-dot-ui"></div><div class="notif-ico">💳</div><div class="notif-inf"><div class="notif-title">Malipo Yamekamilika</div><div class="notif-msg">Umetuma TZS 50,000 kwa Amina Hassan kupitia M-Pesa kwa mafanikio.</div><div class="notif-time">Dakika 5 zilizopita</div></div></div>
+  <div class="notif-item unread"><div class="notif-dot-ui"></div><div class="notif-ico">⚡</div><div class="notif-inf"><div class="notif-title">Bili ya Umeme Inakaribia</div><div class="notif-msg">Bili yako ya TANESCO ya TZS 45,000 inaisha tarehe 15 Machi 2026.</div><div class="notif-time">Saa 2 zilizopita</div></div></div>
+  <div class="notif-item"><div class="notif-dot-ui read"></div><div class="notif-ico">🏆</div><div class="notif-inf"><div class="notif-title">Umepata Pointi!</div><div class="notif-msg">Hongera! Umepata GoPoints 50 kwa kuhifadhi tiketi ya ndege yako.</div><div class="notif-time">Jana, 14:30</div></div></div>
+  <div class="notif-item"><div class="notif-dot-ui read"></div><div class="notif-ico">🛡</div><div class="notif-inf"><div class="notif-title">Usalama wa Akaunti</div><div class="notif-msg">Kuingia kwa mafanikio kutoka kifaa kipya. Ikiwa si wewe, wasiliana nasi.</div><div class="notif-time">Jana, 09:15</div></div></div>
+  <div class="notif-item"><div class="notif-dot-ui read"></div><div class="notif-ico">✈</div><div class="notif-inf"><div class="notif-title">Tiketi Imethibitishwa</div><div class="notif-msg">Tiketi yako ya ndege DAR → ZNZ imethibitishwa. Nambari: GP-2026-084721</div><div class="notif-time">Mar 10, 2026</div></div></div>
+  <div class="safe"></div>
+</div>
+
+<!-- ═══════════════════════════════ HISTORY ═══ -->
+<div class="screen history-bg" id="history">
+  <div class="pg-header"><div class="back" onclick="goTo('home')">←</div><div><div class="pg-title">Historia ya Malipo</div></div></div>
+  <div class="filter-row">
+    <button class="filter-pill on" onclick="filterSwitch(this)">Yote</button>
+    <button class="filter-pill" onclick="filterSwitch(this)">Tuma</button>
+    <button class="filter-pill" onclick="filterSwitch(this)">Bili</button>
+    <button class="filter-pill" onclick="filterSwitch(this)">Usafiri</button>
+    <button class="filter-pill" onclick="filterSwitch(this)">Serikali</button>
+  </div>
+  <div class="hist-group">
+    <div class="hist-date">Leo — Machi 12, 2026</div>
+    <div class="hist-item"><div class="hist-ico">⚡</div><div class="hist-inf"><div class="hist-name">TANESCO — Umeme</div><div class="hist-cat">Bili za Huduma</div></div><div class="hist-right"><div class="hist-amt debit">-12,400</div><div class="hist-status">Imekamilika</div></div></div>
+    <div class="hist-item"><div class="hist-ico">→</div><div class="hist-inf"><div class="hist-name">Tuma kwa Amina Hassan</div><div class="hist-cat">Uhamisho wa Pesa</div></div><div class="hist-right"><div class="hist-amt debit">-50,500</div><div class="hist-status">Imekamilika</div></div></div>
+  </div>
+  <div class="hist-group">
+    <div class="hist-date">Jana — Machi 11, 2026</div>
+    <div class="hist-item"><div class="hist-ico">✈</div><div class="hist-inf"><div class="hist-name">Tiketi — Precision Air</div><div class="hist-cat">Safari ya Ndege · DAR → ZNZ</div></div><div class="hist-right"><div class="hist-amt debit">-185,000</div><div class="hist-status">Imekamilika</div></div></div>
+    <div class="hist-item"><div class="hist-ico">←</div><div class="hist-inf"><div class="hist-name">Pokea kutoka Amina</div><div class="hist-cat">Uhamisho uliopokelewa</div></div><div class="hist-right"><div class="hist-amt credit">+50,000</div><div class="hist-status">Imekamilika</div></div></div>
+    <div class="hist-item"><div class="hist-ico">🏛</div><div class="hist-inf"><div class="hist-name">NHIF — Michango</div><div class="hist-cat">Huduma ya Serikali</div></div><div class="hist-right"><div class="hist-amt debit">-30,000</div><div class="hist-status pend">Inasubiri</div></div></div>
+  </div>
+  <div class="hist-group">
+    <div class="hist-date">Machi 10, 2026</div>
+    <div class="hist-item"><div class="hist-ico">🚗</div><div class="hist-inf"><div class="hist-name">GoRide — Usafiri wa Mjini</div><div class="hist-cat">Usafiri · Msasani → CBD</div></div><div class="hist-right"><div class="hist-amt debit">-8,500</div><div class="hist-status">Imekamilika</div></div></div>
+    <div class="hist-item"><div class="hist-ico">🍛</div><div class="hist-inf"><div class="hist-name">Mama Africa Kitchen</div><div class="hist-cat">Utoaji wa Chakula</div></div><div class="hist-right"><div class="hist-amt debit">-24,000</div><div class="hist-status">Imekamilika</div></div></div>
+  </div>
+  <div class="safe"></div>
+</div>
+
+<!-- ═══════════════════════════════ OFFLINE ═══ -->
+<div class="screen offline-bg" id="offline">
+  <div class="offline-ico"><svg viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg></div>
+  <div class="offline-title">Hakuna Mtandao</div>
+  <div class="offline-sub">Huna muunganiko wa intaneti sasa. Unaweza bado kufikia baadhi ya huduma zilizohifadhiwa.</div>
+  <div class="cached-cards">
+    <div class="cached-item"><div class="cached-ico">💳</div><div class="cached-inf"><div class="cached-name">Tiketi Zilizohifadhiwa</div><div class="cached-detail">Tiketi 3 zinapatikana bila intaneti</div></div></div>
+    <div class="cached-item"><div class="cached-ico">📋</div><div class="cached-inf"><div class="cached-name">Historia ya Malipo</div><div class="cached-detail">Miamala 30 ya mwisho</div></div></div>
+    <div class="cached-item"><div class="cached-ico">📱</div><div class="cached-inf"><div class="cached-name">Salio la Mwisho</div><div class="cached-detail">TZS 284,500 — Imesasishwa leo asubuhi</div></div></div>
+  </div>
+  <div class="offline-ussd">
+    <div class="ussd-title">Tumia USSD bila intaneti</div>
+    <div class="ussd-code">*150*00#</div>
+    <div class="ussd-desc">Piga simu hii kwa GoPay kupitia USSD bila data</div>
+  </div>
+  <div style="height:24px"></div>
+  <button class="btn btn-g" onclick="goTo('home')">Jaribu Tena</button>
+</div>
+
+<!-- ═══════════════════════════════ MERCHANT ═══ -->
+<div class="screen merch-bg" id="merchant">
+  <div class="pg-header"><div class="back" onclick="goTo('home')">←</div><div><div class="pg-title">Dashibodi ya Biashara</div><div class="pg-sub">Muhtasari wa leo</div></div></div>
+  <div class="merch-stats">
+    <div class="merch-stat"><div class="ms-lbl">Mauzo Leo</div><div class="ms-val">842,500</div><div class="ms-change ms-up">+18% vs jana</div></div>
+    <div class="merch-stat"><div class="ms-lbl">Miamala</div><div class="ms-val">47</div><div class="ms-change ms-up">+12 leo</div></div>
+    <div class="merch-stat"><div class="ms-lbl">Wateja Wapya</div><div class="ms-val">8</div><div class="ms-change ms-up">+3 wiki hii</div></div>
+    <div class="merch-stat"><div class="ms-lbl">Kiasi cha Wastani</div><div class="ms-val">17,926</div><div class="ms-change ms-dn">-4% vs jana</div></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Mauzo ya Wiki Hii (TZS 000)</div>
+    <div class="bar-chart">
+      <div class="bar-wrap"><div class="bar" style="height:45%"></div><div class="bar-day">J2</div></div>
+      <div class="bar-wrap"><div class="bar" style="height:62%"></div><div class="bar-day">J3</div></div>
+      <div class="bar-wrap"><div class="bar" style="height:38%"></div><div class="bar-day">J4</div></div>
+      <div class="bar-wrap"><div class="bar" style="height:75%"></div><div class="bar-day">J5</div></div>
+      <div class="bar-wrap"><div class="bar" style="height:55%"></div><div class="bar-day">J6</div></div>
+      <div class="bar-wrap"><div class="bar" style="height:88%"></div><div class="bar-day">J7</div></div>
+      <div class="bar-wrap"><div class="bar today" style="height:72%"></div><div class="bar-day" style="color:var(--g400)">Leo</div></div>
+    </div>
+  </div>
+  <div class="qr-code-card">
+    <div class="qr-preview"><svg viewBox="0 0 48 48" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" fill="#000"/><rect x="7" y="7" width="10" height="10" fill="#fff"/><rect x="9" y="9" width="6" height="6" fill="#000"/><rect x="28" y="4" width="16" height="16" rx="2" fill="#000"/><rect x="31" y="7" width="10" height="10" fill="#fff"/><rect x="33" y="9" width="6" height="6" fill="#000"/><rect x="4" y="28" width="16" height="16" rx="2" fill="#000"/><rect x="7" y="31" width="10" height="10" fill="#fff"/><rect x="9" y="33" width="6" height="6" fill="#000"/><rect x="28" y="28" width="5" height="5" fill="#000"/><rect x="35" y="28" width="5" height="5" fill="#000"/><rect x="28" y="35" width="5" height="8" fill="#000"/><rect x="35" y="35" width="8" height="8" fill="#000"/></svg></div>
+    <div class="qr-info"><div class="qr-name">Msimbo wa Biashara Yangu</div><div class="qr-id">GP-MERCH-2026-0047</div></div>
+    <button style="padding:8px 14px;border-radius:10px;background:var(--card);border:1px solid var(--border);color:rgba(255,255,255,0.6);font-size:12px;font-family:var(--fb);cursor:pointer">Shiriki</button>
+  </div>
+  <div style="padding:0 24px;display:flex;gap:10px;margin-bottom:16px">
+    <button class="btn btn-g" style="flex:1;padding:13px" onclick="goTo('qr')">Pokea Malipo</button>
+    <button class="btn btn-ghost" style="flex:1;padding:13px" onclick="goTo('history')">Ripoti</button>
+  </div>
+  <div class="safe"></div>
+</div>
+
+<!-- ═══════════════════════════════ PROFILE ═══ -->
+<div class="screen profile-bg" id="profile">
+  <div style="padding:52px 24px 16px"><div class="auth-title">Wasifu</div></div>
+  <div class="prof-card"><div class="prof-av">JM</div><div><div class="prof-name">Justin Mafie</div><div class="prof-ph">+255 712 345 678</div><div class="kyc-badge">✓ Imethibitishwa</div></div></div>
+  <div class="sgrp"><div class="sgrp-lbl">Akaunti</div><div class="slist">
+    <div class="slist-item"><div class="s-ico">👤</div><div class="s-txt"><div class="s-name">Maelezo Yangu</div></div><span class="s-arr">›</span></div>
+    <div class="slist-item"><div class="s-ico">💳</div><div class="s-txt"><div class="s-name">Akaunti Zilizounganishwa</div><div class="s-sub">M-Pesa, Airtel, Tigo</div></div><span class="s-arr">›</span></div>
+    <div class="slist-item"><div class="s-ico">🏦</div><div class="s-txt"><div class="s-name">Benki Zilizounganishwa</div><div class="s-sub">CRDB, NMB</div></div><span class="s-arr">›</span></div>
+    <div class="slist-item" onclick="goTo('merchant')"><div class="s-ico">🏪</div><div class="s-txt"><div class="s-name">Akaunti ya Biashara</div><div class="s-sub">Dashibodi ya Mfanyabiashara</div></div><span class="s-arr">›</span></div>
+  </div></div>
+  <div class="sgrp"><div class="sgrp-lbl">Usalama</div><div class="slist">
+    <div class="slist-item"><div class="s-ico">🔒</div><div class="s-txt"><div class="s-name">PIN na Biometriki</div></div><span class="s-arr">›</span></div>
+    <div class="slist-item"><div class="s-ico">📱</div><div class="s-txt"><div class="s-name">Udhibiti wa Vifaa</div></div><span class="s-arr">›</span></div>
+    <div class="slist-item"><div class="s-ico">🛡</div><div class="s-txt"><div class="s-name">Kikomo cha Malipo</div><div class="s-sub">Kila siku: TZS 5,000,000</div></div><span class="s-arr">›</span></div>
+    <div class="slist-item"><div class="s-ico">🔔</div><div class="s-txt"><div class="s-name">Arifa za Usalama</div></div><span class="s-arr">›</span></div>
+  </div></div>
+  <div class="sgrp"><div class="sgrp-lbl">Mapendeleo</div><div class="slist">
+    <div class="slist-item"><div class="s-ico">🌍</div><div class="s-txt"><div class="s-name">Lugha</div><div class="s-sub">Kiswahili</div></div><span class="s-arr">›</span></div>
+    <div class="slist-item"><div class="s-ico">🔔</div><div class="s-txt"><div class="s-name">Arifa</div></div><span class="s-arr">›</span></div>
+  </div></div>
+  <div class="sgrp"><div class="sgrp-lbl">Msaada</div><div class="slist">
+    <div class="slist-item"><div class="s-ico">💬</div><div class="s-txt"><div class="s-name">Wasiliana Nasi</div></div><span class="s-arr">›</span></div>
+    <div class="slist-item"><div class="s-ico">📄</div><div class="s-txt"><div class="s-name">Masharti ya Huduma</div></div><span class="s-arr">›</span></div>
+    <div class="slist-item" onclick="goTo('offline')"><div class="s-ico">📡</div><div class="s-txt"><div class="s-name">Hali ya Muunganiko</div><div class="s-sub">Njia za USSD</div></div><span class="s-arr">›</span></div>
+  </div></div>
+  <div style="padding:0 24px"><button class="btn btn-red" onclick="goTo('splash')">Toka</button></div>
+  <div class="safe"></div>
+  <div class="bnav">
+    <div class="bnav-item" onclick="goTo('home')"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="bnav-lbl">Nyumbani</span></div>
+    <div class="bnav-item" onclick="goTo('bills')"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="bnav-lbl">Lipa</span></div>
+    <div class="bnav-item" onclick="goTo('services')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg><span class="bnav-lbl">Huduma</span></div>
+    <div class="bnav-item" onclick="goTo('rewards')"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span class="bnav-lbl">Tuzo</span></div>
+    <div class="bnav-item on"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="bnav-lbl">Wasifu</span></div>
+  </div>
+</div>
+
+  </div><!-- /device-inner -->
+</div><!-- /device -->
+
+<script>
+var cur='splash';
+function goTo(id){
+  var prev=document.getElementById(cur);
+  if(prev)prev.classList.remove('active');
+  cur=id;
+  var next=document.getElementById(id);
+  if(next)next.classList.add('active');
+  document.querySelectorAll('.snav-btn').forEach(function(b){
+    b.classList.toggle('active',b.textContent.toLowerCase().replace(/[^a-z]/g,'')==id.replace(/[^a-z]/g,''));
+  });
+  if(next)next.scrollTop=0;
+}
+function segSwitch(b){b.closest('.seg').querySelectorAll('.seg-btn').forEach(function(x){x.classList.remove('on')});b.classList.add('on')}
+function filterSwitch(b){b.closest('.filter-row, .book-tabs-row').querySelectorAll('.filter-pill, .btab').forEach(function(x){x.classList.remove('on')});b.classList.add('on')}
+document.querySelectorAll('.btab').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.btab').forEach(function(x){x.classList.remove('on')});b.classList.add('on')})});
+document.querySelectorAll('.food-cat').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.food-cat').forEach(function(x){x.classList.remove('on')});b.classList.add('on')})});
+var amt='0';
+function np(v){if(v==='.'&&amt.includes('.'))return;if(amt==='0'&&v!=='.')amt=v;else amt+=v;if(amt.length>10)amt=amt.slice(0,-1);var el=document.getElementById('amtVal');if(el)el.textContent=amt.replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+function nd(){amt=amt.slice(0,-1)||'0';var el=document.getElementById('amtVal');if(el)el.textContent=amt.replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+</script>
+</body>
+</html>

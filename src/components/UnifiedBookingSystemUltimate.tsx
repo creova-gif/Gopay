@@ -911,14 +911,27 @@ export function UnifiedBookingSystemUltimate({ user, onBack, initialService = 'f
   // Due to length, I'll create a condensed version showing the key new features integrated
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="p-8 text-center">
-        <p className="text-2xl font-bold text-gray-900 mb-4">View: {currentView}</p>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="max-w-md w-full text-center">
+        {/* Icon */}
+        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <AlertCircle className="w-10 h-10 text-gray-400" />
+        </div>
+        
+        {/* Message */}
+        <h2 className="text-2xl font-black text-gray-900 mb-2">
+          Page Not Found
+        </h2>
+        <p className="text-gray-600 mb-8">
+          The page you're looking for doesn't exist or has been moved.
+        </p>
+        
+        {/* Action */}
         <button
           onClick={() => setCurrentView('dashboard')}
-          className="bg-blue-500 text-white px-6 py-3 rounded-xl font-bold"
+          className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors active:scale-95"
         >
-          Go to Dashboard
+          Back to Dashboard
         </button>
       </div>
     </div>

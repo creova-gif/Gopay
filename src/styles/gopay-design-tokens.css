@@ -8,64 +8,67 @@
 
 :root {
   /* ========================================
-     PRIMARY COLORS - goPay Green Brand
+     PRIMARY COLORS - GoPay Green (#1A4D3E)
+     Product Bible v1.0 - EXACT MATCH REQUIRED
      ======================================== */
   
-  --color-primary-900: #0E3B2E;   /* Primary dark – headers, active states */
-  --color-primary-800: #165943;   /* Intermediate dark */
-  --color-primary-700: #1F6F54;   /* Main brand green */
-  --color-primary-600: #2A8566;   /* Intermediate */
-  --color-primary-500: #3FA27A;   /* Highlights, icons */
-  --color-primary-400: #6BB794;   /* Light highlights */
-  --color-primary-300: #9ED9C1;   /* Background accents */
-  --color-primary-200: #C6E8DB;   /* Very light */
-  --color-primary-100: #E8F5EF;   /* Light backgrounds */
-  --color-primary-50: #F4FAF7;    /* Lightest */
+  --color-primary-900: #0F2E24;   /* Darkest */
+  --color-primary-800: #143A2E;   /* Darker */
+  --color-primary-700: #1A4D3E;   /* PRIMARY - GoPay Green (Product Bible) */
+  --color-primary-600: #1B6B5C;   /* SECONDARY - Deep Teal (Product Bible) */
+  --color-primary-500: #228B6F;   /* Medium */
+  --color-primary-400: #3FA27A;   /* Light */
+  --color-primary-300: #6BB794;   /* Lighter */
+  --color-primary-200: #9ED9C1;   /* Very light */
+  --color-primary-100: #C6E8DB;   /* Background tint */
+  --color-primary-50: #E8F5EF;    /* Lightest background */
   
   /* ========================================
      NEUTRAL COLORS - Text & Backgrounds
+     Product Bible v1.0 - EXACT GRAYSCALE
      ======================================== */
   
-  --color-neutral-900: #111827;   /* Primary text */
-  --color-neutral-800: #1F2937;   /* Dark text */
-  --color-neutral-700: #374151;   /* Secondary text */
-  --color-neutral-600: #4B5563;   /* Tertiary text */
-  --color-neutral-500: #6B7280;   /* Helper text */
-  --color-neutral-400: #9CA3AF;   /* Disabled text */
-  --color-neutral-300: #D1D5DB;   /* Dividers, borders */
-  --color-neutral-200: #E5E7EB;   /* Light borders */
-  --color-neutral-100: #F9FAFB;   /* Page backgrounds */
-  --color-neutral-50: #FFFFFF;    /* Pure white */
+  --color-neutral-900: #111827;   /* Pure Black (Product Bible) - Primary text */
+  --color-neutral-800: #1F2937;   /* Dark gray */
+  --color-neutral-700: #374151;   /* Charcoal (Product Bible) - Secondary text */
+  --color-neutral-600: #4B5563;   /* Mid-dark gray */
+  --color-neutral-500: #6B7280;   /* Mid gray */
+  --color-neutral-400: #9CA3AF;   /* Mid Gray (Product Bible) - Disabled text */
+  --color-neutral-300: #D1D5DB;   /* Light borders */
+  --color-neutral-200: #E5E7EB;   /* Light Gray (Product Bible) - Borders */
+  --color-neutral-100: #F9FAFB;   /* Off-White (Product Bible) - Backgrounds */
+  --color-neutral-50: #FFFFFF;    /* Pure White (Product Bible) */
   
   /* ========================================
      SEMANTIC COLORS - Status & Feedback
+     Product Bible v1.0 - RESERVED FOR STATUS ONLY
      ======================================== */
   
-  /* Success - Green */
-  --color-success-700: #15803D;
-  --color-success-600: #16A34A;
-  --color-success-500: #22C55E;
-  --color-success-400: #4ADE80;
-  --color-success-100: #DCFCE7;
-  --color-success-50: #F0FDF4;
+  /* Success - Green (#10B981 - Product Bible) */
+  --color-success-700: #047857;
+  --color-success-600: #059669;
+  --color-success-500: #10B981;   /* SUCCESS GREEN (Product Bible) */
+  --color-success-400: #34D399;
+  --color-success-100: #D1FAE5;
+  --color-success-50: #ECFDF5;
   
-  /* Warning - Amber */
+  /* Warning - Amber (#F59E0B - Product Bible) */
   --color-warning-700: #B45309;
   --color-warning-600: #D97706;
-  --color-warning-500: #F59E0B;
+  --color-warning-500: #F59E0B;   /* WARNING AMBER (Product Bible) */
   --color-warning-400: #FBBF24;
   --color-warning-100: #FEF3C7;
   --color-warning-50: #FFFBEB;
   
-  /* Error - Red */
+  /* Error - Red (#EF4444 - Product Bible) */
   --color-error-700: #B91C1C;
   --color-error-600: #DC2626;
-  --color-error-500: #EF4444;
+  --color-error-500: #EF4444;     /* ERROR RED (Product Bible) */
   --color-error-400: #F87171;
   --color-error-100: #FEE2E2;
   --color-error-50: #FEF2F2;
   
-  /* Info - Blue */
+  /* Info - Blue (for informational messages) */
   --color-info-700: #1D4ED8;
   --color-info-600: #2563EB;
   --color-info-500: #3B82F6;
@@ -74,72 +77,85 @@
   --color-info-50: #EFF6FF;
   
   /* ========================================
-     TYPOGRAPHY - East Africa Optimized
+     TYPOGRAPHY - Product Bible v1.0
+     Inter or SF Pro - SINGLE FONT FAMILY
      ======================================== */
   
   /* Font Families */
-  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  --font-primary: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
   
-  /* Display XL - Hero sections */
-  --text-display-xl-size: 32px;
-  --text-display-xl-line: 40px;
-  --text-display-xl-weight: 600;  /* Semibold */
+  /* Hero (Balance) - 40px / Semibold (Product Bible) */
+  --text-hero-size: 40px;
+  --text-hero-line: 48px;
+  --text-hero-weight: 600;  /* Semibold */
   
-  /* Heading 1 - Page titles */
-  --text-h1-size: 24px;
-  --text-h1-line: 32px;
-  --text-h1-weight: 600;  /* Semibold */
+  /* Screen Title - 24px / Semibold (Product Bible) */
+  --text-title-size: 24px;
+  --text-title-line: 32px;
+  --text-title-weight: 600;  /* Semibold */
   
-  /* Heading 2 - Section titles */
-  --text-h2-size: 20px;
-  --text-h2-line: 28px;
-  --text-h2-weight: 500;  /* Medium */
+  /* Body - 16px / Regular (Product Bible) */
+  --text-body-size: 16px;
+  --text-body-line: 24px;
+  --text-body-weight: 400;  /* Regular */
   
-  /* Heading 3 - Subsection titles */
-  --text-h3-size: 18px;
-  --text-h3-line: 26px;
-  --text-h3-weight: 500;  /* Medium */
-  
-  /* Body Large - DEFAULT */
-  --text-body-l-size: 16px;
-  --text-body-l-line: 24px;
-  --text-body-l-weight: 400;  /* Regular */
-  
-  /* Body Medium */
-  --text-body-m-size: 14px;
-  --text-body-m-line: 22px;
-  --text-body-m-weight: 400;  /* Regular */
-  
-  /* Body Small */
-  --text-body-s-size: 13px;
-  --text-body-s-line: 20px;
-  --text-body-s-weight: 400;  /* Regular */
-  
-  /* Caption - Helper text */
-  --text-caption-size: 12px;
-  --text-caption-line: 18px;
+  /* Caption - 14px / Regular (Product Bible) */
+  --text-caption-size: 14px;
+  --text-caption-line: 20px;
   --text-caption-weight: 400;  /* Regular */
   
-  /* Button text */
-  --text-button-size: 14px;
-  --text-button-size-lg: 16px;
+  /* Button - 16px / Medium (Product Bible) */
+  --text-button-size: 16px;
+  --text-button-line: 24px;
   --text-button-weight: 500;  /* Medium */
   
+  /* Legacy support - map to Product Bible values */
+  --text-display-xl-size: var(--text-hero-size);
+  --text-display-xl-line: var(--text-hero-line);
+  --text-display-xl-weight: var(--text-hero-weight);
+  
+  --text-h1-size: var(--text-title-size);
+  --text-h1-line: var(--text-title-line);
+  --text-h1-weight: var(--text-title-weight);
+  
+  --text-h2-size: 20px;
+  --text-h2-line: 28px;
+  --text-h2-weight: 600;
+  
+  --text-h3-size: 18px;
+  --text-h3-line: 26px;
+  --text-h3-weight: 500;
+  
+  --text-body-l-size: var(--text-body-size);
+  --text-body-l-line: var(--text-body-line);
+  --text-body-l-weight: var(--text-body-weight);
+  
+  --text-body-m-size: var(--text-caption-size);
+  --text-body-m-line: var(--text-caption-line);
+  --text-body-m-weight: var(--text-caption-weight);
+  
+  --text-body-s-size: 13px;
+  --text-body-s-line: 20px;
+  --text-body-s-weight: 400;
+  
+  --text-button-size-lg: var(--text-button-size);
+  
   /* ========================================
-     SPACING SCALE - 4px base
+     SPACING SCALE - 8pt BASE GRID (Product Bible)
+     All spacing MUST be multiples of 8
      ======================================== */
   
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
+  --space-1: 8px;    /* 1 unit */
+  --space-2: 16px;   /* 2 units */
+  --space-3: 24px;   /* 3 units */
+  --space-4: 32px;   /* 4 units */
+  --space-5: 40px;   /* 5 units */
+  --space-6: 48px;   /* 6 units */
+  --space-8: 64px;   /* 8 units */
+  --space-10: 80px;  /* 10 units */
+  --space-12: 96px;  /* 12 units */
+  --space-16: 128px; /* 16 units */
   
   /* ========================================
      BORDER RADIUS - Fintech-grade

@@ -34,6 +34,7 @@ app.use('*', logger(console.log));
 
 // Mount payment aggregator routes
 app.route('/make-server-69a10ee8/payment-aggregator', paymentAggregatorApp);
+app.route('/make-server-69a10ee8/payment', paymentAggregatorApp);
 
 // Mount performance routes
 import performanceApp from './performance.tsx';
@@ -639,4 +640,7 @@ app.post('/make-server-69a10ee8/favorites/add', async (c) => {
   }
 });
 
-Deno.serve(app.fetch);
+export default app;
+
+// Deno.serve is now called from /supabase/functions/make-server/index.ts
+// This allows the app to be imported and served from the proper entry point

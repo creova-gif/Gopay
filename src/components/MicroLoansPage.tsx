@@ -164,7 +164,7 @@ export function MicroLoansPage({ user, accessToken, onBack }: MicroLoansPageProp
               <ArrowLeft className="size-6 text-gray-900" />
             </button>
             <div className="flex-1">
-              <h1 className="text-xl font-extrabold text-gray-900" style={{ color: '#111827' }}>goPay Loans ⚡</h1>
+              <h1 className="text-xl font-extrabold text-gray-900" style={{ color: '#111827' }}>goPay Loans</h1>
               <p className="text-sm text-gray-600">Instant micro-credit</p>
             </div>
           </div>
