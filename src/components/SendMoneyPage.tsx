@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAnalytics } from '../hooks/useAnalytics';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { User } from '../App';
@@ -44,6 +45,7 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
   const [balance, setBalance] = useState<number | null>(null);
   const [optimisticBalance, setOptimisticBalance] = useState<number | null>(null);
   const [transactionRef, setTransactionRef] = useState('');
+  const { track } = useAnalytics(accessToken);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -78,6 +80,7 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
       toast.error('Salio halitosha');
       return;
     }
+    track('send_money_started', { method: transferMethod, amount: numericAmount, recipient });
     setStep('confirm');
   };
 
@@ -112,18 +115,21 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
         const result = await response.json();
         setTransactionRef(result.reference || `TXN${Date.now()}`);
         setStep('success');
+        track('send_money_completed', { method: transferMethod, amount: numericAmount, recipient });
       } else {
         const err = await response.json().catch(() => ({}));
         const msg = err.error || 'Uhamisho umeshindwa. Jaribu tena.';
         if (balance !== null) setOptimisticBalance(balance);
         setPinError(msg);
         setShakePin(true);
+        track('send_money_failed', { method: transferMethod, amount: numericAmount, reason: msg });
         window.dispatchEvent(new CustomEvent('gopay:open-support'));
       }
     } catch {
       if (balance !== null) setOptimisticBalance(balance);
       setPinError('Hitilafu ya mtandao. Jaribu tena.');
       setShakePin(true);
+      track('send_money_failed', { method: transferMethod, amount: numericAmount, reason: 'network_error' });
       window.dispatchEvent(new CustomEvent('gopay:open-support'));
     } finally {
       setSending(false);

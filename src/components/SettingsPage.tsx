@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../hooks/useLanguage';
+import { useAnalytics } from '../hooks/useAnalytics';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
@@ -39,6 +40,7 @@ interface TrustedContact {
 export function SettingsPage({ user, accessToken, onBack, onUpdateUser }: SettingsPageProps) {
   const [currentView, setCurrentView] = useState<SettingsView>('main');
   const { language, toggleLanguage } = useLanguage();
+  const { track } = useAnalytics(accessToken);
 
   // Profile states
   const [name, setName] = useState(user.name);
@@ -379,7 +381,7 @@ export function SettingsPage({ user, accessToken, onBack, onUpdateUser }: Settin
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
               {/* Language Toggle */}
               <button
-                onClick={toggleLanguage}
+                onClick={() => { toggleLanguage(); track('language_toggled', { newLanguage: language === 'sw' ? 'en' : 'sw' }); }}
                 className="w-full p-4 flex items-center gap-4 hover:bg-gray-50 transition-all border-b border-gray-100"
               >
                 <div className="bg-teal-100 p-3 rounded-xl">

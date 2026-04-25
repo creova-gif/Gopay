@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAnalytics } from '../hooks/useAnalytics';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { ArrowLeft, Plus, RefreshCw, Pause, Trash2, Calendar, Zap, Smartphone, Tv, Wifi, Check } from 'lucide-react';
@@ -57,6 +58,7 @@ export function RecurringPaymentsPage({ user, accessToken, onBack }: RecurringPa
   const [payments, setPayments] = useState<RecurringPayment[]>(INITIAL_PAYMENTS);
   const [showAdd, setShowAdd] = useState(false);
   const [saving, setSaving] = useState(false);
+  const { track } = useAnalytics(accessToken);
 
   const [form, setForm] = useState({
     categoryId: 'tanesco',
@@ -77,7 +79,9 @@ export function RecurringPaymentsPage({ user, accessToken, onBack }: RecurringPa
     }, 0);
 
   const toggleActive = (id: string) => {
+    const current = payments.find(p => p.id === id);
     setPayments(prev => prev.map(p => p.id === id ? { ...p, active: !p.active } : p));
+    track('recurring_payment_toggled', { id, newState: current ? !current.active : undefined });
     toast.success('Hali imesasishwa');
   };
 
@@ -118,6 +122,7 @@ export function RecurringPaymentsPage({ user, accessToken, onBack }: RecurringPa
     };
     setPayments(prev => [newPayment, ...prev]);
     setForm({ categoryId: 'tanesco', accountRef: '', amount: '', frequency: 'monthly' });
+    track('recurring_payment_created', { categoryId: form.categoryId, frequency: form.frequency, amount: Number(form.amount) });
     setShowAdd(false);
     setSaving(false);
     toast.success('Malipo ya mara kwa mara yameanzishwa!');

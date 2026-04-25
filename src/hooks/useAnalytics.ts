@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { projectId } from '../utils/supabase/info';
 
 type AnalyticsEvent =
@@ -25,14 +26,14 @@ type AnalyticsEvent =
   | 'language_toggled';
 
 export function useAnalytics(accessToken?: string) {
-  const track = (event: AnalyticsEvent, properties?: Record<string, unknown>) => {
+  const track = useCallback((event: AnalyticsEvent, properties?: Record<string, unknown>) => {
     if (!accessToken) return;
     fetch(`https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/integrations/track`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
       body: JSON.stringify({ event, properties, timestamp: new Date().toISOString() }),
     }).catch(() => { /* analytics must never break the app */ });
-  };
+  }, [accessToken]);
 
   return { track };
 }

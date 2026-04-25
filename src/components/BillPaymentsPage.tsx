@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useOfflineQueue } from '../hooks/useOfflineQueue';
+import { useAnalytics } from '../hooks/useAnalytics';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -62,6 +63,7 @@ interface ServiceProvider {
 
 export function BillPaymentsPage({ user, accessToken, onBack, onNavigate }: BillPaymentsPageProps) {
   const { isOnline, enqueue } = useOfflineQueue();
+  const { track } = useAnalytics(accessToken);
   const [activeView, setActiveView] = useState<'home' | 'category' | 'provider' | 'payment' | 'confirm' | 'success'>('home');
   const [selectedCategory, setSelectedCategory] = useState<BillCategory | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<ServiceProvider | null>(null);
@@ -801,8 +803,11 @@ export function BillPaymentsPage({ user, accessToken, onBack, onNavigate }: Bill
     };
     const endpoint = `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/bills/pay`;
 
+    track('bill_payment_started', { provider: selectedProvider?.id, amount: parseInt(amount), paymentMethod });
+
     if (!isOnline) {
       await enqueue({ type: 'bill', payload, endpoint, accessToken });
+      track('bill_payment_queued_offline', { provider: selectedProvider?.id, amount: parseInt(amount) });
       return;
     }
 
@@ -816,12 +821,14 @@ export function BillPaymentsPage({ user, accessToken, onBack, onNavigate }: Bill
 
       if (response.ok) {
         setActiveView('success');
+        track('bill_payment_completed', { provider: selectedProvider?.id, amount: parseInt(amount), paymentMethod });
         if (paymentMethod === 'gopay') fetchBalance();
       } else {
         toast.error('Malipo yameshindwa. Jaribu tena.');
       }
     } catch {
       await enqueue({ type: 'bill', payload, endpoint, accessToken });
+      track('bill_payment_queued_offline', { provider: selectedProvider?.id, amount: parseInt(amount) });
     } finally {
       setProcessing(false);
     }

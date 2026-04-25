@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { User } from '../App';
 import {
@@ -7,6 +7,7 @@ import {
   Calendar, Shield, Award, Info, ChevronRight, Sparkles
 } from 'lucide-react';
 import { projectId } from '../utils/supabase/info';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 interface MicroLoansPageProps {
   user: User;
@@ -47,6 +48,11 @@ export function MicroLoansPage({ user, accessToken, onBack }: MicroLoansPageProp
   const [processing, setProcessing] = useState(false);
   const [creditScore] = useState(750);
   const [loanLimit] = useState(500000);
+  const { track } = useAnalytics(accessToken);
+
+  useEffect(() => {
+    if (view === 'apply') track('loan_apply_started', { purpose: loanPurpose });
+  }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [activeLoans, setActiveLoans] = useState<ActiveLoan[]>([
     { id: '1', amount: 50000, purpose: 'Bus Ticket to Arusha', disbursedDate: '2025-11-15', dueDate: '2025-12-15', totalDue: 52500, paid: 20000, status: 'active' },
@@ -90,6 +96,7 @@ export function MicroLoansPage({ user, accessToken, onBack }: MicroLoansPageProp
     };
     setActiveLoans(prev => [...prev, newLoan]);
     setView('success');
+    track('loan_apply_completed', { amount: selectedOffer.amount, purpose: selectedOffer.purpose });
     setPin('');
     setProcessing(false);
   };

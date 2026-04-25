@@ -65,6 +65,7 @@ import { SupportChat } from './components/SupportChat';
 import { RecurringPaymentsPage } from './components/RecurringPaymentsPage';
 import { supabase } from './utils/supabase/client';
 import { projectId } from './utils/supabase/info';
+import { useAnalytics } from './hooks/useAnalytics';
 
 export type User = {
   id: string;
@@ -98,6 +99,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [supportOpen, setSupportOpen] = useState(false);
   const profileFetchInFlight = useRef(false);
+  const { track } = useAnalytics(accessToken ?? undefined);
 
   useEffect(() => {
     // Check existing session on mount
@@ -219,6 +221,16 @@ export default function App() {
 
   const navigate = (page: Page) => setCurrentPage(page);
   const goHome = () => setCurrentPage('dashboard');
+
+  useEffect(() => {
+    track('page_view', { page: currentPage });
+    if (currentPage === 'security') track('settings_security_viewed');
+    if (currentPage === 'merchantdash') track('merchant_dashboard_viewed');
+  }, [currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (supportOpen) track('support_chat_opened');
+  }, [supportOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const handler = () => setSupportOpen(true);
@@ -392,7 +404,7 @@ export default function App() {
           <DeliveryRiderDashboard user={user} accessToken={accessToken} onBack={goHome} />
         )}
         {currentPage === 'aiassistant' && (
-          <AIAssistantPage onBack={goHome} />
+          <AIAssistantPage onBack={goHome} accessToken={accessToken} />
         )}
         {currentPage === 'emergencysos' && (
           <EmergencySOSPage onBack={goHome} />

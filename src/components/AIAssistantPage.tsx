@@ -1,8 +1,10 @@
 import { ArrowLeft, Sparkles, Plane, Building2, Shield, Globe, Mic, Send } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 interface AIAssistantPageProps {
   onBack: () => void;
+  accessToken?: string;
 }
 
 interface Message {
@@ -81,12 +83,13 @@ function generateResponse(input: string, type: string): { content: string; sugge
   return { content: 'Nipo hapa kusaidia! Unataka kujua nini?', suggestions: ASSISTANTS.find(a => a.id === type)?.suggestions };
 }
 
-export function AIAssistantPage({ onBack }: AIAssistantPageProps) {
+export function AIAssistantPage({ onBack, accessToken }: AIAssistantPageProps) {
   const [activeId, setActiveId] = useState('travel');
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { track } = useAnalytics(accessToken);
 
   const assistant = ASSISTANTS.find(a => a.id === activeId)!;
 
@@ -100,6 +103,7 @@ export function AIAssistantPage({ onBack }: AIAssistantPageProps) {
 
   const handleSend = () => {
     if (!inputText.trim()) return;
+    track('ai_assistant_message_sent', { assistant: activeId, message: inputText });
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: inputText, timestamp: new Date() };
     setMessages(prev => [...prev, userMsg]);
     setInputText('');

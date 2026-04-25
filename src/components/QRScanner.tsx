@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAnalytics } from '../hooks/useAnalytics';
 import { toast } from 'sonner';
 import { User } from '../App';
 import { ArrowLeft, QrCode, Flashlight, Image, AlertCircle, Check } from 'lucide-react';
@@ -21,8 +22,10 @@ export function QRScanner({ user, accessToken, onBack }: QRScannerProps) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [pinAttempts, setPinAttempts] = useState(0);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
+  const { track } = useAnalytics(accessToken);
 
   const handleScanDemo = () => {
+    track('qr_scan_started');
     setScanning(true);
     setTimeout(() => {
       setScannedData({ merchantName: 'Shoppers Plaza Masaki', merchantId: 'MERCHANT_001', accountNumber: '+255 712 345 678', type: 'merchant' });
@@ -53,6 +56,7 @@ export function QRScanner({ user, accessToken, onBack }: QRScannerProps) {
       setShowSuccess(true);
       setPinAttempts(0);
       setLockedUntil(null);
+      track('qr_payment_completed', { amount: parseFloat(amount) || 0, merchantName: scannedData?.merchantName });
     }, 1000);
   };
 
