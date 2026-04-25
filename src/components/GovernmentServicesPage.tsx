@@ -547,6 +547,8 @@ export function GovernmentServicesPage({ onBack, onNavigate }: GovernmentService
                   Fanya upya leseni yako siku 30 kabla ya kumalizika ili kuepuka usumbufu.
                 </p>
               </div>
+              <h3 className="font-black text-gray-900 text-lg mb-2">Hakuna Faini!</h3>
+              <p className="text-gray-500 text-sm">Huna faini zozote ambazo hazijalipwa. Endelea kuendesha kwa usalama!</p>
             </div>
           </motion.div>
         )}

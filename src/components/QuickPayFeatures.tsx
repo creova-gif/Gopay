@@ -199,7 +199,7 @@ export function QuickPayFeatures({ user, accessToken, onBack }: QuickPayFeatures
       return;
     }
     try {
-      // @ts-expect-error NDEFReader is not in TS lib yet
+      // @ts-expect-error NDEFReader not in TS lib
       const ndef = new window.NDEFReader();
       await ndef.scan();
       setNfcActive(true);

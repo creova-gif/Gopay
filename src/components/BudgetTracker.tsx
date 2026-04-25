@@ -20,6 +20,7 @@ interface Budget {
   category: string;
   icon: React.ElementType;
   color: string;
+  bgColor: string;
   limit: number;
   spent: number;
   period: 'weekly' | 'monthly';
@@ -119,6 +120,7 @@ export function BudgetTracker({ user, accessToken, onBack }: BudgetTrackerProps)
   const [showAddBudget, setShowAddBudget] = useState(false);
   const [newBudget, setNewBudget] = useState({ category: 'Food & Dining', limit: '', period: 'monthly' as 'weekly' | 'monthly' });
   const [loading, setLoading] = useState(true);
+  const [activeView, setActiveView] = useState<'overview' | 'list'>('overview');
 
   useEffect(() => {
     fetch(`https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/budgets/list`, {
