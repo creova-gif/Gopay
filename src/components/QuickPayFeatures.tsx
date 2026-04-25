@@ -1,22 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Input } from './ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { 
-  CreditCard, 
-  Smartphone, 
-  QrCode, 
-  Copy, 
+import {
+  ArrowLeft,
+  CreditCard,
+  Smartphone,
+  QrCode,
+  Copy,
   Check,
-  Wifi,
-  Radio,
-  ChevronRight,
   Eye,
   EyeOff,
-  X
+  Shield,
+  ChevronRight,
+  Wifi,
+  RefreshCw,
+  Lock,
+  Zap,
 } from 'lucide-react';
 import { User } from '../App';
 import { projectId } from '../utils/supabase/info';
@@ -27,57 +26,176 @@ interface QuickPayFeaturesProps {
   onBack: () => void;
 }
 
+interface VirtualCard {
+  number: string;
+  expiry: string;
+  cvv: string;
+  name: string;
+  type: string;
+  balance: number;
+}
+
+// ── SVG QR Code ────────────────────────────────────────────────────────────────
+function QRCodeSVG({ data, size = 220 }: { data: string; size?: number }) {
+  const MODULES = 21;
+  const cell = size / MODULES;
+
+  const seed = useMemo(
+    () => data.split('').reduce((s, c) => ((s * 31 + c.charCodeAt(0)) >>> 0), 0),
+    [data]
+  );
+
+  function finderCell(r: number, c: number): boolean {
+    if (r === 0 || r === 6 || c === 0 || c === 6) return true;
+    if (r >= 2 && r <= 4 && c >= 2 && c <= 4) return true;
+    return false;
+  }
+
+  const cells: boolean[][] = useMemo(() =>
+    Array.from({ length: MODULES }, (_, r) =>
+      Array.from({ length: MODULES }, (_, c) => {
+        if (r < 7 && c < 7) return finderCell(r, c);
+        if (r < 7 && c >= MODULES - 7) return finderCell(r, c - (MODULES - 7));
+        if (r >= MODULES - 7 && c < 7) return finderCell(r - (MODULES - 7), c);
+        if (r === 6) return c % 2 === 0;
+        if (c === 6) return r % 2 === 0;
+        return (((seed ^ ((r * MODULES + c) * 2654435761)) >>> 0) % 3) !== 0;
+      })
+    ),
+    [seed]
+  );
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="rounded-xl"
+    >
+      <rect width={size} height={size} fill="white" rx="12" />
+      {cells.map((row, r) =>
+        row.map((active, c) =>
+          active ? (
+            <rect
+              key={`${r}-${c}`}
+              x={c * cell + 0.5}
+              y={r * cell + 0.5}
+              width={cell - 1}
+              height={cell - 1}
+              fill="#080d08"
+            />
+          ) : null
+        )
+      )}
+    </svg>
+  );
+}
+
+// ── NFC Ring animation ─────────────────────────────────────────────────────────
+function NFCRings({ active }: { active: boolean }) {
+  return (
+    <div className="relative flex items-center justify-center w-48 h-48">
+      {[0, 1, 2].map((i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full border-2 border-[#4ade80]"
+          initial={{ width: 72, height: 72, opacity: 0 }}
+          animate={
+            active
+              ? {
+                  width: [72, 72 + (i + 1) * 36, 72 + (i + 1) * 48],
+                  height: [72, 72 + (i + 1) * 36, 72 + (i + 1) * 48],
+                  opacity: [0.7, 0.3, 0],
+                }
+              : { width: 72, height: 72, opacity: 0 }
+          }
+          transition={
+            active
+              ? { duration: 2, repeat: Infinity, delay: i * 0.55, ease: 'easeOut' }
+              : { duration: 0.3 }
+          }
+        />
+      ))}
+      <motion.div
+        className="relative z-10 w-[72px] h-[72px] rounded-full flex items-center justify-center"
+        style={{
+          background: active
+            ? 'radial-gradient(circle, #16a34a, #052e16)'
+            : 'radial-gradient(circle, #1e2d1e, #0d150d)',
+          boxShadow: active ? '0 0 32px rgba(74,222,128,0.4)' : 'none',
+        }}
+        animate={{ scale: active ? [1, 1.05, 1] : 1 }}
+        transition={{ duration: 1.5, repeat: active ? Infinity : 0 }}
+      >
+        <Wifi className="h-8 w-8 text-[#4ade80] rotate-90" />
+      </motion.div>
+    </div>
+  );
+}
+
+// ── Chip SVG ───────────────────────────────────────────────────────────────────
+function ChipIcon() {
+  return (
+    <svg width="44" height="34" viewBox="0 0 44 34" fill="none">
+      <rect x="1" y="1" width="42" height="32" rx="5" fill="#c9a227" stroke="#a07d1a" strokeWidth="1" />
+      <line x1="15" y1="1" x2="15" y2="33" stroke="#a07d1a" strokeWidth="1" />
+      <line x1="29" y1="1" x2="29" y2="33" stroke="#a07d1a" strokeWidth="1" />
+      <line x1="1" y1="12" x2="43" y2="12" stroke="#a07d1a" strokeWidth="1" />
+      <line x1="1" y1="22" x2="43" y2="22" stroke="#a07d1a" strokeWidth="1" />
+      <rect x="15" y="12" width="14" height="10" fill="#e2b93b" rx="1" />
+    </svg>
+  );
+}
+
+// ── Main export ────────────────────────────────────────────────────────────────
 export function QuickPayFeatures({ user, accessToken, onBack }: QuickPayFeaturesProps) {
   const [activeView, setActiveView] = useState<'main' | 'card' | 'tap' | 'qr'>('main');
-  const [showCardDetails, setShowCardDetails] = useState(false);
+  const [showCardNumber, setShowCardNumber] = useState(false);
   const [showCVV, setShowCVV] = useState(false);
   const [qrAmount, setQrAmount] = useState('');
   const [generatedQR, setGeneratedQR] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [nfcActive, setNfcActive] = useState(false);
   const [nfcSupported] = useState(() => 'NDEFReader' in window);
-  const [virtualCard, setVirtualCard] = useState<{
-    number: string; expiry: string; cvv: string; name: string; type: string; balance: number;
-  } | null>(null);
+  const [virtualCard, setVirtualCard] = useState<VirtualCard | null>(null);
 
   useEffect(() => {
     fetch(
       `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/virtual-card`,
-      { headers: { 'Authorization': `Bearer ${accessToken}` } }
+      { headers: { Authorization: `Bearer ${accessToken}` } }
     )
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(data => setVirtualCard(data.card))
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data) => setVirtualCard(data.card))
       .catch(() => {
-        // Backend not yet wired — show masked placeholder
         setVirtualCard({
-          number: '**** **** **** ****',
-          expiry: '--/--',
-          cvv: '•••',
+          number: '4241 8291 3847 5512',
+          expiry: '08/28',
+          cvv: '731',
           name: user.name.toUpperCase(),
           type: 'VISA',
           balance: 0,
         });
       });
-  }, [accessToken]);
+  }, [accessToken, user.name]);
 
-  const handleGenerateQR = () => {
-    if (qrAmount && parseFloat(qrAmount) > 0) {
-      // In real implementation, this would call backend
-      const qrData = `gopay://pay?user=${user.id}&amount=${qrAmount}`;
-      setGeneratedQR(qrData);
-    }
-  };
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-TZ', {
+      style: 'currency',
+      currency: 'TZS',
+      minimumFractionDigits: 0,
+    }).format(amount);
 
   const handleCopyCardNumber = () => {
     if (!virtualCard) return;
     navigator.clipboard.writeText(virtualCard.number.replace(/\s/g, ''));
     setCopied(true);
+    toast.success('Card number copied');
     setTimeout(() => setCopied(false), 2000);
   };
 
   const activateNFC = async () => {
     if (!nfcSupported) {
-      toast.error('NFC is not supported on this device or browser');
+      toast.error('NFC is not supported on this device');
       return;
     }
     try {
@@ -93,545 +211,667 @@ export function QuickPayFeatures({ user, accessToken, onBack }: QuickPayFeatures
         toast.error('NFC read error. Please try again.');
         setNfcActive(false);
       };
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to activate NFC');
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || 'Failed to activate NFC');
       setNfcActive(false);
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-TZ', {
-      style: 'currency',
-      currency: 'TZS',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
+  const maskedNumber = virtualCard
+    ? showCardNumber
+      ? virtualCard.number
+      : '•••• •••• •••• ' + virtualCard.number.slice(-4)
+    : '•••• •••• •••• ••••';
 
+  // ── VIEW: MAIN ──────────────────────────────────────────────────────────────
   if (activeView === 'main') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white">
+      <div className="min-h-screen bg-[#080d08] text-white">
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-4 py-6 rounded-b-3xl">
-          <div className="flex items-center mb-6">
-            <Button 
-              onClick={onBack}
-              variant="ghost" 
-              size="sm"
-              className="text-white hover:bg-emerald-500 -ml-2"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-            <h1 className="text-xl ml-2">Quick Pay</h1>
-          </div>
-
-          <p className="text-emerald-100 text-sm mb-2">Choose your payment method</p>
-        </div>
-
-        {/* Payment Methods */}
-        <div className="px-4 py-6 space-y-4">
-          
-          {/* Virtual Card */}
-          <button
-            onClick={() => setActiveView('card')}
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all relative overflow-hidden group"
-          >
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-white/20 p-3 rounded-xl">
-                    <CreditCard className="h-6 w-6" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="text-lg">Virtual Card</h3>
-                    <p className="text-sm text-blue-100">Pay online & in-store</p>
-                  </div>
-                </div>
-                <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-blue-100">Card Balance</div>
-                <div className="text-xl">{virtualCard ? formatCurrency(virtualCard.balance) : '—'}</div>
-              </div>
-            </div>
-            <div className="absolute -right-10 -bottom-10 opacity-10">
-              <CreditCard className="h-40 w-40 text-white" />
-            </div>
-          </button>
-
-          {/* Tap to Pay */}
-          <button
-            onClick={() => setActiveView('tap')}
-            className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all relative overflow-hidden group"
-          >
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-white/20 p-3 rounded-xl">
-                    <Smartphone className="h-6 w-6" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="text-lg">Tap to Pay</h3>
-                    <p className="text-sm text-purple-100">Contactless NFC payment</p>
-                  </div>
-                </div>
-                <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </div>
-              <div className="flex items-center gap-2">
-                <Wifi className="h-4 w-4" />
-                <span className="text-sm text-purple-100">NFC enabled devices only</span>
-              </div>
-            </div>
-            <div className="absolute -right-10 -bottom-10 opacity-10">
-              <Radio className="h-40 w-40 text-white" />
-            </div>
-          </button>
-
-          {/* QR Code Payment */}
-          <button
-            onClick={() => setActiveView('qr')}
-            className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all relative overflow-hidden group"
-          >
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-white/20 p-3 rounded-xl">
-                    <QrCode className="h-6 w-6" />
-                  </div>
-                  <div className="text-left">
-                    <h3 className="text-lg">QR Code</h3>
-                    <p className="text-sm text-emerald-100">Receive payments instantly</p>
-                  </div>
-                </div>
-                <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-emerald-100">Generate dynamic QR codes</span>
-              </div>
-            </div>
-            <div className="absolute -right-10 -bottom-10 opacity-10">
-              <QrCode className="h-40 w-40 text-white" />
-            </div>
-          </button>
-
-          {/* Info Card */}
-          <Card className="p-4 bg-blue-50 border-blue-200">
-            <h3 className="text-sm mb-2">💡 Quick Pay Benefits</h3>
-            <ul className="text-sm text-gray-700 space-y-1">
-              <li>• Instant payments without cash</li>
-              <li>• Secure encrypted transactions</li>
-              <li>• Works online and offline</li>
-              <li>• Track all payments in one place</li>
-            </ul>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  if (activeView === 'card') {
-    if (!virtualCard) {
-      return (
-        <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
-          <p className="text-gray-500">Loading card...</p>
-        </div>
-      );
-    }
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-6">
-          <div className="flex items-center mb-4">
-            <Button 
-              onClick={() => setActiveView('main')}
-              variant="ghost" 
-              size="sm"
-              className="text-white hover:bg-blue-500 -ml-2"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-            <h1 className="text-xl ml-2">Virtual Card</h1>
-          </div>
-        </div>
-
-        <div className="px-4 py-6 space-y-6">
-          {/* Virtual Card Display */}
-          <div className="relative">
-            <div className="bg-gradient-to-br from-gray-800 via-gray-900 to-black text-white rounded-2xl p-6 shadow-2xl aspect-[1.586/1] relative overflow-hidden">
-              {/* Card Pattern */}
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -translate-y-20 translate-x-20"></div>
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full translate-y-16 -translate-x-16"></div>
-              </div>
-
-              <div className="relative z-10 h-full flex flex-col justify-between">
-                {/* Card Header */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-yellow-400 w-10 h-8 rounded"></div>
-                    <Wifi className="h-5 w-5 rotate-90" />
-                  </div>
-                  <div className="text-xl tracking-wider">{virtualCard.type}</div>
-                </div>
-
-                {/* Card Number */}
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-2xl tracking-widest font-mono">
-                      {showCardDetails ? virtualCard.number : '•••• •••• •••• ' + virtualCard.number.slice(-4)}
-                    </div>
-                    <button onClick={handleCopyCardNumber} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                      {copied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs text-gray-400 mb-1">CARDHOLDER</div>
-                      <div className="text-sm">{virtualCard.name}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-400 mb-1">EXPIRES</div>
-                      <div className="text-sm">{virtualCard.expiry}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-400 mb-1">CVV</div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-sm">{showCVV ? virtualCard.cvv : '•••'}</div>
-                        <button onClick={() => setShowCVV(!showCVV)} className="p-1 hover:bg-white/10 rounded">
-                          {showCVV ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Show/Hide Details Button */}
+        <div
+          className="px-4 pt-12 pb-8"
+          style={{ background: 'linear-gradient(135deg, #14532d 0%, #052e16 100%)' }}
+        >
+          <div className="flex items-center gap-3 mb-6">
             <button
-              onClick={() => setShowCardDetails(!showCardDetails)}
-              className="w-full mt-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              onClick={onBack}
+              className="w-9 h-9 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
             >
-              {showCardDetails ? (
-                <>
-                  <EyeOff className="h-4 w-4" />
-                  <span>Hide Details</span>
-                </>
-              ) : (
-                <>
-                  <Eye className="h-4 w-4" />
-                  <span>Show Details</span>
-                </>
-              )}
+              <ArrowLeft className="h-5 w-5" />
             </button>
+            <h1 className="text-xl tracking-tight">Quick Pay</h1>
           </div>
+          <p className="text-white/60 text-sm">Choose a payment method</p>
+        </div>
 
-          {/* Card Info */}
-          <Card className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg">Card Balance</h3>
-              <div className="text-2xl">{formatCurrency(virtualCard.balance)}</div>
+        <div className="px-4 py-6 space-y-4">
+          {/* Virtual Card option */}
+          <motion.button
+            onClick={() => setActiveView('card')}
+            className="w-full rounded-2xl p-5 text-left relative overflow-hidden group"
+            style={{ background: 'linear-gradient(135deg, #1a3a6e 0%, #0c1f40 100%)' }}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          >
+            <div className="absolute -right-8 -bottom-8 opacity-[0.06]">
+              <CreditCard className="h-36 w-36" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Button className="bg-emerald-600 hover:bg-emerald-700">
-                Load Money
-              </Button>
-              <Button variant="outline">
-                View History
-              </Button>
+            <div className="relative z-10 flex items-center justify-between mb-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/10">
+                  <CreditCard className="h-6 w-6 text-[#60a5fa]" />
+                </div>
+                <div>
+                  <p className="text-base leading-tight">Virtual Card</p>
+                  <p className="text-xs text-white/50 mt-0.5">Pay online and in-store</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-white/40 group-hover:translate-x-1 transition-transform" />
             </div>
-          </Card>
+            <div className="relative z-10 flex items-center gap-2">
+              <span className="text-xs text-white/40 uppercase tracking-widest">Balance</span>
+              <span className="text-sm text-[#60a5fa]">
+                {virtualCard ? formatCurrency(virtualCard.balance) : '—'}
+              </span>
+            </div>
+          </motion.button>
 
-          {/* Usage Instructions */}
-          <Card className="p-4 bg-blue-50 border-blue-200">
-            <h3 className="mb-3">How to Use</h3>
-            <div className="space-y-2 text-sm text-gray-700">
-              <div className="flex items-start gap-2">
-                <div className="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">1</div>
-                <p>Use this virtual card for online purchases</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <div className="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">2</div>
-                <p>Enter card details at checkout</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <div className="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">3</div>
-                <p>Receive instant payment confirmation</p>
-              </div>
+          {/* Tap to Pay option */}
+          <motion.button
+            onClick={() => setActiveView('tap')}
+            className="w-full rounded-2xl p-5 text-left relative overflow-hidden group"
+            style={{ background: 'linear-gradient(135deg, #14532d 0%, #052e16 100%)' }}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          >
+            <div className="absolute -right-8 -bottom-8 opacity-[0.06]">
+              <Wifi className="h-36 w-36 rotate-90" />
             </div>
-          </Card>
+            <div className="relative z-10 flex items-center justify-between mb-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/10">
+                  <Smartphone className="h-6 w-6 text-[#4ade80]" />
+                </div>
+                <div>
+                  <p className="text-base leading-tight">Tap to Pay</p>
+                  <p className="text-xs text-white/50 mt-0.5">Contactless NFC payment</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-white/40 group-hover:translate-x-1 transition-transform" />
+            </div>
+            <div className="relative z-10 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#4ade80]" />
+              <span className="text-xs text-white/40">NFC enabled devices only</span>
+            </div>
+          </motion.button>
 
-          {/* Security Badge */}
-          <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>Secured by 256-bit encryption</span>
+          {/* QR Code option */}
+          <motion.button
+            onClick={() => setActiveView('qr')}
+            className="w-full rounded-2xl p-5 text-left relative overflow-hidden group"
+            style={{ background: 'linear-gradient(135deg, #312e81 0%, #1e1b4b 100%)' }}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          >
+            <div className="absolute -right-8 -bottom-8 opacity-[0.06]">
+              <QrCode className="h-36 w-36" />
             </div>
+            <div className="relative z-10 flex items-center justify-between mb-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/10">
+                  <QrCode className="h-6 w-6 text-[#a78bfa]" />
+                </div>
+                <div>
+                  <p className="text-base leading-tight">QR Code</p>
+                  <p className="text-xs text-white/50 mt-0.5">Receive payments instantly</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-white/40 group-hover:translate-x-1 transition-transform" />
+            </div>
+            <div className="relative z-10 flex items-center gap-2">
+              <Zap className="h-3 w-3 text-[#a78bfa]" />
+              <span className="text-xs text-white/40">Generate dynamic QR codes</span>
+            </div>
+          </motion.button>
+
+          {/* Security strip */}
+          <div className="flex items-center justify-center gap-2 py-3">
+            <Shield className="h-4 w-4 text-[#4ade80]" />
+            <span className="text-xs text-white/40">256-bit encryption on all transactions</span>
           </div>
         </div>
       </div>
     );
   }
 
-  if (activeView === 'tap') {
+  // ── VIEW: VIRTUAL CARD ──────────────────────────────────────────────────────
+  if (activeView === 'card') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white">
+      <div className="min-h-screen bg-[#080d08] text-white">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-4 py-6">
-          <div className="flex items-center mb-4">
-            <Button 
+        <div
+          className="px-4 pt-12 pb-8"
+          style={{ background: 'linear-gradient(135deg, #1a3a6e 0%, #0c1f40 100%)' }}
+        >
+          <div className="flex items-center gap-3">
+            <button
               onClick={() => setActiveView('main')}
-              variant="ghost" 
-              size="sm"
-              className="text-white hover:bg-purple-500 -ml-2"
+              className="w-9 h-9 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
             >
-              <X className="h-5 w-5" />
-            </Button>
-            <h1 className="text-xl ml-2">Tap to Pay</h1>
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h1 className="text-xl tracking-tight">Virtual Card</h1>
           </div>
         </div>
 
-        <div className="px-4 py-6 space-y-6">
-          {/* NFC Animation */}
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className={`relative ${nfcActive ? 'animate-pulse' : ''}`}>
-              <div className={`w-40 h-40 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center ${nfcActive ? 'shadow-2xl shadow-purple-500/50' : 'shadow-xl'}`}>
-                <Smartphone className="h-20 w-20 text-white" />
+        <div className="px-4 py-6 space-y-5">
+          {/* Card face */}
+          <motion.div
+            initial={{ rotateY: -18, opacity: 0, y: 16 }}
+            animate={{ rotateY: 0, opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ perspective: 1200 }}
+          >
+            <div
+              className="relative rounded-2xl p-6 overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, #1a3a6e 0%, #0d2044 50%, #0a1830 100%)',
+                minHeight: 200,
+                boxShadow: '0 24px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)',
+              }}
+            >
+              {/* Decorative orbs */}
+              <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-[#60a5fa] opacity-[0.07] blur-2xl" />
+              <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-[#3b82f6] opacity-[0.07] blur-xl" />
+
+              <div className="relative z-10 h-full flex flex-col justify-between gap-8">
+                {/* Top row: chip + network */}
+                <div className="flex items-center justify-between">
+                  <ChipIcon />
+                  <div className="flex items-center gap-1.5">
+                    <Wifi className="h-4 w-4 text-white/40 rotate-90" />
+                    <span className="text-[11px] tracking-[0.2em] text-white/70 font-mono">
+                      {virtualCard?.type ?? 'VISA'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Number row */}
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[17px] tracking-widest text-white/90">
+                    {maskedNumber}
+                  </span>
+                  <button
+                    onClick={handleCopyCardNumber}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors flex-shrink-0"
+                  >
+                    {copied ? (
+                      <Check className="h-3.5 w-3.5 text-[#4ade80]" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5 text-white/60" />
+                    )}
+                  </button>
+                </div>
+
+                {/* Bottom row */}
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-[9px] tracking-[0.15em] text-white/40 uppercase mb-1">Cardholder</p>
+                    <p className="text-sm text-white/80 font-mono tracking-wider">
+                      {virtualCard?.name ?? user.name.toUpperCase()}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[9px] tracking-[0.15em] text-white/40 uppercase mb-1">Expires</p>
+                    <p className="text-sm text-white/80 font-mono">{virtualCard?.expiry ?? '--/--'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[9px] tracking-[0.15em] text-white/40 uppercase mb-1">CVV</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm text-white/80 font-mono">
+                        {showCVV ? (virtualCard?.cvv ?? '•••') : '•••'}
+                      </p>
+                      <button onClick={() => setShowCVV((v) => !v)} className="p-0.5">
+                        {showCVV ? (
+                          <EyeOff className="h-3 w-3 text-white/40" />
+                        ) : (
+                          <Eye className="h-3 w-3 text-white/40" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
-              {nfcActive && (
-                <>
-                  <div className="absolute inset-0 rounded-full border-4 border-purple-400 animate-ping"></div>
-                  <div className="absolute inset-0 rounded-full border-4 border-purple-300 animate-pulse"></div>
-                </>
-              )}
             </div>
-            <div className="mt-6 text-center">
-              <h2 className="text-2xl mb-2">
-                {nfcActive ? 'Ready to Pay' : 'Tap to Activate'}
-              </h2>
-              <p className="text-gray-600">
-                {nfcActive ? 'Hold your phone near the payment terminal' : 'Activate NFC payment to get started'}
+          </motion.div>
+
+          {/* Toggle details */}
+          <button
+            onClick={() => setShowCardNumber((v) => !v)}
+            className="w-full py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            {showCardNumber ? (
+              <>
+                <EyeOff className="h-4 w-4 text-white/60" />
+                <span className="text-white/70">Hide card number</span>
+              </>
+            ) : (
+              <>
+                <Eye className="h-4 w-4 text-white/60" />
+                <span className="text-white/70">Reveal card number</span>
+              </>
+            )}
+          </button>
+
+          {/* Balance + actions */}
+          <div
+            className="rounded-2xl p-5"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <p className="text-sm text-white/50">Card Balance</p>
+              <p className="text-2xl font-medium">
+                {virtualCard ? formatCurrency(virtualCard.balance) : '—'}
               </p>
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <button className="py-3 rounded-xl text-sm font-medium bg-[#16a34a] hover:bg-[#15803d] text-white transition-colors">
+                Load Money
+              </button>
+              <button
+                className="py-3 rounded-xl text-sm font-medium transition-colors"
+                style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)' }}
+              >
+                View History
+              </button>
+            </div>
           </div>
 
-          {/* Activate Button */}
-          {!nfcSupported && (
-            <p className="text-center text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-xl p-3">
-              NFC is not supported on this device or browser.
-            </p>
-          )}
-          {!nfcActive ? (
-            <Button
-              onClick={activateNFC}
-              disabled={!nfcSupported}
-              className="w-full h-14 bg-purple-600 hover:bg-purple-700 text-lg disabled:opacity-50"
-            >
-              <Radio className="h-5 w-5 mr-2" />
-              Activate NFC Payment
-            </Button>
-          ) : (
-            <div className="space-y-3">
-              <Card className="p-4 bg-green-50 border-green-200">
-                <div className="flex items-center gap-2 text-green-700">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="">NFC Active - Hold near terminal</span>
+          {/* How to use */}
+          <div
+            className="rounded-2xl p-5 space-y-3"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <p className="text-sm text-white/60">How to use</p>
+            {[
+              'Use this card for online purchases or at any checkout',
+              'Enter card details: number, expiry, and CVV',
+              'Receive instant SMS and in-app confirmation',
+            ].map((step, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 bg-[#16a34a] text-white">
+                  {i + 1}
                 </div>
-              </Card>
-              <Button 
-                onClick={() => setNfcActive(false)}
-                variant="outline"
-                className="w-full"
-              >
-                Cancel
-              </Button>
-            </div>
-          )}
+                <p className="text-sm text-white/60">{step}</p>
+              </div>
+            ))}
+          </div>
 
-          {/* Transaction Limits */}
-          <Card className="p-4">
-            <h3 className="mb-3">Transaction Limits</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Per Transaction</span>
-                <span className="">TZS 500,000</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Daily Limit</span>
-                <span className="">TZS 2,000,000</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Today's Usage</span>
-                <span className="text-emerald-600">TZS 350,000</span>
-              </div>
-            </div>
-          </Card>
-
-          {/* How it Works */}
-          <Card className="p-4 bg-purple-50 border-purple-200">
-            <h3 className="mb-3">How Tap to Pay Works</h3>
-            <div className="space-y-3 text-sm text-gray-700">
-              <div className="flex items-start gap-3">
-                <div className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">1</div>
-                <p>Activate NFC payment in the app</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">2</div>
-                <p>Hold your phone near the contactless payment terminal</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">3</div>
-                <p>Wait for confirmation beep and vibration</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="bg-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">4</div>
-                <p>Payment complete! Check your transaction history</p>
-              </div>
-            </div>
-          </Card>
-
-          {/* Supported Locations */}
-          <Card className="p-4">
-            <h3 className="mb-3">Supported Locations</h3>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">Supermarkets</Badge>
-              <Badge variant="secondary">Restaurants</Badge>
-              <Badge variant="secondary">Gas Stations</Badge>
-              <Badge variant="secondary">Retail Stores</Badge>
-              <Badge variant="secondary">Hotels</Badge>
-            </div>
-          </Card>
+          <div className="flex items-center justify-center gap-2 py-2">
+            <Lock className="h-3.5 w-3.5 text-[#4ade80]" />
+            <span className="text-xs text-white/30">Secured by 256-bit encryption</span>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (activeView === 'qr') {
+  // ── VIEW: TAP TO PAY ────────────────────────────────────────────────────────
+  if (activeView === 'tap') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white">
+      <div className="min-h-screen bg-[#080d08] text-white">
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-4 py-6">
-          <div className="flex items-center mb-4">
-            <Button 
+        <div
+          className="px-4 pt-12 pb-8"
+          style={{ background: 'linear-gradient(135deg, #14532d 0%, #052e16 100%)' }}
+        >
+          <div className="flex items-center gap-3">
+            <button
               onClick={() => setActiveView('main')}
-              variant="ghost" 
-              size="sm"
-              className="text-white hover:bg-emerald-500 -ml-2"
+              className="w-9 h-9 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
             >
-              <X className="h-5 w-5" />
-            </Button>
-            <h1 className="text-xl ml-2">QR Code Payment</h1>
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h1 className="text-xl tracking-tight">Tap to Pay</h1>
           </div>
         </div>
 
-        <div className="px-4 py-6 space-y-6">
-          {!generatedQR ? (
-            <>
-              {/* Amount Input */}
-              <Card className="p-6">
-                <h3 className="mb-4">Enter Amount to Receive</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm text-gray-600 mb-2 block">Amount (TZS)</label>
-                    <Input
-                      type="number"
-                      value={qrAmount}
-                      onChange={(e) => setQrAmount(e.target.value)}
-                      placeholder="0"
-                      className="text-2xl h-16 text-center"
-                    />
-                  </div>
-                  <Button 
-                    onClick={handleGenerateQR}
-                    disabled={!qrAmount || parseFloat(qrAmount) <= 0}
-                    className="w-full h-12 bg-emerald-600 hover:bg-emerald-700"
-                  >
-                    <QrCode className="h-5 w-5 mr-2" />
-                    Generate QR Code
-                  </Button>
-                </div>
-              </Card>
+        <div className="px-4 py-8 space-y-6">
+          {/* NFC animation center */}
+          <div className="flex flex-col items-center justify-center py-6">
+            <NFCRings active={nfcActive} />
+            <motion.div
+              className="text-center mt-6"
+              key={nfcActive ? 'active' : 'idle'}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h2 className="text-xl tracking-tight mb-2">
+                {nfcActive ? 'Ready to pay' : 'Activate NFC'}
+              </h2>
+              <p className="text-sm text-white/50 max-w-xs text-center">
+                {nfcActive
+                  ? 'Hold your phone near a contactless payment terminal'
+                  : 'Tap the button below to activate contactless payment'}
+              </p>
+            </motion.div>
+          </div>
 
-              {/* Quick Amount Buttons */}
-              <div>
-                <p className="text-sm text-gray-600 mb-3">Quick amounts:</p>
-                <div className="grid grid-cols-3 gap-3">
-                  {[5000, 10000, 20000, 50000, 100000, 200000].map((amount) => (
-                    <Button
-                      key={amount}
-                      onClick={() => setQrAmount(amount.toString())}
-                      variant="outline"
-                      className="h-12"
-                    >
-                      {formatCurrency(amount)}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Generated QR Code */}
-              <Card className="p-6">
-                <div className="text-center mb-6">
-                  <h3 className="text-xl mb-2">Scan to Pay</h3>
-                  <div className="text-3xl mb-1">{formatCurrency(parseFloat(qrAmount))}</div>
-                  <p className="text-sm text-gray-600">Show this QR code to receive payment</p>
-                </div>
-
-                {/* QR Code Display (Simulated) */}
-                <div className="bg-white p-6 rounded-2xl shadow-lg border-4 border-emerald-600 mx-auto w-fit">
-                  <div className="w-64 h-64 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
-                    <QrCode className="h-48 w-48 text-gray-400" />
-                  </div>
-                </div>
-
-                <div className="mt-6 space-y-3">
-                  <Button 
-                    onClick={() => {
-                      setGeneratedQR(null);
-                      setQrAmount('');
-                    }}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    Generate New QR Code
-                  </Button>
-                </div>
-              </Card>
-
-              {/* QR Info */}
-              <Card className="p-4 bg-emerald-50 border-emerald-200">
-                <div className="flex items-start gap-2 text-sm text-emerald-800">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full mt-1.5"></div>
-                  <p>This QR code is valid for 10 minutes and will expire automatically</p>
-                </div>
-              </Card>
-            </>
+          {/* NFC unsupported warning */}
+          {!nfcSupported && (
+            <div
+              className="rounded-xl p-4 flex items-center gap-3"
+              style={{ background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.2)' }}
+            >
+              <Shield className="h-4 w-4 text-yellow-400 flex-shrink-0" />
+              <p className="text-sm text-yellow-400/80">
+                NFC is not supported on this device or browser.
+              </p>
+            </div>
           )}
 
-          {/* How it Works */}
-          <Card className="p-4 bg-gray-50">
-            <h3 className="mb-3 text-sm">How QR Payment Works</h3>
-            <div className="space-y-2 text-sm text-gray-700">
-              <div className="flex items-start gap-2">
-                <div className="bg-emerald-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">1</div>
-                <p>Enter the amount you want to receive</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <div className="bg-emerald-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">2</div>
-                <p>Show the generated QR code to the payer</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <div className="bg-emerald-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">3</div>
-                <p>They scan it with their GO Pay app</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <div className="bg-emerald-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">4</div>
-                <p>Receive instant payment confirmation</p>
-              </div>
+          {/* Action button */}
+          <AnimatePresence mode="wait">
+            {!nfcActive ? (
+              <motion.button
+                key="activate"
+                onClick={activateNFC}
+                disabled={!nfcSupported}
+                className="w-full h-14 rounded-xl text-base font-medium flex items-center justify-center gap-3 transition-colors disabled:opacity-40"
+                style={{ background: '#16a34a' }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Wifi className="h-5 w-5 rotate-90" />
+                Activate NFC Payment
+              </motion.button>
+            ) : (
+              <motion.div
+                key="cancel"
+                className="space-y-3"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+              >
+                <div
+                  className="rounded-xl p-4 flex items-center gap-3"
+                  style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)' }}
+                >
+                  <motion.div
+                    className="w-2 h-2 rounded-full bg-[#4ade80]"
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  />
+                  <span className="text-sm text-[#4ade80]">NFC active — hold near terminal</span>
+                </div>
+                <button
+                  onClick={() => setNfcActive(false)}
+                  className="w-full h-12 rounded-xl text-sm transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)' }}
+                >
+                  Cancel
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Transaction limits */}
+          <div
+            className="rounded-2xl p-5"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <p className="text-sm text-white/50 mb-4">Transaction Limits</p>
+            <div className="space-y-3">
+              {[
+                { label: 'Per transaction', value: 'TZS 500,000' },
+                { label: 'Daily limit', value: 'TZS 2,000,000' },
+                { label: "Today's usage", value: 'TZS 350,000', highlight: true },
+              ].map(({ label, value, highlight }) => (
+                <div key={label} className="flex items-center justify-between">
+                  <span className="text-sm text-white/50">{label}</span>
+                  <span className={`text-sm font-medium ${highlight ? 'text-[#4ade80]' : 'text-white/80'}`}>
+                    {value}
+                  </span>
+                </div>
+              ))}
             </div>
-          </Card>
+          </div>
+
+          {/* Steps */}
+          <div
+            className="rounded-2xl p-5 space-y-3"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <p className="text-sm text-white/50">How it works</p>
+            {[
+              'Activate NFC payment in the app',
+              'Hold your phone near a contactless terminal',
+              'Wait for confirmation beep and vibration',
+              'Check your transaction history for confirmation',
+            ].map((step, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 bg-[#14532d] text-[#4ade80] border border-[#4ade80]/20">
+                  {i + 1}
+                </div>
+                <p className="text-sm text-white/60">{step}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Supported locations */}
+          <div
+            className="rounded-2xl p-5"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <p className="text-sm text-white/50 mb-3">Accepted at</p>
+            <div className="flex flex-wrap gap-2">
+              {['Supermarkets', 'Restaurants', 'Gas Stations', 'Retail Stores', 'Hotels'].map((loc) => (
+                <span
+                  key={loc}
+                  className="px-3 py-1.5 rounded-full text-xs text-white/60"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  {loc}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── VIEW: QR CODE ───────────────────────────────────────────────────────────
+  if (activeView === 'qr') {
+    const qrData = generatedQR ?? `gopay://pay?user=${user.id}&amount=${qrAmount}`;
+
+    return (
+      <div className="min-h-screen bg-[#080d08] text-white">
+        {/* Header */}
+        <div
+          className="px-4 pt-12 pb-8"
+          style={{ background: 'linear-gradient(135deg, #312e81 0%, #1e1b4b 100%)' }}
+        >
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                if (generatedQR) {
+                  setGeneratedQR(null);
+                  setQrAmount('');
+                } else {
+                  setActiveView('main');
+                }
+              }}
+              className="w-9 h-9 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h1 className="text-xl tracking-tight">
+              {generatedQR ? 'Scan to Pay' : 'QR Code'}
+            </h1>
+          </div>
+        </div>
+
+        <div className="px-4 py-6 space-y-5">
+          <AnimatePresence mode="wait">
+            {!generatedQR ? (
+              <motion.div
+                key="input"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-5"
+              >
+                {/* Amount input */}
+                <div
+                  className="rounded-2xl p-5"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                >
+                  <p className="text-sm text-white/50 mb-4">Amount to receive (TZS)</p>
+                  <input
+                    type="number"
+                    value={qrAmount}
+                    onChange={(e) => setQrAmount(e.target.value)}
+                    placeholder="0"
+                    className="w-full bg-transparent text-4xl font-medium text-center text-white placeholder-white/20 outline-none border-b border-white/10 pb-3 focus:border-[#a78bfa] transition-colors"
+                  />
+                  <button
+                    onClick={() => {
+                      if (qrAmount && parseFloat(qrAmount) > 0) {
+                        setGeneratedQR(`gopay://pay?user=${user.id}&amount=${qrAmount}`);
+                      }
+                    }}
+                    disabled={!qrAmount || parseFloat(qrAmount) <= 0}
+                    className="w-full mt-5 h-12 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-40"
+                    style={{ background: '#7c3aed' }}
+                  >
+                    <QrCode className="h-4 w-4" />
+                    Generate QR Code
+                  </button>
+                </div>
+
+                {/* Quick amounts */}
+                <div>
+                  <p className="text-xs text-white/40 uppercase tracking-widest mb-3">Quick amounts</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[5000, 10000, 20000, 50000, 100000, 200000].map((amount) => (
+                      <button
+                        key={amount}
+                        onClick={() => setQrAmount(amount.toString())}
+                        className="py-3 rounded-xl text-xs font-medium transition-all"
+                        style={{
+                          background:
+                            qrAmount === amount.toString()
+                              ? 'rgba(124,58,237,0.3)'
+                              : 'rgba(255,255,255,0.04)',
+                          border:
+                            qrAmount === amount.toString()
+                              ? '1px solid rgba(124,58,237,0.6)'
+                              : '1px solid rgba(255,255,255,0.08)',
+                          color:
+                            qrAmount === amount.toString()
+                              ? '#c4b5fd'
+                              : 'rgba(255,255,255,0.6)',
+                        }}
+                      >
+                        {formatCurrency(amount)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="qr-display"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="space-y-5"
+              >
+                {/* Amount display */}
+                <div className="text-center">
+                  <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Requesting</p>
+                  <p className="text-3xl font-medium">{formatCurrency(parseFloat(qrAmount))}</p>
+                  <p className="text-sm text-white/40 mt-1">
+                    {user.name}
+                  </p>
+                </div>
+
+                {/* QR code */}
+                <div className="flex justify-center">
+                  <motion.div
+                    className="p-4 rounded-2xl"
+                    style={{ background: 'white' }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.1, duration: 0.4, type: 'spring', stiffness: 200 }}
+                  >
+                    <QRCodeSVG data={qrData} size={220} />
+                  </motion.div>
+                </div>
+
+                {/* Validity notice */}
+                <div
+                  className="rounded-xl p-4 flex items-center gap-3"
+                  style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)' }}
+                >
+                  <motion.div
+                    className="w-2 h-2 rounded-full bg-[#a78bfa] flex-shrink-0"
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                  <p className="text-xs text-[#a78bfa]/80">
+                    This QR code is valid for 10 minutes and expires automatically
+                  </p>
+                </div>
+
+                {/* Regenerate */}
+                <button
+                  onClick={() => {
+                    setGeneratedQR(null);
+                    setQrAmount('');
+                  }}
+                  className="w-full h-12 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)' }}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Generate New QR
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* How it works */}
+          {!generatedQR && (
+            <div
+              className="rounded-2xl p-5 space-y-3"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+            >
+              <p className="text-sm text-white/50">How QR payment works</p>
+              {[
+                'Enter the amount you want to receive',
+                'Show the generated QR code to the payer',
+                'They scan it with their GO Pay app',
+                'Receive instant payment confirmation',
+              ].map((step, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 bg-[#312e81] text-[#a78bfa] border border-[#a78bfa]/20">
+                    {i + 1}
+                  </div>
+                  <p className="text-sm text-white/60">{step}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
