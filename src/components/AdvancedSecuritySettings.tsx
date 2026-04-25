@@ -1,1010 +1,565 @@
-import { ArrowLeft, Shield, Lock, Smartphone, AlertTriangle, CheckCircle, Eye, EyeOff, Fingerprint, Key, MapPin, Bell, Users, Clock, Zap, Settings } from 'lucide-react';
-import { Button } from './ui/button';
+import { ArrowLeft, Shield, Lock, Smartphone, AlertTriangle, CheckCircle, Eye, Fingerprint, Key, MapPin, Users, Clock, Zap, Settings } from 'lucide-react';
 import { useState } from 'react';
 
 interface AdvancedSecuritySettingsProps {
   onBack: () => void;
 }
 
+type Tab = 'authentication' | 'devices' | 'transaction' | 'privacy';
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'authentication', label: 'Uthibitishaji' },
+  { id: 'devices', label: 'Vifaa' },
+  { id: 'transaction', label: 'Malipo' },
+  { id: 'privacy', label: 'Faragha' },
+];
+
+function Toggle({ value, onChange, 'aria-label': ariaLabel }: { value: boolean; onChange: () => void; 'aria-label'?: string }) {
+  return (
+    <button
+      onClick={onChange}
+      className="relative w-14 h-8 rounded-full transition-colors flex-shrink-0 active:scale-95"
+      style={{ background: value ? '#16a34a' : 'rgba(255,255,255,0.12)' }}
+      role="switch"
+      aria-checked={value}
+      aria-label={ariaLabel}
+    >
+      <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${value ? 'translate-x-6' : 'translate-x-0'}`} />
+    </button>
+  );
+}
+
+function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`rounded-2xl p-5 ${className}`} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+      {children}
+    </div>
+  );
+}
+
+function IconBox({ children, color }: { children: React.ReactNode; color: string }) {
+  return (
+    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+      style={{ background: `${color}18`, border: `1px solid ${color}30` }}>
+      {children}
+    </div>
+  );
+}
+
 export function AdvancedSecuritySettings({ onBack }: AdvancedSecuritySettingsProps) {
-  const [activeTab, setActiveTab] = useState<'authentication' | 'devices' | 'transaction' | 'privacy'>('authentication');
-  
-  // Authentication States
+  const [activeTab, setActiveTab] = useState<Tab>('authentication');
   const [biometricEnabled, setBiometricEnabled] = useState(true);
   const [pinEnabled, setPinEnabled] = useState(true);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
   const [autoLockTime, setAutoLockTime] = useState('30');
-  
-  // Device Security
   const [rootDetection, setRootDetection] = useState(true);
   const [screenRecordBlock, setScreenRecordBlock] = useState(true);
   const [appCloningDetection, setAppCloningDetection] = useState(true);
-  const [trustedDevicesOnly, setTrustedDevicesOnly] = useState(false);
-  
-  // Transaction Security
   const [transactionPinRequired, setTransactionPinRequired] = useState(true);
   const [dailyLimit, setDailyLimit] = useState('5000000');
   const [nighttimeBlock, setNighttimeBlock] = useState(false);
   const [whitelistOnly, setWhitelistOnly] = useState(false);
   const [fraudAIEnabled, setFraudAIEnabled] = useState(true);
-  
-  // Privacy & Location
   const [antiGPSSpoofing, setAntiGPSSpoofing] = useState(true);
   const [locationEncryption, setLocationEncryption] = useState(true);
   const [vpnDetection, setVpnDetection] = useState(true);
-  
-  const [deviceTrustScore, setDeviceTrustScore] = useState(95);
-  const [securityScore, setSecurityScore] = useState(92);
+
+  const deviceTrustScore = 95;
+  const securityScore = 92;
 
   const trustedDevices = [
-    {
-      id: '1',
-      name: 'iPhone 14 Pro',
-      lastActive: '2 minutes ago',
-      location: 'Dar es Salaam, Tanzania',
-      trustScore: 98,
-      current: true
-    },
-    {
-      id: '2',
-      name: 'Samsung Galaxy S23',
-      lastActive: '3 days ago',
-      location: 'Arusha, Tanzania',
-      trustScore: 85,
-      current: false
-    }
+    { id: '1', name: 'iPhone 14 Pro', lastActive: 'Dakika 2 zilizopita', location: 'Dar es Salaam, Tanzania', trustScore: 98, current: true },
+    { id: '2', name: 'Samsung Galaxy S23', lastActive: 'Siku 3 zilizopita', location: 'Arusha, Tanzania', trustScore: 85, current: false },
   ];
 
   const recentSecurityEvents = [
-    {
-      id: '1',
-      type: 'login',
-      message: 'Successful login from trusted device',
-      timestamp: '2 minutes ago',
-      severity: 'info'
-    },
-    {
-      id: '2',
-      type: 'fraud_blocked',
-      message: 'Suspicious transaction blocked by AI',
-      timestamp: '1 hour ago',
-      severity: 'warning'
-    },
-    {
-      id: '3',
-      type: 'location',
-      message: 'GPS spoofing attempt detected and blocked',
-      timestamp: '5 hours ago',
-      severity: 'danger'
-    }
+    { id: '1', message: 'Kuingia kwa mafanikio kutoka kwa kifaa kinachoaminika', timestamp: 'Dakika 2 zilizopita', severity: 'info' },
+    { id: '2', message: 'Muamala wa tuhuma ulizuiwa na AI', timestamp: 'Saa 1 iliyopita', severity: 'warning' },
+    { id: '3', message: 'Jaribio la udanganyifu wa GPS liligundulika na kuzuiwa', timestamp: 'Masaa 5 yaliyopita', severity: 'danger' },
   ];
 
-  if (activeTab === 'authentication') {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
-          <div className="px-4 py-4">
-            <div className="flex items-center gap-3 mb-4">
-              <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full">
-                <ArrowLeft className="size-6" />
-              </button>
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold">Advanced Security</h1>
-                <p className="text-sm text-gray-600">Bank-grade protection</p>
-              </div>
-              <div className={`px-4 py-2 rounded-full ${
-                securityScore >= 90 ? 'bg-green-100' :
-                securityScore >= 70 ? 'bg-amber-100' :
-                'bg-red-100'
-              }`}>
-                <p className="text-xs font-semibold ${
-                  securityScore >= 90 ? 'text-green-700' :
-                  securityScore >= 70 ? 'text-amber-700' :
-                  'text-red-700'
-                }">
-                  {securityScore}% Secure
-                </p>
-              </div>
-            </div>
+  const eventColor = (s: string) => s === 'info' ? '#60a5fa' : s === 'warning' ? '#facc15' : '#f87171';
+  const eventBg = (s: string) => s === 'info' ? 'rgba(59,130,246,0.12)' : s === 'warning' ? 'rgba(234,179,8,0.12)' : 'rgba(239,68,68,0.12)';
 
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              <button
-                onClick={() => setActiveTab('authentication')}
-                className={`px-4 py-2 rounded-full whitespace-nowrap font-semibold transition-all ${
-                  activeTab === 'authentication'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                Authentication
-              </button>
-              <button
-                onClick={() => setActiveTab('devices')}
-                className={`px-4 py-2 rounded-full whitespace-nowrap font-semibold transition-all ${
-                  activeTab === 'devices'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                Devices
-              </button>
-              <button
-                onClick={() => setActiveTab('transaction')}
-                className={`px-4 py-2 rounded-full whitespace-nowrap font-semibold transition-all ${
-                  activeTab === 'transaction'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                Transactions
-              </button>
-              <button
-                onClick={() => setActiveTab('privacy')}
-                className={`px-4 py-2 rounded-full whitespace-nowrap font-semibold transition-all ${
-                  activeTab === 'privacy'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700'
-                }`}
-              >
-                Privacy
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="px-4 py-6 space-y-6 pb-24">
-          {/* Security Score Card */}
-          <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-3xl p-6 shadow-xl">
-            <div className="flex items-start gap-4 mb-6">
-              <div className="bg-white/20 backdrop-blur-sm w-16 h-16 rounded-xl flex items-center justify-center">
-                <Shield className="size-8" />
-              </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-bold mb-2">Security Status</h2>
-                <p className="text-sm text-white/90">
-                  Your account meets BoT security standards
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm">Security Score</span>
-                <span className="text-2xl font-bold">{securityScore}%</span>
-              </div>
-              <div className="h-3 bg-white/20 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-white rounded-full transition-all duration-500"
-                  style={{ width: `${securityScore}%` }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Biometric Authentication */}
-          <div className="bg-white rounded-3xl p-6 shadow-md">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-purple-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                  <Fingerprint className="size-6 text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">Biometric Lock</h3>
-                  <p className="text-sm text-gray-600">Face ID / Fingerprint</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setBiometricEnabled(!biometricEnabled)}
-                className={`relative w-14 h-8 rounded-full transition-colors ${
-                  biometricEnabled ? 'bg-green-600' : 'bg-gray-300'
-                }`}
-                role="switch"
-                aria-checked={biometricEnabled}
-              >
-                <div
-                  className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                    biometricEnabled ? 'translate-x-6' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-            {biometricEnabled && (
-              <div className="bg-green-50 rounded-xl p-3 border border-green-200">
-                <p className="text-xs text-green-800">
-                  ✓ Secure Enclave enabled • Hardware-protected keys
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* App PIN */}
-          <div className="bg-white rounded-3xl p-6 shadow-md">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-blue-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                  <Lock className="size-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">App PIN Lock</h3>
-                  <p className="text-sm text-gray-600">6-digit PIN required</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setPinEnabled(!pinEnabled)}
-                className={`relative w-14 h-8 rounded-full transition-colors ${
-                  pinEnabled ? 'bg-green-600' : 'bg-gray-300'
-                }`}
-                role="switch"
-                aria-checked={pinEnabled}
-              >
-                <div
-                  className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                    pinEnabled ? 'translate-x-6' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-            {pinEnabled && (
-              <Button className="w-full h-12 rounded-full" variant="outline">
-                Change PIN
-              </Button>
-            )}
-          </div>
-
-          {/* Two-Factor Authentication */}
-          <div className="bg-white rounded-3xl p-6 shadow-md">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-green-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                  <Smartphone className="size-6 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">Two-Factor Auth (2FA)</h3>
-                  <p className="text-sm text-gray-600">SMS + Biometric</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
-                className={`relative w-14 h-8 rounded-full transition-colors ${
-                  twoFactorEnabled ? 'bg-green-600' : 'bg-gray-300'
-                }`}
-                role="switch"
-                aria-checked={twoFactorEnabled}
-              >
-                <div
-                  className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                    twoFactorEnabled ? 'translate-x-6' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-            {twoFactorEnabled && (
-              <div className="bg-green-50 rounded-xl p-3 border border-green-200">
-                <p className="text-xs text-green-800">
-                  ✓ Required for high-value transactions • BoT compliant
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Auto-Lock Timer */}
-          <div className="bg-white rounded-3xl p-6 shadow-md">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-amber-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                <Clock className="size-6 text-amber-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900">Auto-Lock Timer</h3>
-                <p className="text-sm text-gray-600">Lock after inactivity</p>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              {['30', '60', '120', '300'].map(seconds => (
-                <button
-                  key={seconds}
-                  onClick={() => setAutoLockTime(seconds)}
-                  className={`w-full p-3 rounded-xl transition-all ${
-                    autoLockTime === seconds
-                      ? 'bg-blue-100 border-2 border-blue-600'
-                      : 'bg-gray-50 border-2 border-transparent'
-                  }`}
-                >
-                  <span className={`font-semibold ${
-                    autoLockTime === seconds ? 'text-blue-900' : 'text-gray-700'
-                  }`}>
-                    {parseInt(seconds) < 60 ? `${seconds} seconds` : `${parseInt(seconds) / 60} minutes`}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Password Reset */}
-          <div className="bg-white rounded-3xl p-6 shadow-md">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-red-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                <Key className="size-6 text-red-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-900">Password & Recovery</h3>
-                <p className="text-sm text-gray-600">NIDA-verified reset only</p>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Button className="w-full h-12 rounded-full" variant="outline">
-                Change Password
-              </Button>
-              <Button className="w-full h-12 rounded-full" variant="outline">
-                Setup Recovery (NIDA)
-              </Button>
-            </div>
-          </div>
-
-          {/* Security Recommendations */}
-          <div className="bg-blue-50 rounded-2xl p-6 border border-blue-200">
-            <h3 className="font-semibold text-blue-900 mb-3">BoT Security Standards</h3>
-            <ul className="space-y-2 text-sm text-blue-800">
-              <li className="flex items-start gap-2">
-                <CheckCircle className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <span>End-to-end encryption (AES-256 + TLS 1.3)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <span>Hardware key storage (Secure Enclave)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <span>Password hashing (Argon2id)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <span>Real-time fraud monitoring (AI-powered)</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (activeTab === 'devices') {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
-          <div className="px-4 py-4">
-            <div className="flex items-center gap-3 mb-4">
-              <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full">
-                <ArrowLeft className="size-6" />
-              </button>
-              <h1 className="text-2xl font-bold flex-1">Device Security</h1>
-            </div>
-
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              <button
-                onClick={() => setActiveTab('authentication')}
-                className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-semibold whitespace-nowrap"
-              >
-                Authentication
-              </button>
-              <button
-                onClick={() => setActiveTab('devices')}
-                className="px-4 py-2 rounded-full bg-blue-600 text-white font-semibold whitespace-nowrap"
-              >
-                Devices
-              </button>
-              <button
-                onClick={() => setActiveTab('transaction')}
-                className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-semibold whitespace-nowrap"
-              >
-                Transactions
-              </button>
-              <button
-                onClick={() => setActiveTab('privacy')}
-                className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-semibold whitespace-nowrap"
-              >
-                Privacy
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="px-4 py-6 space-y-6 pb-24">
-          {/* Device Trust Score */}
-          <div className="bg-gradient-to-br from-green-600 to-emerald-700 text-white rounded-3xl p-6 shadow-xl">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="bg-white/20 backdrop-blur-sm w-16 h-16 rounded-xl flex items-center justify-center">
-                <Smartphone className="size-8" />
-              </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-bold mb-1">Device Trust Score</h2>
-                <p className="text-sm text-white/90">This device reputation</p>
-              </div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm">Trust Level</span>
-                <span className="text-2xl font-bold">{deviceTrustScore}%</span>
-              </div>
-              <div className="h-3 bg-white/20 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-white rounded-full"
-                  style={{ width: `${deviceTrustScore}%` }}
-                />
-              </div>
-              <p className="text-xs text-white/80 mt-3">
-                ✓ Clean device • No rooting • No tampering detected
-              </p>
-            </div>
-          </div>
-
-          {/* Root/Jailbreak Detection */}
-          <div className="bg-white rounded-3xl p-6 shadow-md">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-red-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                  <AlertTriangle className="size-6 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">Root Detection</h3>
-                  <p className="text-sm text-gray-600">Block rooted/jailbroken devices</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setRootDetection(!rootDetection)}
-                className={`relative w-14 h-8 rounded-full transition-colors ${
-                  rootDetection ? 'bg-green-600' : 'bg-gray-300'
-                }`}
-              >
-                <div
-                  className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                    rootDetection ? 'translate-x-6' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-            {rootDetection && (
-              <div className="bg-green-50 rounded-xl p-3 border border-green-200">
-                <p className="text-xs text-green-800">
-                  ✓ Active • Payments blocked on compromised devices
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Screen Recording Block */}
-          <div className="bg-white rounded-3xl p-6 shadow-md">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-purple-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                  <Eye className="size-6 text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">Screen Protection</h3>
-                  <p className="text-sm text-gray-600">Block screenshots & recording</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setScreenRecordBlock(!screenRecordBlock)}
-                className={`relative w-14 h-8 rounded-full transition-colors ${
-                  screenRecordBlock ? 'bg-green-600' : 'bg-gray-300'
-                }`}
-              >
-                <div
-                  className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                    screenRecordBlock ? 'translate-x-6' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-            {screenRecordBlock && (
-              <div className="bg-purple-50 rounded-xl p-3 border border-purple-200">
-                <p className="text-xs text-purple-800">
-                  ✓ Wallet & QR screens cannot be captured
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* App Cloning Detection */}
-          <div className="bg-white rounded-3xl p-6 shadow-md">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-amber-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                  <Settings className="size-6 text-amber-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">Clone Detection</h3>
-                  <p className="text-sm text-gray-600">Block dual apps & parallel space</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setAppCloningDetection(!appCloningDetection)}
-                className={`relative w-14 h-8 rounded-full transition-colors ${
-                  appCloningDetection ? 'bg-green-600' : 'bg-gray-300'
-                }`}
-              >
-                <div
-                  className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                    appCloningDetection ? 'translate-x-6' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-
-          {/* Trusted Devices */}
-          <div>
-            <h3 className="font-bold text-gray-900 mb-4">Trusted Devices</h3>
-            <div className="space-y-3">
-              {trustedDevices.map(device => (
-                <div key={device.id} className="bg-white rounded-3xl p-6 shadow-md">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                      device.current ? 'bg-green-100' : 'bg-gray-100'
-                    }`}>
-                      <Smartphone className={`size-6 ${
-                        device.current ? 'text-green-600' : 'text-gray-600'
-                      }`} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-bold text-gray-900">{device.name}</h4>
-                        {device.current && (
-                          <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold">
-                            CURRENT
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 mb-2">{device.location}</p>
-                      <p className="text-xs text-gray-500">{device.lastActive}</p>
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 rounded-xl p-3 mb-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-600">Trust Score</span>
-                      <span className="text-sm font-bold text-gray-900">{device.trustScore}%</span>
-                    </div>
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden mt-2">
-                      <div 
-                        className={`h-full rounded-full ${
-                          device.trustScore >= 90 ? 'bg-green-600' :
-                          device.trustScore >= 70 ? 'bg-amber-600' :
-                          'bg-red-600'
-                        }`}
-                        style={{ width: `${device.trustScore}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {!device.current && (
-                    <Button variant="outline" className="w-full h-10 rounded-full text-red-600 border-red-200">
-                      Remove Device
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Runtime Integrity */}
-          <div className="bg-blue-50 rounded-2xl p-6 border border-blue-200">
-            <h3 className="font-semibold text-blue-900 mb-3">Runtime Protection Active</h3>
-            <ul className="space-y-2 text-sm text-blue-800">
-              <li className="flex items-start gap-2">
-                <CheckCircle className="size-4 text-blue-600 mt-0.5" />
-                <span>Memory tampering detection</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="size-4 text-blue-600 mt-0.5" />
-                <span>Code injection prevention</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="size-4 text-blue-600 mt-0.5" />
-                <span>Hooking framework blocking (Frida/Xposed)</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="size-4 text-blue-600 mt-0.5" />
-                <span>Certificate pinning enabled</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (activeTab === 'transaction') {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
-          <div className="px-4 py-4">
-            <div className="flex items-center gap-3 mb-4">
-              <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full">
-                <ArrowLeft className="size-6" />
-              </button>
-              <h1 className="text-2xl font-bold flex-1">Transaction Security</h1>
-            </div>
-
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              <button
-                onClick={() => setActiveTab('authentication')}
-                className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-semibold whitespace-nowrap"
-              >
-                Authentication
-              </button>
-              <button
-                onClick={() => setActiveTab('devices')}
-                className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-semibold whitespace-nowrap"
-              >
-                Devices
-              </button>
-              <button
-                onClick={() => setActiveTab('transaction')}
-                className="px-4 py-2 rounded-full bg-blue-600 text-white font-semibold whitespace-nowrap"
-              >
-                Transactions
-              </button>
-              <button
-                onClick={() => setActiveTab('privacy')}
-                className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-semibold whitespace-nowrap"
-              >
-                Privacy
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="px-4 py-6 space-y-6 pb-24">
-          {/* AI Fraud Engine */}
-          <div className="bg-gradient-to-br from-purple-600 to-purple-700 text-white rounded-3xl p-6 shadow-xl">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="bg-white/20 backdrop-blur-sm w-16 h-16 rounded-xl flex items-center justify-center">
-                <Zap className="size-8" />
-              </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-bold mb-1">AI Fraud Engine</h2>
-                <p className="text-sm text-white/90">Real-time protection</p>
-              </div>
-              <button
-                onClick={() => setFraudAIEnabled(!fraudAIEnabled)}
-                className={`relative w-14 h-8 rounded-full transition-colors ${
-                  fraudAIEnabled ? 'bg-white/30' : 'bg-white/10'
-                }`}
-              >
-                <div
-                  className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                    fraudAIEnabled ? 'translate-x-6' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-            {fraudAIEnabled && (
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
-                <p className="text-xs mb-3">Protected Against:</p>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>✓ SIM swap fraud</div>
-                  <div>✓ Social engineering</div>
-                  <div>✓ Device mismatch</div>
-                  <div>✓ Location anomalies</div>
-                  <div>✓ Unusual patterns</div>
-                  <div>✓ Velocity checks</div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Transaction PIN */}
-          <div className="bg-white rounded-3xl p-6 shadow-md">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-blue-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                  <Lock className="size-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">Transaction PIN</h3>
-                  <p className="text-sm text-gray-600">Required for all payments</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setTransactionPinRequired(!transactionPinRequired)}
-                className={`relative w-14 h-8 rounded-full transition-colors ${
-                  transactionPinRequired ? 'bg-green-600' : 'bg-gray-300'
-                }`}
-              >
-                <div
-                  className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                    transactionPinRequired ? 'translate-x-6' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-
-          {/* Daily Limit */}
-          <div className="bg-white rounded-3xl p-6 shadow-md">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-amber-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                <Settings className="size-6 text-amber-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900">Daily Transaction Limit</h3>
-                <p className="text-sm text-gray-600">Protect from large fraud</p>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 rounded-xl p-4 mb-4">
-              <p className="text-sm text-gray-600 mb-2">Current Limit</p>
-              <p className="text-3xl font-bold text-gray-900">
-                TZS {parseInt(dailyLimit).toLocaleString()}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              {['1000000', '5000000', '10000000', '50000000'].map(limit => (
-                <button
-                  key={limit}
-                  onClick={() => setDailyLimit(limit)}
-                  className={`w-full p-3 rounded-xl transition-all ${
-                    dailyLimit === limit
-                      ? 'bg-amber-100 border-2 border-amber-600'
-                      : 'bg-gray-50 border-2 border-transparent'
-                  }`}
-                >
-                  <span className={`font-semibold ${
-                    dailyLimit === limit ? 'text-amber-900' : 'text-gray-700'
-                  }`}>
-                    TZS {parseInt(limit).toLocaleString()}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Financial Firewall Mode */}
-          <div>
-            <h3 className="font-bold text-gray-900 mb-4">Financial Firewall</h3>
-            
-            {/* Nighttime Block */}
-            <div className="bg-white rounded-3xl p-6 shadow-md mb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-indigo-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                    <Clock className="size-6 text-indigo-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900">Nighttime Block</h4>
-                    <p className="text-sm text-gray-600">No payments 11 PM - 6 AM</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setNighttimeBlock(!nighttimeBlock)}
-                  className={`relative w-14 h-8 rounded-full transition-colors ${
-                    nighttimeBlock ? 'bg-green-600' : 'bg-gray-300'
-                  }`}
-                >
-                  <div
-                    className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                      nighttimeBlock ? 'translate-x-6' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
-
-            {/* Whitelist Only */}
-            <div className="bg-white rounded-3xl p-6 shadow-md">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-green-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                    <Users className="size-6 text-green-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900">Whitelist Mode</h4>
-                    <p className="text-sm text-gray-600">Only approved recipients</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setWhitelistOnly(!whitelistOnly)}
-                  className={`relative w-14 h-8 rounded-full transition-colors ${
-                    whitelistOnly ? 'bg-green-600' : 'bg-gray-300'
-                  }`}
-                >
-                  <div
-                    className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                      whitelistOnly ? 'translate-x-6' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Security Events */}
-          <div>
-            <h3 className="font-bold text-gray-900 mb-4">Recent Security Events</h3>
-            <div className="space-y-3">
-              {recentSecurityEvents.map(event => (
-                <div key={event.id} className="bg-white rounded-2xl p-4 shadow-md">
-                  <div className="flex items-start gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      event.severity === 'info' ? 'bg-blue-100' :
-                      event.severity === 'warning' ? 'bg-amber-100' :
-                      'bg-red-100'
-                    }`}>
-                      <AlertTriangle className={`size-5 ${
-                        event.severity === 'info' ? 'text-blue-600' :
-                        event.severity === 'warning' ? 'text-amber-600' :
-                        'text-red-600'
-                      }`} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900 text-sm mb-1">{event.message}</p>
-                      <p className="text-xs text-gray-500">{event.timestamp}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Privacy Tab
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
-        <div className="px-4 py-4">
+    <div className="min-h-screen pb-10" style={{ background: '#080d08' }}>
+      {/* Header */}
+      <div className="sticky top-0 z-20" style={{ background: 'linear-gradient(135deg, #14532d 0%, #052e16 100%)' }}>
+        <div className="px-4 pt-8 pb-4">
           <div className="flex items-center gap-3 mb-4">
-            <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full">
-              <ArrowLeft className="size-6" />
+            <button onClick={onBack} className="p-2.5 rounded-full active:scale-95" style={{ background: 'rgba(255,255,255,0.15)' }}>
+              <ArrowLeft className="size-5 text-white" />
             </button>
-            <h1 className="text-2xl font-bold flex-1">Privacy & Location</h1>
+            <div className="flex-1">
+              <h1 style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>Usalama wa Juu</h1>
+              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Ulinzi wa kiwango cha benki</p>
+            </div>
+            <div className="px-3 py-1.5 rounded-full" style={{ background: 'rgba(22,163,74,0.25)', border: '1px solid rgba(74,222,128,0.3)' }}>
+              <p style={{ fontSize: '12px', fontWeight: 700, color: '#4ade80' }}>{securityScore}% Salama</p>
+            </div>
           </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            <button
-              onClick={() => setActiveTab('authentication')}
-              className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-semibold whitespace-nowrap"
-            >
-              Authentication
-            </button>
-            <button
-              onClick={() => setActiveTab('devices')}
-              className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-semibold whitespace-nowrap"
-            >
-              Devices
-            </button>
-            <button
-              onClick={() => setActiveTab('transaction')}
-              className="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-semibold whitespace-nowrap"
-            >
-              Transactions
-            </button>
-            <button
-              onClick={() => setActiveTab('privacy')}
-              className="px-4 py-2 rounded-full bg-blue-600 text-white font-semibold whitespace-nowrap"
-            >
-              Privacy
-            </button>
+          <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className="px-4 py-2 rounded-full whitespace-nowrap font-semibold transition-all text-sm active:scale-95"
+                style={{
+                  background: activeTab === tab.id ? '#16a34a' : 'rgba(255,255,255,0.1)',
+                  color: activeTab === tab.id ? '#fff' : 'rgba(255,255,255,0.6)',
+                  border: activeTab === tab.id ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="px-4 py-6 space-y-6 pb-24">
-        {/* Anti-GPS Spoofing */}
-        <div className="bg-white rounded-3xl p-6 shadow-md">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-red-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                <MapPin className="size-6 text-red-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900">Anti-GPS Spoofing</h3>
-                <p className="text-sm text-gray-600">Block fake location apps</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setAntiGPSSpoofing(!antiGPSSpoofing)}
-              className={`relative w-14 h-8 rounded-full transition-colors ${
-                antiGPSSpoofing ? 'bg-green-600' : 'bg-gray-300'
-              }`}
-            >
-              <div
-                className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                  antiGPSSpoofing ? 'translate-x-6' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-          {antiGPSSpoofing && (
-            <div className="bg-red-50 rounded-xl p-3 border border-red-200">
-              <p className="text-xs text-red-800">
-                ✓ Mock location detection • Magnetometer validation
-              </p>
-            </div>
-          )}
-        </div>
+      <div className="px-4 py-5 space-y-4">
 
-        {/* Location Encryption */}
-        <div className="bg-white rounded-3xl p-6 shadow-md">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-blue-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                <Lock className="size-6 text-blue-600" />
+        {/* ── AUTHENTICATION ── */}
+        {activeTab === 'authentication' && (
+          <>
+            <div className="rounded-2xl p-5" style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.2) 0%, rgba(5,46,22,0.85) 100%)', border: '1px solid rgba(74,222,128,0.15)' }}>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: 'rgba(22,163,74,0.3)' }}>
+                  <Shield className="size-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>Hali ya Usalama</p>
+                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>Akaunti yako inakidhi viwango vya BoT</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-gray-900">Location Encryption</h3>
-                <p className="text-sm text-gray-600">Encrypt GPS before sending</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setLocationEncryption(!locationEncryption)}
-              className={`relative w-14 h-8 rounded-full transition-colors ${
-                locationEncryption ? 'bg-green-600' : 'bg-gray-300'
-              }`}
-            >
-              <div
-                className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                  locationEncryption ? 'translate-x-6' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-
-        {/* VPN Detection */}
-        <div className="bg-white rounded-3xl p-6 shadow-md">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-amber-100 w-12 h-12 rounded-xl flex items-center justify-center">
-                <Shield className="size-6 text-amber-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900">VPN/Proxy Detection</h3>
-                <p className="text-sm text-gray-600">Block suspicious connections</p>
+              <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <div className="flex justify-between items-center mb-2">
+                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>Alama ya Usalama</span>
+                  <span style={{ fontSize: '24px', fontWeight: 900, color: '#fff', letterSpacing: '-1px' }}>{securityScore}%</span>
+                </div>
+                <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${securityScore}%`, background: 'linear-gradient(90deg, #16a34a, #4ade80)' }} />
+                </div>
               </div>
             </div>
-            <button
-              onClick={() => setVpnDetection(!vpnDetection)}
-              className={`relative w-14 h-8 rounded-full transition-colors ${
-                vpnDetection ? 'bg-green-600' : 'bg-gray-300'
-              }`}
-            >
-              <div
-                className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                  vpnDetection ? 'translate-x-6' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-        </div>
 
-        {/* Privacy Info */}
-        <div className="bg-green-50 rounded-2xl p-6 border border-green-200">
-          <h3 className="font-semibold text-green-900 mb-3">Location Privacy</h3>
-          <ul className="space-y-2 text-sm text-green-800">
-            <li className="flex items-start gap-2">
-              <CheckCircle className="size-4 text-green-600 mt-0.5" />
-              <span>No raw GPS coordinates stored</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <CheckCircle className="size-4 text-green-600 mt-0.5" />
-              <span>Converted to hashed zones for privacy</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <CheckCircle className="size-4 text-green-600 mt-0.5" />
-              <span>Auto-delete after 30-90 days</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <CheckCircle className="size-4 text-green-600 mt-0.5" />
-              <span>Encrypted in transit (TLS 1.3)</span>
-            </li>
-          </ul>
-        </div>
+            <Card>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <IconBox color="#a78bfa"><Fingerprint className="size-5" style={{ color: '#a78bfa' }} /></IconBox>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Kufuli cha Biometri</p>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Face ID / Alama ya kidole</p>
+                  </div>
+                </div>
+                <Toggle value={biometricEnabled} onChange={() => setBiometricEnabled(!biometricEnabled)} />
+              </div>
+              {biometricEnabled && (
+                <div className="rounded-xl p-3" style={{ background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.15)' }}>
+                  <p style={{ fontSize: '11px', color: '#4ade80' }}>✓ Secure Enclave imewezeshwa • Funguo zilindwa na vifaa</p>
+                </div>
+              )}
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <IconBox color="#60a5fa"><Lock className="size-5" style={{ color: '#60a5fa' }} /></IconBox>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Kufuli cha PIN</p>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>PIN ya tarakimu 6 inahitajika</p>
+                  </div>
+                </div>
+                <Toggle value={pinEnabled} onChange={() => setPinEnabled(!pinEnabled)} />
+              </div>
+              {pinEnabled && (
+                <button className="w-full h-10 rounded-xl text-sm font-semibold transition-all active:scale-95"
+                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  Badilisha PIN
+                </button>
+              )}
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <IconBox color="#4ade80"><Smartphone className="size-5" style={{ color: '#4ade80' }} /></IconBox>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Uthibitishaji wa 2FA</p>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>SMS + Biometri</p>
+                  </div>
+                </div>
+                <Toggle value={twoFactorEnabled} onChange={() => setTwoFactorEnabled(!twoFactorEnabled)} />
+              </div>
+              {twoFactorEnabled && (
+                <div className="rounded-xl p-3" style={{ background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.15)' }}>
+                  <p style={{ fontSize: '11px', color: '#4ade80' }}>✓ Inahitajika kwa miamala ya thamani kubwa • Inakidhi BoT</p>
+                </div>
+              )}
+            </Card>
+
+            <Card>
+              <div className="flex items-center gap-3 mb-4">
+                <IconBox color="#facc15"><Clock className="size-5" style={{ color: '#facc15' }} /></IconBox>
+                <div>
+                  <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Kufungwa Kiotomatiki</p>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Funga baada ya kutotumika</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {[{ v: '30', l: 'Sekunde 30' }, { v: '60', l: 'Dakika 1' }, { v: '120', l: 'Dakika 2' }, { v: '300', l: 'Dakika 5' }].map(opt => (
+                  <button key={opt.v} onClick={() => setAutoLockTime(opt.v)}
+                    className="w-full p-3 rounded-xl transition-all active:scale-[0.98] text-left"
+                    style={{
+                      background: autoLockTime === opt.v ? 'rgba(22,163,74,0.15)' : 'rgba(255,255,255,0.04)',
+                      border: autoLockTime === opt.v ? '1.5px solid #16a34a' : '1px solid rgba(255,255,255,0.08)',
+                    }}>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: autoLockTime === opt.v ? '#4ade80' : 'rgba(255,255,255,0.7)' }}>{opt.l}</span>
+                  </button>
+                ))}
+              </div>
+            </Card>
+
+            <Card>
+              <div className="flex items-center gap-3 mb-4">
+                <IconBox color="#f87171"><Key className="size-5" style={{ color: '#f87171' }} /></IconBox>
+                <div>
+                  <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Nywila & Urejeshaji</p>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Urejeshaji uliothibitishwa na NIDA pekee</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {['Badilisha Nywila', 'Weka Urejeshaji (NIDA)'].map(label => (
+                  <button key={label} className="w-full h-10 rounded-xl text-sm font-semibold active:scale-95"
+                    style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </Card>
+
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.15)' }}>
+              <p style={{ fontSize: '13px', fontWeight: 700, color: '#4ade80', marginBottom: '12px' }}>Viwango vya Usalama vya BoT</p>
+              <ul className="space-y-2">
+                {['Usimbuaji wa mwisho hadi mwisho (AES-256 + TLS 1.3)', 'Hifadhi ya funguo za vifaa (Secure Enclave)', 'Uchimbaji wa nywila (Argon2id)', 'Ufuatiliaji wa ulaghai wa wakati halisi (AI)'].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <CheckCircle className="size-4 flex-shrink-0 mt-0.5" style={{ color: '#4ade80' }} />
+                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
+
+        {/* ── DEVICES ── */}
+        {activeTab === 'devices' && (
+          <>
+            <div className="rounded-2xl p-5" style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.2) 0%, rgba(5,46,22,0.85) 100%)', border: '1px solid rgba(74,222,128,0.15)' }}>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: 'rgba(22,163,74,0.3)' }}>
+                  <Smartphone className="size-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>Alama ya Uaminifu wa Kifaa</p>
+                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>Sifa ya kifaa hiki</p>
+                </div>
+              </div>
+              <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                <div className="flex justify-between items-center mb-2">
+                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>Kiwango cha Uaminifu</span>
+                  <span style={{ fontSize: '24px', fontWeight: 900, color: '#fff', letterSpacing: '-1px' }}>{deviceTrustScore}%</span>
+                </div>
+                <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                  <div className="h-full rounded-full" style={{ width: `${deviceTrustScore}%`, background: 'linear-gradient(90deg, #16a34a, #4ade80)' }} />
+                </div>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginTop: '8px' }}>✓ Kifaa safi • Hakuna mizizi • Hakuna uharibifu uliogunduliwa</p>
+              </div>
+            </div>
+
+            <Card>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <IconBox color="#f87171"><AlertTriangle className="size-5" style={{ color: '#f87171' }} /></IconBox>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Ugunduz wa Mizizi</p>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Zuia vifaa vilivyoboreshwa</p>
+                  </div>
+                </div>
+                <Toggle value={rootDetection} onChange={() => setRootDetection(!rootDetection)} />
+              </div>
+              {rootDetection && (
+                <div className="rounded-xl p-3" style={{ background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.15)' }}>
+                  <p style={{ fontSize: '11px', color: '#4ade80' }}>✓ Inafanya kazi • Malipo yamezuiwa kwenye vifaa vilivyoathirika</p>
+                </div>
+              )}
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <IconBox color="#a78bfa"><Eye className="size-5" style={{ color: '#a78bfa' }} /></IconBox>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Ulinzi wa Skrini</p>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Zuia picha za skrini na kurekodi</p>
+                  </div>
+                </div>
+                <Toggle value={screenRecordBlock} onChange={() => setScreenRecordBlock(!screenRecordBlock)} />
+              </div>
+              {screenRecordBlock && (
+                <div className="rounded-xl p-3" style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.15)' }}>
+                  <p style={{ fontSize: '11px', color: '#c4b5fd' }}>✓ Skrini za pochi na QR haziwezi kupigiwa picha</p>
+                </div>
+              )}
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <IconBox color="#facc15"><Settings className="size-5" style={{ color: '#facc15' }} /></IconBox>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Ugunduz wa Nakala</p>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Zuia programu mbili na nafasi ya sambamba</p>
+                  </div>
+                </div>
+                <Toggle value={appCloningDetection} onChange={() => setAppCloningDetection(!appCloningDetection)} />
+              </div>
+            </Card>
+
+            <div>
+              <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff', marginBottom: '12px' }}>Vifaa Vinavyoaminika</p>
+              <div className="space-y-3">
+                {trustedDevices.map(device => (
+                  <Card key={device.id}>
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="w-11 h-11 rounded-xl flex items-center justify-center"
+                        style={{ background: device.current ? 'rgba(22,163,74,0.15)' : 'rgba(255,255,255,0.06)', border: device.current ? '1px solid rgba(22,163,74,0.3)' : '1px solid rgba(255,255,255,0.08)' }}>
+                        <Smartphone className="size-5" style={{ color: device.current ? '#4ade80' : 'rgba(255,255,255,0.5)' }} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{device.name}</p>
+                          {device.current && (
+                            <span className="px-2 py-0.5 rounded-full" style={{ fontSize: '10px', fontWeight: 700, background: 'rgba(22,163,74,0.2)', color: '#4ade80', border: '1px solid rgba(22,163,74,0.3)' }}>
+                              SASA HIVI
+                            </span>
+                          )}
+                        </div>
+                        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '2px' }}>{device.location}</p>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>{device.lastActive}</p>
+                      </div>
+                    </div>
+                    <div className="rounded-xl p-3 mb-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                      <div className="flex justify-between items-center mb-2">
+                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Alama ya Uaminifu</span>
+                        <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{device.trustScore}%</span>
+                      </div>
+                      <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                        <div className="h-full rounded-full" style={{ width: `${device.trustScore}%`, background: device.trustScore >= 90 ? '#16a34a' : device.trustScore >= 70 ? '#d97706' : '#dc2626' }} />
+                      </div>
+                    </div>
+                    {!device.current && (
+                      <button className="w-full h-9 rounded-xl text-sm font-semibold active:scale-95"
+                        style={{ background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' }}>
+                        Ondoa Kifaa
+                      </button>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.15)' }}>
+              <p style={{ fontSize: '13px', fontWeight: 700, color: '#4ade80', marginBottom: '12px' }}>Ulinzi wa Wakati wa Utekelezaji Unafanya Kazi</p>
+              <ul className="space-y-2">
+                {['Ugunduz wa uharibifu wa kumbukumbu', 'Kuzuia kuingiza nambari', 'Kuzuia mfumo wa kuunganisha (Frida/Xposed)', 'Kuunganisha cheti kumewezeshwa'].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <CheckCircle className="size-4 flex-shrink-0 mt-0.5" style={{ color: '#4ade80' }} />
+                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
+
+        {/* ── TRANSACTION ── */}
+        {activeTab === 'transaction' && (
+          <>
+            <div className="rounded-2xl p-5" style={{ background: 'linear-gradient(135deg, rgba(109,40,217,0.35) 0%, rgba(76,29,149,0.6) 100%)', border: '1px solid rgba(167,139,250,0.2)' }}>
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,92,246,0.3)' }}>
+                  <Zap className="size-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>Injini ya AI Dhidi ya Ulaghai</p>
+                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>Ulinzi wa wakati halisi</p>
+                </div>
+                <Toggle value={fraudAIEnabled} onChange={() => setFraudAIEnabled(!fraudAIEnabled)} />
+              </div>
+              {fraudAIEnabled && (
+                <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px' }}>Imelindwa Dhidi ya:</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['✓ Udanganyifu wa SIM', '✓ Uhandisi wa kijamii', '✓ Kutofautiana kwa kifaa', '✓ Matatizo ya mahali', '✓ Mifumo isiyo ya kawaida', '✓ Ukaguzi wa kasi'].map((item, i) => (
+                      <p key={i} style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>{item}</p>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Card>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <IconBox color="#60a5fa"><Lock className="size-5" style={{ color: '#60a5fa' }} /></IconBox>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>PIN ya Muamala</p>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Inahitajika kwa malipo yote</p>
+                  </div>
+                </div>
+                <Toggle value={transactionPinRequired} onChange={() => setTransactionPinRequired(!transactionPinRequired)} />
+              </div>
+            </Card>
+
+            <Card>
+              <div className="flex items-center gap-3 mb-4">
+                <IconBox color="#facc15"><Settings className="size-5" style={{ color: '#facc15' }} /></IconBox>
+                <div>
+                  <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Kikomo cha Muamala wa Kila Siku</p>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Linda kutoka kwa ulaghai mkubwa</p>
+                </div>
+              </div>
+              <div className="rounded-xl p-4 mb-3" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>Kikomo cha Sasa Hivi</p>
+                <p style={{ fontSize: '28px', fontWeight: 900, color: '#fff', letterSpacing: '-1px' }}>TZS {parseInt(dailyLimit).toLocaleString()}</p>
+              </div>
+              <div className="space-y-2">
+                {[{ v: '1000000', l: 'TZS 1,000,000' }, { v: '5000000', l: 'TZS 5,000,000' }, { v: '10000000', l: 'TZS 10,000,000' }, { v: '50000000', l: 'TZS 50,000,000' }].map(opt => (
+                  <button key={opt.v} onClick={() => setDailyLimit(opt.v)}
+                    className="w-full p-3 rounded-xl transition-all active:scale-[0.98] text-left"
+                    style={{
+                      background: dailyLimit === opt.v ? 'rgba(234,179,8,0.15)' : 'rgba(255,255,255,0.04)',
+                      border: dailyLimit === opt.v ? '1.5px solid #d97706' : '1px solid rgba(255,255,255,0.08)',
+                    }}>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: dailyLimit === opt.v ? '#facc15' : 'rgba(255,255,255,0.7)' }}>{opt.l}</span>
+                  </button>
+                ))}
+              </div>
+            </Card>
+
+            <div>
+              <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff', marginBottom: '12px' }}>Kinga ya Fedha</p>
+              <div className="space-y-3">
+                <Card>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <IconBox color="#818cf8"><Clock className="size-5" style={{ color: '#818cf8' }} /></IconBox>
+                      <div>
+                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Kizuizi cha Usiku</p>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Hakuna malipo 11 PM - 6 AM</p>
+                      </div>
+                    </div>
+                    <Toggle value={nighttimeBlock} onChange={() => setNighttimeBlock(!nighttimeBlock)} />
+                  </div>
+                </Card>
+                <Card>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <IconBox color="#4ade80"><Users className="size-5" style={{ color: '#4ade80' }} /></IconBox>
+                      <div>
+                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Hali ya Orodha ya Weupe</p>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Wapokeaji walioidhinishwa pekee</p>
+                      </div>
+                    </div>
+                    <Toggle value={whitelistOnly} onChange={() => setWhitelistOnly(!whitelistOnly)} />
+                  </div>
+                </Card>
+              </div>
+            </div>
+
+            <div>
+              <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff', marginBottom: '12px' }}>Matukio ya Usalama ya Hivi Karibuni</p>
+              <div className="space-y-3">
+                {recentSecurityEvents.map(event => (
+                  <div key={event.id} className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: eventBg(event.severity) }}>
+                        <AlertTriangle className="size-4" style={{ color: eventColor(event.severity) }} />
+                      </div>
+                      <div className="flex-1">
+                        <p style={{ fontSize: '13px', fontWeight: 600, color: '#fff', marginBottom: '2px' }}>{event.message}</p>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{event.timestamp}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ── PRIVACY ── */}
+        {activeTab === 'privacy' && (
+          <>
+            <Card>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <IconBox color="#f87171"><MapPin className="size-5" style={{ color: '#f87171' }} /></IconBox>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Kinga ya GPS Bandia</p>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Zuia programu za mahali bandia</p>
+                  </div>
+                </div>
+                <Toggle value={antiGPSSpoofing} onChange={() => setAntiGPSSpoofing(!antiGPSSpoofing)} />
+              </div>
+              {antiGPSSpoofing && (
+                <div className="rounded-xl p-3" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)' }}>
+                  <p style={{ fontSize: '11px', color: '#fca5a5' }}>✓ Ugunduz wa mahali bandia • Uthibitishaji wa magnetometer</p>
+                </div>
+              )}
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <IconBox color="#60a5fa"><Lock className="size-5" style={{ color: '#60a5fa' }} /></IconBox>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Usimbuaji wa Mahali</p>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Simba GPS kabla ya kutuma</p>
+                  </div>
+                </div>
+                <Toggle value={locationEncryption} onChange={() => setLocationEncryption(!locationEncryption)} />
+              </div>
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <IconBox color="#facc15"><Shield className="size-5" style={{ color: '#facc15' }} /></IconBox>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Ugunduz wa VPN/Proxy</p>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Zuia miunganisho ya tuhuma</p>
+                  </div>
+                </div>
+                <Toggle value={vpnDetection} onChange={() => setVpnDetection(!vpnDetection)} />
+              </div>
+            </Card>
+
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.15)' }}>
+              <p style={{ fontSize: '13px', fontWeight: 700, color: '#4ade80', marginBottom: '12px' }}>Faragha ya Mahali</p>
+              <ul className="space-y-2">
+                {['Hakuna kuratibu za GPS kamili zilizohifadhiwa', 'Zimebadilishwa kuwa maeneo yaliyofichwa kwa faragha', 'Kufutwa kiotomatiki baada ya siku 30-90', 'Imesimbwa wakati wa usafirishaji (TLS 1.3)'].map((item, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <CheckCircle className="size-4 flex-shrink-0 mt-0.5" style={{ color: '#4ade80' }} />
+                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,4 @@
-import { ArrowLeft, Sparkles, Plane, Building2, Shield, Globe, MessageCircle, Mic, Send, MapPin, Calendar, DollarSign, TrendingUp, AlertTriangle } from 'lucide-react';
-import { Button } from './ui/button';
+import { ArrowLeft, Sparkles, Plane, Building2, Shield, Globe, Mic, Send } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 interface AIAssistantPageProps {
@@ -14,272 +13,141 @@ interface Message {
   suggestions?: string[];
 }
 
+const ASSISTANTS = [
+  {
+    id: 'travel', name: 'Travel AI', icon: Plane,
+    color: '#3b82f6', gradient: 'linear-gradient(135deg,#3b82f6,#6366f1)',
+    description: 'Panga safari, tafsiri, tafuta maeneo',
+    greeting: "Habari! Mimi ni msaidizi wako wa safari Tanzania. Naweza kukusaidia kupanga ratiba, kutafuta vivutio, kutafsiri misemo, na kugundua maeneo ya kipekee. Unataka kwenda wapi?",
+    suggestions: ['Panga safari ya Serengeti siku 3', 'Wakati bora kupanda Kilimanjaro?', 'Tafsiri "Hoteli iko wapi?"', 'Fukwe nzuri Zanzibar'],
+  },
+  {
+    id: 'business', name: 'SME AI', icon: Building2,
+    color: '#8b5cf6', gradient: 'linear-gradient(135deg,#8b5cf6,#ec4899)',
+    description: 'Zana za biashara, uchambuzi, masoko',
+    greeting: 'Habari! Mimi ni msaidizi wako wa biashara. Naweza kusaidia na maudhui ya masoko, uchambuzi wa mauzo, maarifa ya hesabu, na kukua biashara yako kwenye goPay. Ninaweza kukusaidiaje leo?',
+    suggestions: ['Andika maelezo ya bidhaa', 'Changanua mwelekeo wa mauzo yangu', 'Tengeneza chapisho la mitandao', 'Vidokezo vya usimamizi wa hesabu'],
+  },
+  {
+    id: 'safety', name: 'Safety AI', icon: Shield,
+    color: '#ef4444', gradient: 'linear-gradient(135deg,#ef4444,#f97316)',
+    description: 'Ugunduz wa ulaghai, msaada wa dharura',
+    greeting: 'Habari! Mimi ni msaidizi wako wa usalama. Ninafuatilia miamala kwa shughuli za tuhuma na naweza kusaidia na dharura. Kila kitu sawa? Ninaweza kukusaidiaje?',
+    suggestions: ['Je, muamala huu uko salama?', 'Ripoti shughuli ya tuhuma', 'Namba za dharura', 'Vidokezo vya usalama wa safari'],
+  },
+  {
+    id: 'translate', name: 'Tafsiri', icon: Globe,
+    color: '#16a34a', gradient: 'linear-gradient(135deg,#16a34a,#06b6d4)',
+    description: 'Kiswahili ↔ Kiingereza ↔ Zaidi',
+    greeting: 'Habari! Naweza kutafsiri kati ya Kiswahili, Kiingereza, Kifaransa, Kijerumani, na zaidi. Andika au sema unachotaka kutafsiriwa.',
+    suggestions: ['Tafsiri kwa Kiswahili', 'Tafsiri kwa Kiingereza', 'Misemo ya kawaida ya safari', 'Msamiati wa biashara'],
+  },
+];
+
+function generateResponse(input: string, type: string): { content: string; suggestions?: string[] } {
+  const lower = input.toLowerCase();
+  if (type === 'travel') {
+    if (lower.includes('serengeti') || lower.includes('safari')) return {
+      content: `Chaguo zuri! Hapa kuna ratiba ya siku 3 ya Serengeti:\n\n**Siku 1: Kufika & Serengeti ya Kati**\n- Asubuhi: Fika Seronera Airstrip\n- Mchana: Safari Serengeti ya Kati\n- Jioni: Machweo ya jua Simba Kopjes\n\n**Siku 2: Serengeti ya Kaskazini**\n- Siku nzima: Tazama Uhamiaji Mkubwa\n- Tembelea kivuko cha Mto Mara\n- Fuatilia paka wakubwa na mwongozo\n\n**Siku 3: Ngorongoro**\n- Asubuhi: Endesha hadi Ngorongoro\n- Shuka ndani ya crater kutazama wanyama\n- Mchana: Rudi Arusha\n\n**Gharama inayokadiriwa:** TZS 2,800,000 kwa mtu\n\nUnataka nikuhifadhie malazi?`,
+      suggestions: ['Hifadhi ratiba hii', 'Ongeza siku zaidi', 'Onyesha malazi', 'Chaguo za bei nafuu'],
+    };
+    if (lower.includes('kilimanjaro')) return {
+      content: `**Wakati Bora wa Kupanda Kilimanjaro:**\n\n☀️ **Majira ya Kiangazi (Bora):**\n- Januari hadi Machi\n- Juni hadi Oktoba\n\nMajira haya yana:\n- Anga wazi na maoni mazuri\n- Mvua kidogo\n- Viwango vya juu vya mafanikio\n\n❄️ **Unachostahili kujua:**\n- Joto: -10°C hadi 30°C\n- Muda: Siku 5-9 kulingana na njia\n- Kiwango cha mafanikio: 65-85%\n\n**Njia Maarufu:**\n1. Njia ya Marangu (siku 5-6)\n2. Njia ya Machame (siku 6-7)\n3. Njia ya Lemosho (siku 7-8)\n\nUnahitaji msaada kuchagua njia?`,
+      suggestions: ['Linganisha njia', 'Hifadhi kupanda', 'Vitu vya kubeba', 'Vidokezo vya mafunzo'],
+    };
+    return { content: 'Naweza kukusaidia kupanga safari nzuri Tanzania! Najua kuhusu mbuga za kitaifa, fukwe, milima, maeneo ya utamaduni, na maeneo ya kipekee. Nini kinakuvutia zaidi?', suggestions: ['Mbuga za Kitaifa', 'Fukwe', 'Safari za Utamaduni', 'Shughuli za Msisimko'] };
+  }
+  if (type === 'business') {
+    if (lower.includes('maelezo') || lower.includes('bidhaa')) return {
+      content: `Nitakusaidia kuandika maelezo mazuri ya bidhaa! Hapa kuna kiolezo:\n\n**Kahawa ya Kilimanjaro Premium**\n\nPata ladha tamu ya mlima Kilimanjaro na kahawa yetu bora ya Arabica. Iliovunwa kwa mkono kutoka mashamba ya mwinuko na kukaushwa kikamilifu.\n\n✨ **Sifa:**\n- Mbegu za Arabica za chanzo kimoja\n- Kuchomwa wastani kwa ladha bora\n- Ladha ya chokoleti na machungwa\n- Imepatikana kwa uaminifu kutoka wakulima wa karibu\n\n📦 **Kinapatikana katika:** Mifuko ya 250g, 500g, 1kg\n💰 **Bei:** TZS 15,000 - 45,000\n\nUnataka nikusaidie kuandika maelezo ya bidhaa gani?`,
+      suggestions: ['Andika nyingine', 'Chapisho la mitandao', 'Kiolezo cha barua pepe', 'Maelezo ya menyu'],
+    };
+    return { content: 'Naweza kukusaidia kukua biashara yako na zana za AI! Naweza kuandika maudhui, kuchambua mauzo, kusimamia hesabu, kuunda kampeni za masoko, na kutoa maarifa ya biashara. Unahitaji msaada gani?', suggestions: ['Uandishi wa maudhui', 'Uchambuzi wa mauzo', 'Mawazo ya masoko', 'Msaada wa hesabu'] };
+  }
+  if (type === 'safety') {
+    if (lower.includes('muamala') || lower.includes('salama')) return {
+      content: `**Ukaguzi wa Usalama wa Muamala:**\n\n✅ **Muamala huu unaonekana salama!**\n\nNimechambua:\n- Hali ya uthibitishaji wa mfanyabiashara\n- Kiasi cha muamala dhidi ya wastani\n- Uthabiti wa mahali\n- Usalama wa njia ya malipo\n\n🔒 **Vidokezo vya Usalama:**\n- Hakisha daima alama za mfanyabiashara\n- Angalia maelezo ya muamala kabla ya kuthibitisha\n- Washa uthibitishaji wa biometri\n- Ripoti shughuli ya tuhuma mara moja`,
+      suggestions: ['Ripoti ulaghai', 'Angalia nyingine', 'Mipangilio ya usalama', 'Hali ya dharura'],
+    };
+    return { content: 'Nipo hapa kukusaidia usalama! Ninafuatilia miamala kwa ulaghai, naweza kuwasha tahadhari za dharura, kushiriki mahali pako na watu wanaokuamini, na kutoa vidokezo vya usalama. Kila kitu sawa?', suggestions: ['Angalia muamala', 'Hali ya dharura', 'Vidokezo vya usalama', 'Ripoti ulaghai'] };
+  }
+  if (type === 'translate') {
+    if (lower.includes('swahili') || lower.includes('kiswahili')) return {
+      content: `**Tafsiri kwa Kiswahili:**\n\nMisemo ya kawaida ya safari:\n- "Hoteli iko wapi?" = "Where is the hotel?"\n- Habari = Hello / Good day\n- Asante = Thank you\n- Bei gani? = How much?\n- Nahitaji msaada = I need help\n- Choo iko wapi? = Where is the bathroom?\n- Maji = Water\n- Chakula = Food\n\n🗣️ **Kidokezo:** Kiswahili ni lugha ya sauti - maneno yanasomwa kama yanavyoandikwa!\n\nUhitaji tafsiri zaidi?`,
+      suggestions: ['Tafsiri kwa Kiingereza', 'Misemo zaidi', 'Menyu ya chakula', 'Maneno ya biashara'],
+    };
+    return { content: 'Naweza kutafsiri kati ya Kiswahili, Kiingereza, Kifaransa, Kijerumani, Kihispania, Kiarabu, na Kimandarin. Andika unachotaka kutafsiriwa, au tumia sauti!', suggestions: ['Kiswahili kwa Kiingereza', 'Kiingereza kwa Kiswahili', 'Misemo ya kawaida', 'Tafsiri kwa sauti'] };
+  }
+  return { content: 'Nipo hapa kusaidia! Unataka kujua nini?', suggestions: ASSISTANTS.find(a => a.id === type)?.suggestions };
+}
+
 export function AIAssistantPage({ onBack }: AIAssistantPageProps) {
-  const [activeAssistant, setActiveAssistant] = useState<'travel' | 'business' | 'safety' | 'translate'>('travel');
+  const [activeId, setActiveId] = useState('travel');
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const assistants = [
-    {
-      id: 'travel',
-      name: 'Travel AI',
-      icon: Plane,
-      color: 'from-blue-500 to-blue-600',
-      description: 'Plan trips, translate, find POIs',
-      greeting: 'Hello! I\'m your Tanzania travel assistant. I can help you plan itineraries, find attractions, translate phrases, and discover hidden gems across Tanzania. Where would you like to explore?'
-    },
-    {
-      id: 'business',
-      name: 'SME AI',
-      icon: Building2,
-      color: 'from-purple-500 to-purple-600',
-      description: 'Business tools, analytics, marketing',
-      greeting: 'Hi! I\'m your business assistant. I can help with marketing content, sales analytics, inventory insights, and growing your business on goPay. How can I help your business today?'
-    },
-    {
-      id: 'safety',
-      name: 'Safety AI',
-      icon: Shield,
-      color: 'from-red-500 to-red-600',
-      description: 'Fraud detection, emergency help',
-      greeting: 'Hello! I\'m your safety assistant. I monitor transactions for suspicious activity and can help with emergencies. Is everything okay? How can I assist you?'
-    },
-    {
-      id: 'translate',
-      name: 'Translator',
-      icon: Globe,
-      color: 'from-green-500 to-green-600',
-      description: 'Swahili ↔ English ↔ More',
-      greeting: 'Habari! I can translate between Swahili, English, French, German, and more. Just type or speak what you want to translate.'
-    }
-  ];
+  const assistant = ASSISTANTS.find(a => a.id === activeId)!;
 
   useEffect(() => {
-    // Initialize with greeting
-    const assistant = assistants.find(a => a.id === activeAssistant);
-    if (assistant && messages.length === 0) {
-      setMessages([{
-        id: '1',
-        role: 'assistant',
-        content: assistant.greeting,
-        timestamp: new Date(),
-        suggestions: getSuggestionsForAssistant(activeAssistant)
-      }]);
-    }
-  }, [activeAssistant]);
+    setMessages([{ id: '1', role: 'assistant', content: assistant.greeting, timestamp: new Date(), suggestions: assistant.suggestions }]);
+  }, [activeId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const getSuggestionsForAssistant = (type: string): string[] => {
-    switch (type) {
-      case 'travel':
-        return [
-          'Plan a 3-day Serengeti safari',
-          'Best time to climb Kilimanjaro?',
-          'Translate "Where is the hotel?"',
-          'Hidden beaches in Zanzibar'
-        ];
-      case 'business':
-        return [
-          'Write a product description',
-          'Analyze my sales trends',
-          'Create a social media post',
-          'Inventory management tips'
-        ];
-      case 'safety':
-        return [
-          'Is this transaction safe?',
-          'Report suspicious activity',
-          'Emergency contacts',
-          'Travel safety tips'
-        ];
-      case 'translate':
-        return [
-          'Translate to Swahili',
-          'Translate to English',
-          'Common travel phrases',
-          'Business vocabulary'
-        ];
-      default:
-        return [];
-    }
-  };
-
-  const handleSend = async () => {
+  const handleSend = () => {
     if (!inputText.trim()) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: inputText,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
+    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: inputText, timestamp: new Date() };
+    setMessages(prev => [...prev, userMsg]);
     setInputText('');
     setIsTyping(true);
-
-    // Simulate AI response
     setTimeout(() => {
-      const response = generateAIResponse(inputText, activeAssistant);
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: response.content,
-        timestamp: new Date(),
-        suggestions: response.suggestions
-      };
-      setMessages(prev => [...prev, assistantMessage]);
+      const resp = generateResponse(inputText, activeId);
+      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: resp.content, timestamp: new Date(), suggestions: resp.suggestions }]);
       setIsTyping(false);
     }, 1500);
   };
 
-  const generateAIResponse = (input: string, type: string): { content: string; suggestions?: string[] } => {
-    const lower = input.toLowerCase();
-
-    if (type === 'travel') {
-      if (lower.includes('serengeti') || lower.includes('safari')) {
-        return {
-          content: `Great choice! Here's a 3-day Serengeti itinerary:\n\n**Day 1: Arrival & Central Serengeti**\n- Morning: Arrive at Seronera Airstrip\n- Afternoon: Game drive in Central Serengeti\n- Evening: Sunset at Simba Kopjes\n- Stay: Serengeti Serena Safari Lodge\n\n**Day 2: Northern Serengeti**\n- Full day game drive to see the Great Migration\n- Visit Mara River crossing point\n- Big cat tracking with expert guide\n\n**Day 3: Ngorongoro Crater**\n- Morning: Drive to Ngorongoro\n- Descend into crater for wildlife viewing\n- Afternoon: Return to Arusha\n\n**Estimated Cost:** TZS 2,800,000 per person\n\nWould you like me to book accommodations?`,
-          suggestions: ['Book this itinerary', 'Add more days', 'Show lodges', 'Budget options']
-        };
-      }
-
-      if (lower.includes('kilimanjaro')) {
-        return {
-          content: `**Best Time to Climb Kilimanjaro:**\n\n🌤️ **Dry Seasons (Best):**\n- January to March\n- June to October\n\nThese months offer:\n- Clear skies and stunning views\n- Less rain and mud\n- Higher success rates\n\n❄️ **What to Expect:**\n- Temperature: -10°C to 30°C\n- Duration: 5-9 days depending on route\n- Success rate: 65-85%\n\n**Popular Routes:**\n1. Marangu Route (5-6 days)\n2. Machame Route (6-7 days)\n3. Lemosho Route (7-8 days)\n\nNeed help choosing a route?`,
-          suggestions: ['Compare routes', 'Book a climb', 'What to pack', 'Training tips']
-        };
-      }
-
-      if (lower.includes('translate')) {
-        return {
-          content: `**Travel Phrases in Swahili:**\n\n"Where is the hotel?" = "Hotel iko wapi?"\n\nMore useful phrases:\n- Hello = Habari / Jambo\n- Thank you = Asante\n- How much? = Bei gani?\n- I need help = Nahitaji msaada\n- Where is...? = ...iko wapi?\n- Restaurant = Mkahawa\n- Bathroom = Choo\n- Water = Maji\n\nWhat else would you like to translate?`,
-          suggestions: ['More phrases', 'Food vocabulary', 'Emergency phrases', 'Numbers']
-        };
-      }
-
-      return {
-        content: 'I can help you plan amazing trips across Tanzania! I know about all national parks, beaches, mountains, cultural sites, and hidden gems. What interests you most?',
-        suggestions: ['National Parks', 'Beaches', 'Cultural Tours', 'Adventure Activities']
-      };
-    }
-
-    if (type === 'business') {
-      if (lower.includes('description') || lower.includes('product')) {
-        return {
-          content: `I'll help you write compelling product descriptions! Here's a template:\n\n**Premium Tanzanian Coffee - Kilimanjaro Blend**\n\nExperience the rich, bold flavors of Mount Kilimanjaro with our premium Arabica coffee. Hand-picked from high-altitude farms and roasted to perfection.\n\n✨ **Features:**\n- Single-origin Arabica beans\n- Medium roast for balanced flavor\n- Notes of chocolate and citrus\n- Ethically sourced from local farmers\n\n📦 **Available in:** 250g, 500g, 1kg bags\n💰 **Price:** TZS 15,000 - 45,000\n\nWhat product would you like me to describe?`,
-          suggestions: ['Write another', 'Social media post', 'Email template', 'Menu description']
-        };
-      }
-
-      if (lower.includes('sales') || lower.includes('analytics')) {
-        return {
-          content: `**Sales Analytics Insights:**\n\n📊 **This Month's Performance:**\n- Total Sales: TZS 1,250,000 (↑ 23%)\n- Orders: 89 (↑ 15%)\n- Avg Order: TZS 14,045\n- Top Product: Tanzanite Jewelry\n\n⭐ **Recommendations:**\n1. Stock up on jewelry - selling fast!\n2. Promote slow movers with 10% discount\n3. Peak hours: 2-4 PM and 7-9 PM\n4. Weekend sales are 40% higher\n\n📈 **Growth Opportunities:**\n- Add product bundles\n- Launch weekend specials\n- Improve product photos\n\nWant detailed analytics?`,
-          suggestions: ['Detailed report', 'Inventory check', 'Competitor analysis', 'Marketing ideas']
-        };
-      }
-
-      return {
-        content: 'I can help you grow your business with AI-powered tools! I can write content, analyze sales, manage inventory, create marketing campaigns, and provide business insights. What do you need help with?',
-        suggestions: ['Content writing', 'Sales analysis', 'Marketing ideas', 'Inventory help']
-      };
-    }
-
-    if (type === 'safety') {
-      if (lower.includes('transaction') || lower.includes('safe')) {
-        return {
-          content: `**Transaction Safety Check:**\n\n✅ **This transaction looks safe!**\n\nI've analyzed:\n- Merchant verification status\n- Transaction amount vs. average\n- Location consistency\n- Payment method security\n\n🔒 **Safety Tips:**\n- Always verify merchant badges\n- Check transaction details before confirming\n- Enable biometric authentication\n- Report suspicious activity immediately\n\nNeed to verify another transaction?`,
-          suggestions: ['Report fraud', 'Check another', 'Safety settings', 'Emergency mode']
-        };
-      }
-
-      if (lower.includes('emergency') || lower.includes('help')) {
-        return {
-          content: `**Emergency Assistance Available:**\n\n🚨 **Quick Actions:**\n- Press SOS button (hold power button)\n- Share live location with contacts\n- Call police: 112 or 999\n- Call ambulance: 114\n\n📍 **Your Location:** Dar es Salaam, Tanzania\n\n👥 **Trusted Contacts:**\n- Emergency contact 1: Added ✓\n- Emergency contact 2: Not set\n\n**Are you in immediate danger?**\nI can alert your contacts and emergency services now.`,
-          suggestions: ['Activate SOS', 'Share location', 'Add contacts', 'False alarm']
-        };
-      }
-
-      return {
-        content: 'I\'m here to keep you safe! I monitor transactions for fraud, can activate emergency alerts, share your location with trusted contacts, and provide safety tips. Everything okay?',
-        suggestions: ['Check transaction', 'Emergency mode', 'Safety tips', 'Report fraud']
-      };
-    }
-
-    if (type === 'translate') {
-      if (lower.includes('swahili') || lower.includes('kiswahili')) {
-        return {
-          content: `**Swahili Translation:**\n\n"${input}" in Swahili:\n\n"${input.replace(/translate to swahili:?/i, '').trim()}" = "[Swahili translation would appear here]"\n\n🗣️ **Pronunciation tip:** Swahili is phonetic - words are pronounced as written!\n\n**Common Greetings:**\n- Good morning = Habari ya asubuhi\n- Good evening = Habari ya jioni\n- Welcome = Karibu\n- Goodbye = Kwa heri\n\nNeed more translations?`,
-          suggestions: ['Translate to English', 'More phrases', 'Food menu', 'Business terms']
-        };
-      }
-
-      return {
-        content: 'I can translate between Swahili, English, French, German, Spanish, Arabic, and Mandarin. Just type what you want to translate, or use voice input!',
-        suggestions: ['Swahili to English', 'English to Swahili', 'Common phrases', 'Voice translate']
-      };
-    }
-
-    return {
-      content: 'I\'m here to help! What would you like to know?',
-      suggestions: getSuggestionsForAssistant(type)
-    };
-  };
-
-  const handleSuggestionClick = (suggestion: string) => {
-    setInputText(suggestion);
-  };
-
-  const currentAssistant = assistants.find(a => a.id === activeAssistant)!;
-  const IconComponent = currentAssistant.icon;
+  const IconComponent = assistant.icon;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: '#080d08' }}>
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-white border-b border-gray-200">
-        <div className="px-4 py-4">
+      <div className="sticky top-0 z-20" style={{ background: 'rgba(8,13,8,0.96)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="px-4 pt-6 pb-3">
           <div className="flex items-center gap-3 mb-4">
-            <button
-              onClick={onBack}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              aria-label="Go back"
-            >
-              <ArrowLeft className="size-6 text-gray-900" />
+            <button onClick={onBack} className="p-2.5 rounded-full active:scale-95" style={{ background: 'rgba(255,255,255,0.08)' }}>
+              <ArrowLeft className="size-5 text-white" />
             </button>
-            <div className={`bg-gradient-to-br ${currentAssistant.color} w-12 h-12 rounded-xl flex items-center justify-center`}>
-              <IconComponent className="size-6 text-white" />
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: assistant.gradient }}>
+              <IconComponent className="size-5 text-white" />
             </div>
             <div className="flex-1">
-              <h1 className="text-xl font-bold text-gray-900">{currentAssistant.name}</h1>
-              <p className="text-xs text-gray-600">{currentAssistant.description}</p>
+              <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>{assistant.name}</h1>
+              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{assistant.description}</p>
             </div>
-            <Sparkles className="size-6 text-purple-600 animate-pulse" />
+            <Sparkles className="size-5 animate-pulse" style={{ color: '#c4b5fd' }} />
           </div>
 
-          {/* Assistant Selector */}
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {assistants.map(assistant => {
-              const Icon = assistant.icon;
+          <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+            {ASSISTANTS.map(a => {
+              const Icon = a.icon;
+              const active = activeId === a.id;
               return (
-                <button
-                  key={assistant.id}
-                  onClick={() => {
-                    setActiveAssistant(assistant.id as any);
-                    setMessages([]);
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all ${
-                    activeAssistant === assistant.id
-                      ? `bg-gradient-to-r ${assistant.color} text-white`
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  <Icon className="size-4" />
-                  {assistant.name}
+                <button key={a.id}
+                  onClick={() => { setActiveId(a.id); setMessages([]); }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-full whitespace-nowrap transition-all active:scale-95 text-sm font-semibold"
+                  style={{
+                    background: active ? a.gradient : 'rgba(255,255,255,0.06)',
+                    color: active ? '#fff' : 'rgba(255,255,255,0.5)',
+                    border: active ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                  }}>
+                  <Icon className="size-3.5" />
+                  {a.name}
                 </button>
               );
             })}
@@ -288,25 +156,23 @@ export function AIAssistantPage({ onBack }: AIAssistantPageProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
-        {messages.map(message => (
-          <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] ${
-              message.role === 'user'
-                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white'
-                : 'bg-white border-2 border-gray-100 text-gray-900'
-            } rounded-3xl p-4 shadow-md`}>
-              <p className="text-sm whitespace-pre-line leading-relaxed">{message.content}</p>
-              {message.suggestions && message.suggestions.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
-                  <p className="text-xs font-semibold text-gray-600 mb-2">Suggestions:</p>
-                  {message.suggestions.map((suggestion, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className="w-full bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 text-gray-900 text-sm px-4 py-2 rounded-full transition-all text-left font-medium"
-                    >
-                      {suggestion}
+      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4">
+        {messages.map(msg => (
+          <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className="max-w-[85%] rounded-3xl p-4"
+              style={msg.role === 'user'
+                ? { background: 'linear-gradient(135deg, #16a34a, #15803d)', color: '#fff' }
+                : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff' }
+              }>
+              <p style={{ fontSize: '13px', lineHeight: 1.6, whiteSpace: 'pre-line' }}>{msg.content}</p>
+              {msg.suggestions && msg.suggestions.length > 0 && (
+                <div className="mt-3 pt-3 space-y-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                  <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: '6px', letterSpacing: '0.5px' }}>MAPENDEKEZO</p>
+                  {msg.suggestions.map((s, i) => (
+                    <button key={i} onClick={() => setInputText(s)}
+                      className="w-full rounded-xl px-3 py-2 text-left transition-all active:scale-[0.98]"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.8)' }}>
+                      {s}
                     </button>
                   ))}
                 </div>
@@ -317,39 +183,37 @@ export function AIAssistantPage({ onBack }: AIAssistantPageProps) {
 
         {isTyping && (
           <div className="flex justify-start">
-            <div className="bg-white border-2 border-gray-100 rounded-3xl p-4 shadow-md">
-              <div className="flex gap-2">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            <div className="rounded-3xl p-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="flex gap-1.5">
+                {[0, 150, 300].map(delay => (
+                  <div key={delay} className="w-2 h-2 rounded-full animate-bounce" style={{ background: 'rgba(255,255,255,0.4)', animationDelay: `${delay}ms` }} />
+                ))}
               </div>
             </div>
           </div>
         )}
-
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
-      <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4">
-        <div className="flex gap-3 items-center">
-          <button className="p-3 hover:bg-gray-100 rounded-full transition-colors">
-            <Mic className="size-6 text-gray-600" />
+      <div className="sticky bottom-0 px-4 pb-6 pt-3" style={{ background: 'rgba(8,13,8,0.96)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="flex gap-2 items-center">
+          <button className="p-3 rounded-full active:scale-95" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            <Mic className="size-5" style={{ color: 'rgba(255,255,255,0.5)' }} />
           </button>
           <input
             type="text"
             value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            placeholder={`Ask ${currentAssistant.name}...`}
-            className="flex-1 h-12 px-4 bg-gray-100 rounded-full border-0 focus:outline-none focus:ring-2 focus:ring-purple-600"
+            onChange={e => setInputText(e.target.value)}
+            onKeyPress={e => e.key === 'Enter' && handleSend()}
+            placeholder={`Uliza ${assistant.name}...`}
+            className="flex-1 h-12 px-4 rounded-full border-0 focus:outline-none text-sm text-white"
+            style={{ background: 'rgba(255,255,255,0.07)', caretColor: '#4ade80' }}
           />
-          <button
-            onClick={handleSend}
-            disabled={!inputText.trim()}
-            className="p-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-300 disabled:to-gray-300 rounded-full transition-all"
-          >
-            <Send className="size-6 text-white" />
+          <button onClick={handleSend} disabled={!inputText.trim()}
+            className="p-3 rounded-full transition-all active:scale-95 disabled:opacity-40"
+            style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+            <Send className="size-5 text-white" />
           </button>
         </div>
       </div>
