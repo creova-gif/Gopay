@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -46,12 +47,13 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
         const data = await response.json();
         setTransactions(data.transactions || []);
       } else {
-        // Demo data for pitch
-        setTransactions(demoTransactions);
+        toast.error('Failed to load transactions');
+        setTransactions([]);
       }
     } catch (error) {
       console.error('Error fetching transactions:', error);
-      setTransactions(demoTransactions);
+      toast.error('Network error. Could not load transactions.');
+      setTransactions([]);
     } finally {
       setLoading(false);
     }

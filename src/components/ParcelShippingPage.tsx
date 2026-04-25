@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -97,7 +98,7 @@ export function ParcelShippingPage({ user, accessToken, onBack }: ParcelShipping
 
   const handleBooking = async () => {
     if (!selectedOperator || !weight || !recipientName || !recipientPhone || pin.length !== 4) {
-      alert('Please complete all required fields');
+      toast.error('Please complete all required fields');
       return;
     }
 
@@ -134,7 +135,7 @@ export function ParcelShippingPage({ user, accessToken, onBack }: ParcelShipping
         setStep('confirmation');
         setPin('');
       } else {
-        alert(data.error || 'Booking failed');
+        toast.error(data.error || 'Booking failed');
       }
     } catch (error) {
       console.error('Error booking parcel:', error);

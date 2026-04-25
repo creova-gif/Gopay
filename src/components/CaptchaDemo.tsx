@@ -1,4 +1,5 @@
 import { ArrowLeft, Shield, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { useState } from 'react';
 import { BotDetection } from './BotDetection';
@@ -300,7 +301,7 @@ export function CaptchaDemo({ onBack }: CaptchaDemoProps) {
                 userBehavior={riskScenarios.find(s => s.id === activeDemo)!.behavior}
                 onVerified={handleVerified}
                 onSkip={() => {
-                  alert('Low risk detected - CAPTCHA skipped!');
+                  toast.info('Low risk detected - CAPTCHA skipped!');
                   setActiveDemo(null);
                 }}
               />

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { 
   ArrowLeft, Plus, Minus, ShoppingCart, X, Star, Clock, Truck, Package, Check, AlertCircle
@@ -409,12 +410,12 @@ export function RestaurantMenuPage({ restaurant, accessToken, onBack, onOrderCom
 
   const handleCheckout = async () => {
     if (!pin || pin.length !== 4) {
-      alert('Please enter your 4-digit PIN');
+      toast.error('Please enter your 4-digit PIN');
       return;
     }
 
     if (orderType === 'delivery' && !deliveryAddress) {
-      alert('Please enter delivery address');
+      toast.error('Please enter delivery address');
       return;
     }
 
@@ -450,11 +451,11 @@ export function RestaurantMenuPage({ restaurant, accessToken, onBack, onOrderCom
       if (response.ok) {
         setActiveView('confirmation');
       } else {
-        alert(data.error || 'Order failed');
+        toast.error(data.error || 'Order failed');
       }
     } catch (error) {
       console.error('Error placing order:', error);
-      alert('Order failed. Please try again.');
+      toast.error('Order failed. Please try again.');
     } finally {
       setProcessing(false);
     }

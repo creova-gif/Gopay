@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { ArrowLeft, Shield, Fingerprint, Smartphone, CheckCircle2, Lock, Key, AlertCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { User } from '../App';
@@ -71,7 +72,7 @@ export function SecuritySettings({ user, accessToken, onBack }: SecuritySettings
       }
     } catch (error) {
       console.error('Error setting up 2FA:', error);
-      alert('Failed to setup 2FA');
+      toast.error('Failed to setup 2FA');
     } finally {
       setLoading(false);
     }
@@ -95,13 +96,13 @@ export function SecuritySettings({ user, accessToken, onBack }: SecuritySettings
       if (response.ok) {
         setTwoFactorEnabled(true);
         setShowSetup2FA(false);
-        alert('2FA enabled successfully!');
+        toast.success('2FA enabled successfully!');
       } else {
-        alert('Invalid verification code');
+        toast.error('Invalid verification code');
       }
     } catch (error) {
       console.error('Error verifying 2FA:', error);
-      alert('Failed to verify 2FA');
+      toast.error('Failed to verify 2FA');
     } finally {
       setLoading(false);
     }
@@ -126,11 +127,11 @@ export function SecuritySettings({ user, accessToken, onBack }: SecuritySettings
 
       if (response.ok) {
         setTwoFactorEnabled(false);
-        alert('2FA disabled');
+        toast.success('2FA disabled');
       }
     } catch (error) {
       console.error('Error disabling 2FA:', error);
-      alert('Failed to disable 2FA');
+      toast.error('Failed to disable 2FA');
     } finally {
       setLoading(false);
     }
@@ -138,7 +139,7 @@ export function SecuritySettings({ user, accessToken, onBack }: SecuritySettings
 
   const setupBiometric = async () => {
     if (!window.PublicKeyCredential) {
-      alert('Biometric authentication is not supported on this device');
+      toast.error('Biometric authentication is not supported on this device');
       return;
     }
 
@@ -204,11 +205,11 @@ export function SecuritySettings({ user, accessToken, onBack }: SecuritySettings
 
       if (verifyResponse.ok) {
         setBiometricEnabled(true);
-        alert('Biometric authentication enabled! You can now use Face ID or Fingerprint to login.');
+        toast.success('Biometric authentication enabled! You can now use Face ID or Fingerprint to login.');
       }
     } catch (error) {
       console.error('Error setting up biometric:', error);
-      alert('Failed to setup biometric authentication. Please try again.');
+      toast.error('Failed to setup biometric authentication. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -233,11 +234,11 @@ export function SecuritySettings({ user, accessToken, onBack }: SecuritySettings
 
       if (response.ok) {
         setBiometricEnabled(false);
-        alert('Biometric authentication disabled');
+        toast.success('Biometric authentication disabled');
       }
     } catch (error) {
       console.error('Error disabling biometric:', error);
-      alert('Failed to disable biometric authentication');
+      toast.error('Failed to disable biometric authentication');
     } finally {
       setLoading(false);
     }
@@ -288,7 +289,7 @@ export function SecuritySettings({ user, accessToken, onBack }: SecuritySettings
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(code);
-                      alert('Code copied!');
+                      toast.success('Code copied!');
                     }}
                     className="text-green-600 text-xs"
                   >

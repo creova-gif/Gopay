@@ -1,7 +1,18 @@
 import { Hono } from 'npm:hono';
+import { createClient } from 'jsr:@supabase/supabase-js@2';
 import * as kv from './kv_store.tsx';
 
 const app = new Hono();
+
+const _supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+async function requireAuth(c: any): Promise<string | null> {
+  const auth = c.req.header('Authorization');
+  if (!auth) return null;
+  const token = auth.split(' ')[1];
+  const { data: { user }, error } = await _supabase.auth.getUser(token);
+  if (error || !user) return null;
+  return user.id;
+}
 
 // Performance Monitoring Service
 interface PerformanceMetric {
@@ -139,6 +150,8 @@ async function trackPerformance(metric: PerformanceMetric) {
 
 // Get performance stats
 app.get('/stats', async (c) => {
+  const uid = await requireAuth(c);
+  if (!uid) return c.json({ error: 'Unauthorized' }, 401);
   try {
     const date = c.req.query('date') || new Date().toISOString().split('T')[0];
     const statsKey = `perf:stats:${date}`;
@@ -164,6 +177,8 @@ app.get('/stats', async (c) => {
 
 // Get performance metrics (time-series data)
 app.get('/metrics', async (c) => {
+  const uid = await requireAuth(c);
+  if (!uid) return c.json({ error: 'Unauthorized' }, 401);
   try {
     const date = c.req.query('date') || new Date().toISOString().split('T')[0];
     const metrics = await kv.getByPrefix(`perf:${date}:`);
@@ -180,6 +195,8 @@ app.get('/metrics', async (c) => {
 
 // Clear cache (for specific keys or all)
 app.post('/cache/clear', async (c) => {
+  const uid = await requireAuth(c);
+  if (!uid) return c.json({ error: 'Unauthorized' }, 401);
   try {
     const { pattern } = await c.req.json();
     
@@ -206,6 +223,8 @@ app.post('/cache/clear', async (c) => {
 
 // Get cache stats
 app.get('/cache/stats', async (c) => {
+  const uid = await requireAuth(c);
+  if (!uid) return c.json({ error: 'Unauthorized' }, 401);
   try {
     const entries = Array.from(memoryCache.entries()).map(([key, entry]) => ({
       key,
@@ -224,6 +243,8 @@ app.get('/cache/stats', async (c) => {
 
 // Track client-side performance metric
 app.post('/track', async (c) => {
+  const uid = await requireAuth(c);
+  if (!uid) return c.json({ error: 'Unauthorized' }, 401);
   try {
     const metric: PerformanceMetric = await c.req.json();
     await trackPerformance(metric);
@@ -235,6 +256,8 @@ app.post('/track', async (c) => {
 
 // Health check with performance info
 app.get('/health', async (c) => {
+  const uid = await requireAuth(c);
+  if (!uid) return c.json({ error: 'Unauthorized' }, 401);
   const uptime = process.uptime ? process.uptime() : 0;
   const memoryUsage = Deno.memoryUsage ? Deno.memoryUsage() : { heapUsed: 0, heapTotal: 0 };
   

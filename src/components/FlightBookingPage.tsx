@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { 
   ArrowLeft, Plane, Calendar, Users, MapPin, Clock, Check, X, 
@@ -130,7 +131,7 @@ export function FlightBookingPage({ flight, passengers: passengerCount, departDa
 
   const handleBooking = async () => {
     if (!pin || pin.length !== 4) {
-      alert('Please enter your 4-digit PIN');
+      toast.error('Please enter your 4-digit PIN');
       return;
     }
 
@@ -171,11 +172,11 @@ export function FlightBookingPage({ flight, passengers: passengerCount, departDa
         setBookingReference(data.bookingReference);
         setActiveStep('confirmation');
       } else {
-        alert(data.error || 'Booking failed');
+        toast.error(data.error || 'Booking failed');
       }
     } catch (error) {
       console.error('Error booking flight:', error);
-      alert('Booking failed. Please try again.');
+      toast.error('Booking failed. Please try again.');
     } finally {
       setProcessing(false);
     }
@@ -336,7 +337,7 @@ export function FlightBookingPage({ flight, passengers: passengerCount, departDa
               ) && passengers[0].email && passengers[0].phone;
               
               if (!allValid) {
-                alert('Please fill in all required fields');
+                toast.error('Please fill in all required fields');
                 return;
               }
               setActiveStep('seats');

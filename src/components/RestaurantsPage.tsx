@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -508,7 +509,7 @@ export function RestaurantsPage({ user, accessToken, onBack }: RestaurantsPagePr
 
   const handleBooking = async () => {
     if (!selectedRestaurant || !bookingDate || !bookingTime || !pin) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -542,11 +543,11 @@ export function RestaurantsPage({ user, accessToken, onBack }: RestaurantsPagePr
       if (response.ok) {
         setActiveView('confirmation');
       } else {
-        alert(data.error || 'Booking failed');
+        toast.error(data.error || 'Booking failed');
       }
     } catch (error) {
       console.error('Error booking restaurant:', error);
-      alert('Booking failed. Please try again.');
+      toast.error('Booking failed. Please try again.');
     } finally {
       setProcessing(false);
     }

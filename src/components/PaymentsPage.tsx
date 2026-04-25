@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -108,13 +109,13 @@ export function PaymentsPage({ user, accessToken, onBack }: PaymentsPageProps) {
 
         // Validate PIN
         if (paymentData.pin !== DEMO_WALLET.pin) {
-          alert('❌ Invalid PIN. Try 1234');
+          toast.error('❌ Invalid PIN. Try 1234');
           return;
         }
 
         // Check balance
         if (balance < amount) {
-          alert('❌ Insufficient balance');
+          toast.error('❌ Insufficient balance');
           return;
         }
 
@@ -137,10 +138,10 @@ export function PaymentsPage({ user, accessToken, onBack }: PaymentsPageProps) {
 
         setShowPayment(false);
         setPaymentData({ accountNumber: '', amount: '', pin: '' });
-        alert(`✅ Payment successful!\nReference: ${reference}\nNew Balance: TZS ${newBalance.toLocaleString()}`);
+        toast.success(`✅ Payment successful!\nReference: ${reference}\nNew Balance: TZS ${newBalance.toLocaleString()}`);
       } catch (error) {
         console.error('Error processing demo payment:', error);
-        alert('❌ Payment failed. Please try again.');
+        toast.error('❌ Payment failed. Please try again.');
       }
       return;
     }
@@ -166,14 +167,14 @@ export function PaymentsPage({ user, accessToken, onBack }: PaymentsPageProps) {
         const result = await response.json();
         setShowPayment(false);
         setPaymentData({ accountNumber: '', amount: '', pin: '' });
-        alert(`✅ Payment successful! Reference: ${result.reference}`);
+        toast.success(`✅ Payment successful! Reference: ${result.reference}`);
       } else {
         const error = await response.json();
-        alert(`❌ ${error.error || 'Payment failed'}`);
+        toast.error(`❌ ${error.error || 'Payment failed'}`);
       }
     } catch (error) {
       console.error('Error processing payment:', error);
-      alert('❌ An error occurred. Please try again.');
+      toast.error('❌ An error occurred. Please try again.');
     }
   };
 

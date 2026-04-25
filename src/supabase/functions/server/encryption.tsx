@@ -27,9 +27,7 @@ interface EncryptedData {
 function getEncryptionKey(): string {
   const key = Deno.env.get('ENCRYPTION_KEY');
   if (!key) {
-    // Generate a secure key for demo (in production, set this in environment)
-    console.warn('⚠️ Using demo encryption key - SET ENCRYPTION_KEY in production!');
-    return 'demo-encryption-key-change-in-production-to-secure-random-256bit-key';
+    throw new Error('ENCRYPTION_KEY environment variable is required. Set it in Supabase Edge Function secrets.');
   }
   return key;
 }

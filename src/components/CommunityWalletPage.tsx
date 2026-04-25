@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -148,7 +149,7 @@ export function CommunityWalletPage({ user, accessToken, onBack }: CommunityWall
 
   const handleCreateWallet = () => {
     if (!walletName || !walletPurpose) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -172,12 +173,12 @@ export function CommunityWalletPage({ user, accessToken, onBack }: CommunityWall
     setWalletPurpose('');
     setWalletGoal('');
     setView('list');
-    alert('Community wallet created! 🎉 Invite members to start contributing.');
+    toast.success('Community wallet created! Invite members to start contributing.');
   };
 
   const handleAddFunds = () => {
     if (!selectedWallet || !amount || pin.length !== 4) {
-      alert('Please complete all fields');
+      toast.error('Please complete all fields');
       return;
     }
 
@@ -189,7 +190,7 @@ export function CommunityWalletPage({ user, accessToken, onBack }: CommunityWall
         : w
     ));
 
-    alert(`✅ Contributed ${formatCurrency(contribution)} to ${selectedWallet.name}`);
+    toast.success(`Contributed ${formatCurrency(contribution)} to ${selectedWallet.name}`);
     setAmount('');
     setPin('');
     setView('details');

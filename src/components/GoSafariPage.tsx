@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { User } from '../App';
@@ -54,6 +55,14 @@ export function GoSafariPage({ user, accessToken, onBack }: GoSafariPageProps) {
   const [travelers, setTravelers] = useState(2);
   const [selectedDate, setSelectedDate] = useState('');
   const [sortBy, setSortBy] = useState<'popular' | 'price' | 'nearest'>('popular');
+
+  const handleBookSafari = () => {
+    if (!selectedDate) {
+      toast.error('Please select a travel date');
+      return;
+    }
+    toast.success(`Booking request submitted for ${selectedPark?.name}! A safari coordinator will contact you within 24 hours.`);
+  };
 
   const circuits = [
     { id: 'all', name: 'All Parks', icon: MapPin, description: 'Explore all Tanzania national parks' },
@@ -951,7 +960,7 @@ export function GoSafariPage({ user, accessToken, onBack }: GoSafariPageProps) {
                 </p>
               </div>
 
-              <Button className="w-full bg-[#1a5f3f] hover:bg-[#164d33] py-6 text-lg">
+              <Button onClick={handleBookSafari} className="w-full bg-[#1a5f3f] hover:bg-[#164d33] py-6 text-lg">
                 <Calendar className="w-5 h-5 mr-2" />
                 Book Safari Package - {formatCurrency(estimatedCost)}
               </Button>

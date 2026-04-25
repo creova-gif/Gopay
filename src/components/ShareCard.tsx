@@ -1,5 +1,6 @@
 import { Share2, QrCode, Smartphone, Apple } from 'lucide-react';
 import { Button } from './ui/button';
+import { toast } from 'sonner';
 
 interface ShareCardProps {
   onClose: () => void;
@@ -22,7 +23,7 @@ export function ShareCard({ onClose }: ShareCardProps) {
     } else {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(appUrl);
-      alert('Link copied to clipboard!');
+      toast.success('Link copied to clipboard!');
     }
   };
 
@@ -48,7 +49,7 @@ export function ShareCard({ onClose }: ShareCardProps) {
             <button
               onClick={() => {
                 navigator.clipboard.writeText(appUrl);
-                alert('Copied!');
+                toast.success('Copied!');
               }}
               className="px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors flex-shrink-0"
             >

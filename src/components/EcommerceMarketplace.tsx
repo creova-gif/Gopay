@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { ArrowLeft, Search, Filter, ShoppingCart, Star, Heart, Share2, MapPin, TrendingUp, Package, Truck, Shield } from 'lucide-react';
 
 interface EcommerceMarketplaceProps {
@@ -162,7 +163,7 @@ export function EcommerceMarketplace({ user, accessToken, onBack }: EcommerceMar
         onBack={() => setView('home')}
         onRemove={(id) => toggleCart(id)}
         onCheckout={() => {
-          alert(`Checkout: TZS ${cartTotal.toLocaleString()}`);
+          toast.error(`Checkout: TZS ${cartTotal.toLocaleString()}`);
         }}
       />
     );

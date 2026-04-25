@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import {
@@ -167,7 +168,7 @@ export function RideVerification({
       );
 
       if (response.ok) {
-        alert('Location shared with your trusted contacts');
+        toast.success('Location shared with your trusted contacts');
       }
     } catch (error) {
       console.error('Error sharing location:', error);
@@ -193,7 +194,7 @@ export function RideVerification({
             }),
           }
         );
-        alert('SOS alert sent! Help is on the way.');
+        toast.success('SOS alert sent! Help is on the way.');
       } catch (error) {
         console.error('Error sending SOS:', error);
       }
@@ -203,7 +204,7 @@ export function RideVerification({
   const copyPasscode = () => {
     if (driver) {
       navigator.clipboard.writeText(driver.passcode);
-      alert('Passcode copied!');
+      toast.success('Passcode copied!');
     }
   };
 

@@ -1,4 +1,5 @@
 import { ArrowLeft, MapPin, Home, Copy, Share2, Navigation, Edit, Plus, CheckCircle, Building2, Package } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { useState } from 'react';
 
@@ -56,7 +57,7 @@ export function DigitalAddressPage({ onBack }: DigitalAddressPageProps) {
       });
     } else {
       navigator.clipboard.writeText(shareText);
-      alert('Address copied to clipboard!');
+      toast.success('Address copied to clipboard!');
     }
   };
 

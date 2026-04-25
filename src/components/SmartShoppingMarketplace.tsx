@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -156,7 +157,7 @@ export function SmartShoppingMarketplace({ user, accessToken, onBack, onNavigate
     } else {
       setCart([...cart, { ...product, quantity: 1 }]);
     }
-    alert(`✅ ${product.name} added to cart!`);
+    toast.success(`✅ ${product.name} added to cart!`);
   };
 
   const getCartTotal = () => {
@@ -691,7 +692,7 @@ export function SmartShoppingMarketplace({ user, accessToken, onBack, onNavigate
         {cart.length > 0 && (
           <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 max-w-md mx-auto">
             <Button
-              onClick={() => alert('Proceeding to checkout... 🛒')}
+              onClick={() => toast.error('Proceeding to checkout... 🛒')}
               className="w-full h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-full font-bold text-lg"
             >
               Checkout · {formatCurrency(total)}

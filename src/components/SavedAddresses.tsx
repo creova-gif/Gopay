@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { ArrowLeft, Home, Briefcase, MapPin, Plus, Edit2, Trash2, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import { TanzaniaLocation, TANZANIA_REGIONS, DAR_POPULAR_AREAS, getDefaultLocation } from '../utils/locationService';
@@ -95,7 +96,7 @@ export function SavedAddresses({ accessToken, onBack, onSelectAddress }: SavedAd
       }
     } catch (error) {
       console.error('Error saving address:', error);
-      alert('Failed to save address');
+      toast.error('Failed to save address');
     }
   };
 

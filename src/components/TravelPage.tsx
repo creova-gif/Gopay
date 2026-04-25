@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -199,7 +200,7 @@ export function TravelPage({ user, accessToken, onBack }: TravelPageProps) {
 
   const handleConfirmPayment = async () => {
     if (pin.length !== 4) {
-      alert('Please enter a valid 4-digit PIN');
+      toast.error('Please enter a valid 4-digit PIN');
       return;
     }
 
@@ -227,7 +228,7 @@ export function TravelPage({ user, accessToken, onBack }: TravelPageProps) {
         setSearchStep('success');
         setPin('');
       } else {
-        alert('Payment failed. Please try again.');
+        toast.error('Payment failed. Please try again.');
       }
     } catch (error) {
       console.error('Error processing booking:', error);

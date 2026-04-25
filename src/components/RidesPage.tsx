@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -153,7 +154,7 @@ export function RidesPage({ user, accessToken, onBack }: RidesPageProps) {
 
   const handleBookRide = async () => {
     if (!selectedRide || !pickup || !destination || !pin) {
-      alert('Please fill in all fields');
+      toast.error('Please fill in all fields');
       return;
     }
 
@@ -185,11 +186,11 @@ export function RidesPage({ user, accessToken, onBack }: RidesPageProps) {
         setActiveView('searching');
         simulateDriverSearch();
       } else {
-        alert(data.error || 'Booking failed');
+        toast.error(data.error || 'Booking failed');
       }
     } catch (error) {
       console.error('Error booking ride:', error);
-      alert('Booking failed. Please try again.');
+      toast.error('Booking failed. Please try again.');
     } finally {
       setProcessing(false);
     }
@@ -509,7 +510,10 @@ export function RidesPage({ user, accessToken, onBack }: RidesPageProps) {
     return (
       <div className="min-h-screen bg-white pb-20">
         <div className="sticky top-0 z-20 bg-white border-b border-gray-100 px-4 py-4">
-          <h1 className="text-xl font-bold text-center">Driver on the way</h1>
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <h1 className="text-xl font-bold text-center">Driver on the way</h1>
+            <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full border border-amber-200">DEMO</span>
+          </div>
           <p className="text-sm text-gray-500 text-center">Arriving in 3 minutes</p>
         </div>
 

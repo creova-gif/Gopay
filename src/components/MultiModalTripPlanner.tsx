@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -192,7 +193,7 @@ export function MultiModalTripPlanner({ user, accessToken, onBack }: MultiModalT
 
   const handleSearch = () => {
     if (!origin || !destination || !startDate) {
-      alert('Please fill in all fields');
+      toast.error('Please fill in all fields');
       return;
     }
     setStep('results');
@@ -200,7 +201,7 @@ export function MultiModalTripPlanner({ user, accessToken, onBack }: MultiModalT
 
   const handleBooking = async () => {
     if (!selectedItinerary || pin.length !== 4) {
-      alert('Please complete all required fields');
+      toast.error('Please complete all required fields');
       return;
     }
 
@@ -231,7 +232,7 @@ export function MultiModalTripPlanner({ user, accessToken, onBack }: MultiModalT
         setStep('confirmation');
         setPin('');
       } else {
-        alert(data.error || 'Booking failed');
+        toast.error(data.error || 'Booking failed');
       }
     } catch (error) {
       console.error('Error booking trip:', error);

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { ArrowLeft, Upload, CheckCircle2, Building2, FileText, Camera, AlertCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { User } from '../App';
@@ -133,7 +134,7 @@ export function MerchantOnboarding({ user, accessToken, onBack, onComplete }: Me
       setSubmitted(true);
     } catch (error) {
       console.error('Error submitting merchant application:', error);
-      alert('Failed to submit application. Please try again.');
+      toast.error('Failed to submit application. Please try again.');
     } finally {
       setUploading(false);
     }

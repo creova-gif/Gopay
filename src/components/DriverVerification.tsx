@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import {
@@ -60,12 +61,12 @@ export function DriverVerification({
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      toast.error('Please select an image file');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image size should be less than 5MB');
+      toast.error('Image size should be less than 5MB');
       return;
     }
 
@@ -110,13 +111,13 @@ export function DriverVerification({
               break;
           }
         } else {
-          alert(data.error || 'Upload failed');
+          toast.error(data.error || 'Upload failed');
         }
       };
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error uploading document:', error);
-      alert('Upload failed. Please try again.');
+      toast.error('Upload failed. Please try again.');
     } finally {
       setUploading(false);
       setCurrentUpload(null);
@@ -128,11 +129,11 @@ export function DriverVerification({
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setLocationEnabled(true);
-          alert('Location services enabled successfully!');
+          toast.success('Location services enabled successfully!');
         },
         (error) => {
           let errorMessage = 'Please enable location services to continue';
-          
+
           switch (error.code) {
             case error.PERMISSION_DENIED:
               errorMessage = 'Location permission denied. Please allow location access in your browser settings.';
@@ -146,9 +147,9 @@ export function DriverVerification({
             default:
               errorMessage = 'Unable to get location. Please check your settings.';
           }
-          
+
           console.warn('Location error:', errorMessage, error);
-          alert(errorMessage);
+          toast.error(errorMessage);
         },
         {
           enableHighAccuracy: true,
@@ -157,7 +158,7 @@ export function DriverVerification({
         }
       );
     } else {
-      alert('Location services are not supported by your device');
+      toast.error('Location services are not supported by your device');
     }
   };
 
@@ -192,14 +193,14 @@ export function DriverVerification({
       const data = await response.json();
 
       if (response.ok) {
-        alert('Verification submitted! We will review your documents within 24 hours.');
+        toast.success('Verification submitted! We will review your documents within 24 hours.');
         onVerified();
       } else {
-        alert(data.error || 'Submission failed');
+        toast.error(data.error || 'Submission failed');
       }
     } catch (error) {
       console.error('Error submitting verification:', error);
-      alert('Submission failed. Please try again.');
+      toast.error('Submission failed. Please try again.');
     } finally {
       setSubmitting(false);
     }

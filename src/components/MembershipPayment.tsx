@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { ArrowLeft, Wallet, Smartphone, CreditCard, CheckCircle, Loader2, Zap, Crown, Briefcase, Shield } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -65,7 +66,7 @@ export function MembershipPayment({
 
   const handleWalletPayment = async () => {
     if (walletBalance < amount) {
-      alert('Insufficient wallet balance. Please top up or use mobile money.');
+      toast.error('Insufficient wallet balance. Please top up or use mobile money.');
       return;
     }
 
@@ -74,7 +75,7 @@ export function MembershipPayment({
 
   const confirmWalletPayment = async () => {
     if (pin.length !== 4) {
-      alert('Please enter your 4-digit PIN');
+      toast.error('Please enter your 4-digit PIN');
       return;
     }
 
@@ -113,7 +114,7 @@ export function MembershipPayment({
 
     } catch (error) {
       console.error('Payment error:', error);
-      alert('Payment failed. Please try again.');
+      toast.error('Payment failed. Please try again.');
     } finally {
       setProcessing(false);
     }
@@ -121,7 +122,7 @@ export function MembershipPayment({
 
   const handleMobileMoneyPayment = async (provider: typeof mobileMoneyProviders[0]) => {
     if (!mobileNumber || mobileNumber.length < 10) {
-      alert('Please enter a valid mobile number');
+      toast.error('Please enter a valid mobile number');
       return;
     }
 
@@ -131,7 +132,7 @@ export function MembershipPayment({
       // Simulate mobile money push notification
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      alert(`✅ Push notification sent to ${mobileNumber}\n\nPlease check your ${provider.name} and enter your PIN to complete the payment.`);
+      toast.success(`✅ Push notification sent to ${mobileNumber}\n\nPlease check your ${provider.name} and enter your PIN to complete the payment.`);
 
       // Simulate waiting for user to approve on phone
       await new Promise(resolve => setTimeout(resolve, 3000));
@@ -162,7 +163,7 @@ export function MembershipPayment({
 
     } catch (error) {
       console.error('Payment error:', error);
-      alert('Payment failed. Please try again.');
+      toast.error('Payment failed. Please try again.');
     } finally {
       setProcessing(false);
     }

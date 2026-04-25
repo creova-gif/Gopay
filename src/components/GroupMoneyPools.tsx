@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -174,30 +175,30 @@ export function GroupMoneyPools({ user, accessToken, onBack }: GroupMoneyPoolsPr
 
   const handleCreatePool = async () => {
     if (!newPool.name || !newPool.targetAmount || !newPool.deadline) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
     // TODO: API call to create pool
-    alert(`Pool "${newPool.name}" created! Share link: gopay.tz/pool/${newPool.name.toLowerCase().replace(/\s+/g, '-')}`);
+    toast.success(`Pool "${newPool.name}" created! Share link: gopay.tz/pool/${newPool.name.toLowerCase().replace(/\s+/g, '-')}`);
     setView('home');
   };
 
   const handleContribute = async () => {
     if (!contributionAmount || parseFloat(contributionAmount) <= 0) {
-      alert('Please enter a valid amount');
+      toast.error('Please enter a valid amount');
       return;
     }
 
     // TODO: API call to contribute
-    alert(`✅ Contributed ${formatCurrency(parseFloat(contributionAmount))} to "${selectedPool?.name}"`);
+    toast.success(`✅ Contributed ${formatCurrency(parseFloat(contributionAmount))} to "${selectedPool?.name}"`);
     setView('pool-detail');
     setContributionAmount('');
   };
 
   const copyShareLink = (link: string) => {
     navigator.clipboard.writeText(`https://${link}`);
-    alert('📋 Link copied! Share with anyone to collect contributions.');
+    toast.success('📋 Link copied! Share with anyone to collect contributions.');
   };
 
   // Home View

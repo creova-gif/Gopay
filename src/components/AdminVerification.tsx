@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { 
   ArrowLeft, CheckCircle2, XCircle, Eye, Download, 
   Building2, FileText, User as UserIcon, Camera, Clock,
@@ -58,19 +59,19 @@ export function AdminVerification({ user, accessToken, onBack }: AdminVerificati
       );
 
       if (response.ok) {
-        alert('Merchant approved successfully!');
+        toast.success('Merchant approved successfully!');
         setSelectedApplication(null);
         fetchApplications();
       }
     } catch (error) {
       console.error('Error approving merchant:', error);
-      alert('Failed to approve merchant');
+      toast.error('Failed to approve merchant');
     }
   };
 
   const rejectApplication = async (applicationId: string) => {
     if (!rejectionReason.trim()) {
-      alert('Please provide a reason for rejection');
+      toast.error('Please provide a reason for rejection');
       return;
     }
 
@@ -88,7 +89,7 @@ export function AdminVerification({ user, accessToken, onBack }: AdminVerificati
       );
 
       if (response.ok) {
-        alert('Merchant application rejected');
+        toast.error('Merchant application rejected');
         setShowRejectModal(false);
         setRejectionReason('');
         setSelectedApplication(null);
@@ -96,7 +97,7 @@ export function AdminVerification({ user, accessToken, onBack }: AdminVerificati
       }
     } catch (error) {
       console.error('Error rejecting merchant:', error);
-      alert('Failed to reject merchant');
+      toast.error('Failed to reject merchant');
     }
   };
 

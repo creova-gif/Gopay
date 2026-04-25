@@ -269,26 +269,29 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
                     <span className="text-white/70 text-xs">|</span>
                     <span className={`text-xs font-bold ${language === 'en' ? 'text-white' : 'text-white/50'}`}>EN</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => onNavigate('notifications')}
+                    aria-label={`Notifications${notificationCount > 0 ? `, ${notificationCount} unread` : ''}`}
                     className="hover:opacity-80 p-2.5 rounded-full relative transition-all active:scale-95"
                     style={{ background: 'rgba(255,255,255,0.15)' }}
                   >
-                    <Bell className="size-5 text-white" />
+                    <Bell className="size-5 text-white" aria-hidden="true" />
                     {notificationCount > 0 && (
                       <span className="absolute -top-1 -right-1 text-white text-xs min-w-5 h-5 rounded-full flex items-center justify-center px-1"
                         style={{ background: '#dc2626' }}
+                        aria-hidden="true"
                       >
                         {notificationCount}
                       </span>
                     )}
                   </button>
-                  <button 
+                  <button
                     onClick={() => onNavigate('profile')}
+                    aria-label="Profile and settings"
                     className="hover:opacity-80 p-2.5 rounded-full transition-all active:scale-95"
                     style={{ background: 'rgba(255,255,255,0.15)' }}
                   >
-                    <Settings className="size-5 text-white" />
+                    <Settings className="size-5 text-white" aria-hidden="true" />
                   </button>
                 </div>
               </div>
@@ -2301,7 +2304,7 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
       )}
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 pb-safe" style={{
+      <nav role="navigation" aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-50 pb-safe" style={{
         background: 'rgba(8,13,8,0.97)',
         borderTop: '1px solid rgba(255,255,255,0.06)'
       }}>
@@ -2330,6 +2333,8 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
             {/* Home - Nyumbani (Swahili-first) */}
             <button
               onClick={() => setCurrentTab('home')}
+              aria-label="Home"
+              aria-current={currentTab === 'home' ? 'page' : undefined}
               className="flex-1 flex flex-col items-center gap-0.5 py-2 transition-all duration-[300ms] ease-out relative z-10 active:scale-[0.92]"
             >
               <HomeIcon className={`size-[22px] transition-all duration-[300ms] ${
@@ -2355,6 +2360,8 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
             {/* Rewards - Zawadi */}
             <button
               onClick={() => setCurrentTab('rewards')}
+              aria-label="Rewards"
+              aria-current={currentTab === 'rewards' ? 'page' : undefined}
               className="flex-1 flex flex-col items-center gap-0.5 py-2 transition-all duration-[300ms] ease-out relative z-10 active:scale-[0.92]"
             >
               <RewardsIcon className={`size-[22px] transition-all duration-[300ms] ${
@@ -2380,6 +2387,8 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
             {/* Finance - Fedha */}
             <button
               onClick={() => setCurrentTab('finance')}
+              aria-label="Finance"
+              aria-current={currentTab === 'finance' ? 'page' : undefined}
               className="flex-1 flex flex-col items-center gap-0.5 py-2 transition-all duration-[300ms] ease-out relative z-10 active:scale-[0.92]"
             >
               <WalletIcon className={`size-[22px] transition-all duration-[300ms] ${
@@ -2405,6 +2414,8 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
             {/* Services - Huduma */}
             <button
               onClick={() => setCurrentTab('services')}
+              aria-label="Services"
+              aria-current={currentTab === 'services' ? 'page' : undefined}
               className="flex-1 flex flex-col items-center gap-0.5 py-2 transition-all duration-[300ms] ease-out relative z-10 active:scale-[0.92]"
             >
               <ChartIcon className={`size-[22px] transition-all duration-[300ms] ${
@@ -2430,6 +2441,8 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
             {/* Activity - Shughuli */}
             <button
               onClick={() => setCurrentTab('activity')}
+              aria-label="Activity"
+              aria-current={currentTab === 'activity' ? 'page' : undefined}
               className="flex-1 flex flex-col items-center gap-0.5 py-2 transition-all duration-[300ms] ease-out relative z-10 active:scale-[0.92]"
             >
               <History className={`size-[22px] transition-all duration-[300ms] ${
@@ -2455,6 +2468,8 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
             {/* Profile - Wasifu */}
             <button
               onClick={() => setCurrentTab('profile')}
+              aria-label="Profile"
+              aria-current={currentTab === 'profile' ? 'page' : undefined}
               className="flex-1 flex flex-col items-center gap-0.5 py-2 transition-all duration-[300ms] ease-out relative z-10 active:scale-[0.92]"
             >
               <UserIcon className={`size-[22px] transition-all duration-[300ms] ${
@@ -2478,7 +2493,7 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
             </button>
           </div>
         </div>
-      </div>
+      </nav>
     </div>
   );
 }

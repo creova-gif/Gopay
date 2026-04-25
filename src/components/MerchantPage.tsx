@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -56,11 +57,11 @@ export function MerchantPage({ user, accessToken, onBack }: MerchantPageProps) {
         }, 3000);
       } else {
         const error = await response.json();
-        alert(error.error || 'Payment failed');
+        toast.error(error.error || 'Payment failed');
       }
     } catch (error) {
       console.error('Error processing payment:', error);
-      alert('An error occurred');
+      toast.error('An error occurred');
     }
   };
 

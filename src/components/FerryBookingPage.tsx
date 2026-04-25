@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -138,7 +139,7 @@ export function FerryBookingPage({ user, accessToken, onBack }: FerryBookingPage
 
   const handleBooking = async () => {
     if (!selectedFerry || !travelDate || pin.length !== 4) {
-      alert('Please complete all required fields');
+      toast.error('Please complete all required fields');
       return;
     }
 
@@ -177,7 +178,7 @@ export function FerryBookingPage({ user, accessToken, onBack }: FerryBookingPage
         setStep('confirmation');
         setPin('');
       } else {
-        alert(data.error || 'Booking failed');
+        toast.error(data.error || 'Booking failed');
       }
     } catch (error) {
       console.error('Error booking ferry:', error);

@@ -29,8 +29,19 @@ import paymentAggregatorApp from './payment-aggregator.tsx';
 const app = new Hono();
 
 // Middleware
-app.use('*', cors());
-app.use('*', logger(console.log));
+app.use('*', cors({
+  origin: (origin) => {
+    const allowed = [
+      Deno.env.get('ALLOWED_ORIGIN') || 'https://gopay.tz',
+      'http://localhost:3000',
+      'http://localhost:5173',
+    ];
+    return allowed.includes(origin) ? origin : allowed[0];
+  },
+  allowHeaders: ['Content-Type', 'Authorization'],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+}));
 
 // Mount payment aggregator routes
 app.route('/make-server-69a10ee8/payment-aggregator', paymentAggregatorApp);
@@ -65,6 +76,46 @@ async function verifyUser(authHeader: string | null) {
   return user.id;
 }
 
+// Verify PIN with brute-force protection
+async function verifyPin(userId: string, submittedPin: string): Promise<{ ok: boolean; error?: string; status?: number }> {
+  const wallet = await kv.get(`wallet:${userId}`);
+  if (!wallet) return { ok: false, error: 'Wallet not found', status: 404 };
+
+  if (wallet.pinLockedUntil && Date.now() < wallet.pinLockedUntil) {
+    const seconds = Math.ceil((wallet.pinLockedUntil - Date.now()) / 1000);
+    return { ok: false, error: `PIN locked. Try again in ${seconds}s`, status: 429 };
+  }
+
+  if (wallet.pin !== submittedPin) {
+    const attempts = (wallet.pinAttempts || 0) + 1;
+    const update: Record<string, unknown> = { ...wallet, pinAttempts: attempts };
+    if (attempts >= 5) {
+      update.pinLockedUntil = Date.now() + 30 * 60 * 1000;
+      update.pinAttempts = 0;
+    }
+    await kv.set(`wallet:${userId}`, update);
+    const remaining = Math.max(0, 5 - attempts);
+    return {
+      ok: false,
+      error: remaining > 0 ? `Invalid PIN. ${remaining} attempt(s) remaining` : 'PIN locked for 30 minutes',
+      status: 400,
+    };
+  }
+
+  if ((wallet.pinAttempts || 0) > 0) {
+    await kv.set(`wallet:${userId}`, { ...wallet, pinAttempts: 0, pinLockedUntil: null });
+  }
+  return { ok: true };
+}
+
+// Validate transaction amount
+function validateAmount(amount: unknown): { value: number; error?: string } {
+  const n = Number(amount);
+  if (!Number.isFinite(n) || n <= 0) return { value: 0, error: 'Amount must be a positive number' };
+  if (n > 10_000_000) return { value: 0, error: 'Amount exceeds maximum transaction limit of 10,000,000 TZS' };
+  return { value: Math.floor(n) };
+}
+
 // Auth Routes
 app.post('/make-server-69a10ee8/auth/signup', async (c) => {
   try {
@@ -74,7 +125,7 @@ app.post('/make-server-69a10ee8/auth/signup', async (c) => {
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Auto-confirm since no email server configured
+      email_confirm: false,
       user_metadata: { name, phone, nida },
     });
 
@@ -95,12 +146,14 @@ app.post('/make-server-69a10ee8/auth/signup', async (c) => {
       createdAt: new Date().toISOString(),
     });
 
-    // Initialize wallet with 100,000 TZS demo balance
+    // Initialize wallet — PIN must be set by user before first financial operation
     await kv.set(`wallet:${userId}`, {
       userId,
       balance: 100000,
       currency: 'TZS',
-      pin: '1234', // Demo PIN
+      pin: null,
+      pinAttempts: 0,
+      pinLockedUntil: null,
     });
 
     // Initialize empty linked accounts
@@ -181,16 +234,13 @@ app.post('/make-server-69a10ee8/wallet/link-account', async (c) => {
   try {
     const { type, provider, accountNumber, pin } = await c.req.json();
 
-    // Verify PIN
-    const wallet = await kv.get(`wallet:${userId}`);
-    if (wallet.pin !== pin) {
-      return c.json({ error: 'Invalid PIN' }, 400);
-    }
+    const pinCheck = await verifyPin(userId, pin);
+    if (!pinCheck.ok) return c.json({ error: pinCheck.error }, pinCheck.status as number);
 
     const accounts = await kv.get(`linked_accounts:${userId}`) || [];
-    
+
     const newAccount = {
-      id: `acc_${Date.now()}`,
+      id: `acc_${crypto.randomUUID()}`,
       type,
       provider,
       accountNumber,
@@ -217,22 +267,24 @@ app.post('/make-server-69a10ee8/wallet/add-funds', async (c) => {
   try {
     const { amount, source, pin } = await c.req.json();
 
-    const wallet = await kv.get(`wallet:${userId}`);
-    if (wallet.pin !== pin) {
-      return c.json({ error: 'Invalid PIN' }, 400);
-    }
+    const { value: amountNum, error: amountError } = validateAmount(amount);
+    if (amountError) return c.json({ error: amountError }, 400);
 
-    const newBalance = wallet.balance + parseInt(amount);
+    const pinCheck = await verifyPin(userId, pin);
+    if (!pinCheck.ok) return c.json({ error: pinCheck.error }, pinCheck.status as number);
+
+    const wallet = await kv.get(`wallet:${userId}`);
+    const newBalance = wallet.balance + amountNum;
     wallet.balance = newBalance;
     await kv.set(`wallet:${userId}`, wallet);
 
     // Record transaction
-    const transactionId = `tx_${Date.now()}`;
+    const transactionId = `tx_${crypto.randomUUID()}`;
     await kv.set(`transaction:${transactionId}`, {
       id: transactionId,
       userId,
       type: 'credit',
-      amount: parseInt(amount),
+      amount: amountNum,
       description: `Added funds from ${source}`,
       timestamp: new Date().toISOString(),
       status: 'completed',
@@ -255,12 +307,13 @@ app.post('/make-server-69a10ee8/wallet/send-money', async (c) => {
   try {
     const { recipient, amount, pin } = await c.req.json();
 
-    const wallet = await kv.get(`wallet:${userId}`);
-    if (wallet.pin !== pin) {
-      return c.json({ error: 'Invalid PIN' }, 400);
-    }
+    const { value: amountNum, error: amountError } = validateAmount(amount);
+    if (amountError) return c.json({ error: amountError }, 400);
 
-    const amountNum = parseInt(amount);
+    const pinCheck = await verifyPin(userId, pin);
+    if (!pinCheck.ok) return c.json({ error: pinCheck.error }, pinCheck.status as number);
+
+    const wallet = await kv.get(`wallet:${userId}`);
     if (wallet.balance < amountNum) {
       return c.json({ error: 'Insufficient balance' }, 400);
     }
@@ -269,7 +322,7 @@ app.post('/make-server-69a10ee8/wallet/send-money', async (c) => {
     await kv.set(`wallet:${userId}`, wallet);
 
     // Record transaction
-    const transactionId = `tx_${Date.now()}`;
+    const transactionId = `tx_${crypto.randomUUID()}`;
     await kv.set(`transaction:${transactionId}`, {
       id: transactionId,
       userId,
@@ -318,12 +371,13 @@ app.post('/make-server-69a10ee8/payments/process', async (c) => {
   try {
     const { provider, accountNumber, amount, pin } = await c.req.json();
 
-    const wallet = await kv.get(`wallet:${userId}`);
-    if (wallet.pin !== pin) {
-      return c.json({ error: 'Invalid PIN' }, 400);
-    }
+    const { value: amountNum, error: amountError } = validateAmount(amount);
+    if (amountError) return c.json({ error: amountError }, 400);
 
-    const amountNum = parseInt(amount);
+    const pinCheck = await verifyPin(userId, pin);
+    if (!pinCheck.ok) return c.json({ error: pinCheck.error }, pinCheck.status as number);
+
+    const wallet = await kv.get(`wallet:${userId}`);
     if (wallet.balance < amountNum) {
       return c.json({ error: 'Insufficient balance' }, 400);
     }
@@ -331,8 +385,8 @@ app.post('/make-server-69a10ee8/payments/process', async (c) => {
     wallet.balance -= amountNum;
     await kv.set(`wallet:${userId}`, wallet);
 
-    const reference = `PAY${Date.now()}`;
-    const transactionId = `tx_${Date.now()}`;
+    const reference = `PAY${crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`;
+    const transactionId = `tx_${crypto.randomUUID()}`;
     
     await kv.set(`transaction:${transactionId}`, {
       id: transactionId,
@@ -372,35 +426,27 @@ app.post('/make-server-69a10ee8/payments/bill-payment', async (c) => {
   try {
     const { provider, controlNumber, accountNumber, amount, phone, pin, paymentMethod, billDetails } = await c.req.json();
 
-    // Verify PIN
-    const wallet = await kv.get(`wallet:${userId}`);
-    if (!wallet) {
-      return c.json({ error: 'Wallet not found' }, 404);
-    }
-    
-    if (wallet.pin !== pin) {
-      return c.json({ error: 'Invalid PIN - Please check your PIN and try again' }, 400);
-    }
+    const { value: amountNum, error: amountError } = validateAmount(amount);
+    if (amountError) return c.json({ error: amountError }, 400);
 
-    const amountNum = parseInt(amount);
-    if (!amountNum || amountNum <= 0) {
-      return c.json({ error: 'Invalid amount' }, 400);
-    }
+    const pinCheck = await verifyPin(userId, pin);
+    if (!pinCheck.ok) return c.json({ error: pinCheck.error }, pinCheck.status as number);
+
+    const wallet = await kv.get(`wallet:${userId}`);
+    if (!wallet) return c.json({ error: 'Wallet not found' }, 404);
 
     // Check balance (Tanzania BOT regulation: ensure sufficient funds)
     if (wallet.balance < amountNum) {
       return c.json({ error: 'Insufficient balance - Please top up your wallet' }, 400);
     }
 
-    // Generate payment reference (BOT compliant format)
-    const reference = `BP${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+    const reference = `BP${crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`;
     
     // Deduct from wallet
     wallet.balance -= amountNum;
     await kv.set(`wallet:${userId}`, wallet);
 
-    // Record transaction (BOT regulation: maintain transaction log)
-    const transactionId = `tx_${Date.now()}`;
+    const transactionId = `tx_${crypto.randomUUID()}`;
     await kv.set(`transaction:${transactionId}`, {
       id: transactionId,
       userId,
@@ -437,7 +483,7 @@ app.post('/make-server-69a10ee8/payments/bill-payment', async (c) => {
 
     // In production, this would call the actual provider API to process the payment
     // For TANESCO, DAWASCO, TRA, etc., integration with TEPSA/GePG systems
-    console.log(`Bill payment processed: ${reference} - ${provider} - ${amountNum} TZS`);
+    // Bill payment processed — no PII in logs
 
     return c.json({ 
       success: true, 
@@ -523,11 +569,10 @@ app.post('/make-server-69a10ee8/wallet/pay-qr', async (c) => {
   try {
     const { qrCode, amount, pin } = await c.req.json();
 
-    const wallet = await kv.get(`wallet:${userId}`);
-    if (wallet.pin !== pin) {
-      return c.json({ error: 'Invalid PIN' }, 400);
-    }
+    const pinCheck = await verifyPin(userId, pin);
+    if (!pinCheck.ok) return c.json({ error: pinCheck.error }, pinCheck.status as number);
 
+    const wallet = await kv.get(`wallet:${userId}`);
     const qrData = await kv.get(`qr:${qrCode}`);
     if (!qrData || qrData.status !== 'active') {
       return c.json({ error: 'Invalid or expired QR code' }, 400);
@@ -557,7 +602,7 @@ app.post('/make-server-69a10ee8/wallet/pay-qr', async (c) => {
     }
 
     // Record transactions
-    const transactionId = `tx_${Date.now()}`;
+    const transactionId = `tx_${crypto.randomUUID()}`;
     await kv.set(`transaction:${transactionId}`, {
       id: transactionId,
       userId,
@@ -569,7 +614,7 @@ app.post('/make-server-69a10ee8/wallet/pay-qr', async (c) => {
       category: 'qr_payment',
     });
 
-    const recipientTxId = `tx_${Date.now() + 1}`;
+    const recipientTxId = `tx_${crypto.randomUUID()}`;
     await kv.set(`transaction:${recipientTxId}`, {
       id: recipientTxId,
       userId: qrData.userId,

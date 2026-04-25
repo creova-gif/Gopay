@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -91,7 +92,7 @@ export function MicroLoansPage({ user, accessToken, onBack }: MicroLoansPageProp
 
   const handleApplyLoan = async () => {
     if (!selectedOffer || pin.length !== 4) {
-      alert('Please complete all fields');
+      toast.error('Please complete all fields');
       return;
     }
 
@@ -131,24 +132,11 @@ export function MicroLoansPage({ user, accessToken, onBack }: MicroLoansPageProp
         setView('success');
         setPin('');
       } else {
-        alert(data.error || 'Loan application failed');
+        toast.error(data.error || 'Loan application failed');
       }
     } catch (error) {
       console.error('Error applying for loan:', error);
-      // Demo mode - approve anyway
-      const newLoan: ActiveLoan = {
-        id: Date.now().toString(),
-        amount: selectedOffer.amount,
-        purpose: selectedOffer.purpose,
-        disbursedDate: new Date().toISOString().split('T')[0],
-        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        totalDue: selectedOffer.totalRepayment,
-        paid: 0,
-        status: 'active',
-      };
-      setActiveLoans([...activeLoans, newLoan]);
-      setView('success');
-      setPin('');
+      toast.error('Network error. Please check your connection and try again.');
     } finally {
       setProcessing(false);
     }

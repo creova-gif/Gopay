@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -122,7 +123,7 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
       setShowAddFunds(false);
       setAddFundsData({ amount: '', source: '', pin: '' });
       fetchWalletData();
-      alert('Funds added successfully!');
+      toast.success('Funds added successfully!');
     } else {
       try {
         const response = await fetch(
@@ -141,14 +142,14 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
           setShowAddFunds(false);
           setAddFundsData({ amount: '', source: '', pin: '' });
           fetchWalletData();
-          alert('Funds added successfully!');
+          toast.success('Funds added successfully!');
         } else {
           const error = await response.json();
-          alert(error.error || 'Failed to add funds');
+          toast.error(error.error || 'Failed to add funds');
         }
       } catch (error) {
         console.error('Error adding funds:', error);
-        alert('An error occurred');
+        toast.error('An error occurred');
       }
     }
   };
@@ -166,7 +167,7 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
       setShowSendMoney(false);
       setSendMoneyData({ recipient: '', amount: '', pin: '' });
       fetchWalletData();
-      alert('Money sent successfully!');
+      toast.success('Money sent successfully!');
     } else {
       try {
         const response = await fetch(
@@ -185,14 +186,14 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
           setShowSendMoney(false);
           setSendMoneyData({ recipient: '', amount: '', pin: '' });
           fetchWalletData();
-          alert('Money sent successfully!');
+          toast.success('Money sent successfully!');
         } else {
           const error = await response.json();
-          alert(error.error || 'Failed to send money');
+          toast.error(error.error || 'Failed to send money');
         }
       } catch (error) {
         console.error('Error sending money:', error);
-        alert('An error occurred');
+        toast.error('An error occurred');
       }
     }
   };
@@ -209,7 +210,7 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
       });
       setShowRequestMoney(false);
       setRequestMoneyData({ recipient: '', amount: '', message: '' });
-      alert('Money request sent successfully!');
+      toast.success('Money request sent successfully!');
     } else {
       try {
         const response = await fetch(
@@ -227,14 +228,14 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
         if (response.ok) {
           setShowRequestMoney(false);
           setRequestMoneyData({ recipient: '', amount: '', message: '' });
-          alert('Money request sent successfully!');
+          toast.success('Money request sent successfully!');
         } else {
           const error = await response.json();
-          alert(error.error || 'Failed to request money');
+          toast.error(error.error || 'Failed to request money');
         }
       } catch (error) {
         console.error('Error requesting money:', error);
-        alert('An error occurred');
+        toast.error('An error occurred');
       }
     }
   };
@@ -247,7 +248,7 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
       setShowLinkAccount(false);
       setLinkAccountData({ type: '', provider: '', accountNumber: '', pin: '' });
       fetchLinkedAccounts();
-      alert('Account linked successfully!');
+      toast.success('Account linked successfully!');
     } else {
       try {
         const response = await fetch(
@@ -266,14 +267,14 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
           setShowLinkAccount(false);
           setLinkAccountData({ type: '', provider: '', accountNumber: '', pin: '' });
           fetchLinkedAccounts();
-          alert('Account linked successfully!');
+          toast.success('Account linked successfully!');
         } else {
           const error = await response.json();
-          alert(error.error || 'Failed to link account');
+          toast.error(error.error || 'Failed to link account');
         }
       } catch (error) {
         console.error('Error linking account:', error);
-        alert('An error occurred');
+        toast.error('An error occurred');
       }
     }
   };
@@ -298,11 +299,11 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
         setShowQRCode(true);
       } else {
         const error = await response.json();
-        alert(error.error || 'Failed to generate QR code');
+        toast.error(error.error || 'Failed to generate QR code');
       }
     } catch (error) {
       console.error('Error generating QR code:', error);
-      alert('An error occurred');
+      toast.error('An error occurred');
     }
   };
 

@@ -1,7 +1,22 @@
 import { Hono } from 'npm:hono';
+import { createClient } from 'jsr:@supabase/supabase-js@2';
 import * as kv from './kv_store.tsx';
 
 const app = new Hono();
+
+const _supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
+
+async function requireAuth(c: any): Promise<string | null> {
+  const auth = c.req.header('Authorization');
+  if (!auth) return null;
+  const token = auth.split(' ')[1];
+  const { data: { user }, error } = await _supabase.auth.getUser(token);
+  if (error || !user) return null;
+  return user.id;
+}
 
 /**
  * Integrations Service
@@ -24,6 +39,8 @@ interface AnalyticsEvent {
  * Supports: Mixpanel, Google Analytics, Amplitude
  */
 app.post('/track', async (c) => {
+  const uid = await requireAuth(c);
+  if (!uid) return c.json({ error: 'Unauthorized' }, 401);
   try {
     const event: AnalyticsEvent = await c.req.json();
     
@@ -227,6 +244,8 @@ interface SmsRequest {
 }
 
 app.post('/sms/send', async (c) => {
+  const uid = await requireAuth(c);
+  if (!uid) return c.json({ error: 'Unauthorized' }, 401);
   try {
     const { phone, message, userId }: SmsRequest = await c.req.json();
     
@@ -254,8 +273,7 @@ app.post('/sms/send', async (c) => {
       return c.json({ success: true, ...result });
     }
     
-    // Fallback: Log only (demo mode)
-    console.log(`[SMS] To: ${phone}, Message: ${message}`);
+    // Demo mode — SMS not sent
     return c.json({ success: true, demo: true });
     
   } catch (error: any) {
@@ -295,6 +313,8 @@ interface PushNotification {
 }
 
 app.post('/push/send', async (c) => {
+  const uid = await requireAuth(c);
+  if (!uid) return c.json({ error: 'Unauthorized' }, 401);
   try {
     const notification: PushNotification = await c.req.json();
     
@@ -351,6 +371,8 @@ async function sendPushNotification(serverKey: string, token: string, notificati
 
 // Register FCM token
 app.post('/push/register', async (c) => {
+  const uid = await requireAuth(c);
+  if (!uid) return c.json({ error: 'Unauthorized' }, 401);
   try {
     const { userId, token } = await c.req.json();
     
@@ -378,6 +400,8 @@ interface EmailRequest {
 }
 
 app.post('/email/send', async (c) => {
+  const uid = await requireAuth(c);
+  if (!uid) return c.json({ error: 'Unauthorized' }, 401);
   try {
     const email: EmailRequest = await c.req.json();
     
@@ -429,6 +453,8 @@ interface WhatsAppMessage {
 }
 
 app.post('/whatsapp/send', async (c) => {
+  const uid = await requireAuth(c);
+  if (!uid) return c.json({ error: 'Unauthorized' }, 401);
   try {
     const { phone, message, userId }: WhatsAppMessage = await c.req.json();
     

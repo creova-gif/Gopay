@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -38,12 +39,12 @@ export function QRScanner({ user, accessToken, onBack }: QRScannerProps) {
   const handlePayment = () => {
     if (lockedUntil && Date.now() < lockedUntil) {
       const remaining = Math.ceil((lockedUntil - Date.now()) / 1000);
-      alert(`Too many incorrect attempts. Try again in ${remaining}s`);
+      toast.error(`Too many incorrect attempts. Try again in ${remaining}s`);
       return;
     }
 
     if (!amount || pin.length !== 4) {
-      alert('Please enter amount and 4-digit PIN');
+      toast.error('Please enter amount and 4-digit PIN');
       return;
     }
 
@@ -52,7 +53,7 @@ export function QRScanner({ user, accessToken, onBack }: QRScannerProps) {
       setPinAttempts(0);
       setLockedUntil(Date.now() + 30000);
       setPin('');
-      alert('Too many attempts. Locked for 30 seconds.');
+      toast.error('Too many attempts. Locked for 30 seconds.');
       return;
     }
     setPinAttempts(newAttempts);

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -115,7 +116,7 @@ export function MultiCurrencyWallet({ user, accessToken, onBack }: MultiCurrency
 
   const handleConvert = async () => {
     if (!convertAmount || pin.length !== 4) {
-      alert('Please complete all fields');
+      toast.error('Please complete all fields');
       return;
     }
 
@@ -123,7 +124,7 @@ export function MultiCurrencyWallet({ user, accessToken, onBack }: MultiCurrency
     const fromBalance = balances.find(b => b.code === selectedFromCurrency);
     
     if (!fromBalance || amount > fromBalance.balance) {
-      alert('Insufficient balance');
+      toast.error('Insufficient balance');
       return;
     }
 
@@ -143,7 +144,7 @@ export function MultiCurrencyWallet({ user, accessToken, onBack }: MultiCurrency
         return b;
       }));
 
-      alert(`✅ Converted ${formatCurrency(amount, selectedFromCurrency)} to ${formatCurrency(converted, selectedToCurrency)}`);
+      toast.success(`✅ Converted ${formatCurrency(amount, selectedFromCurrency)} to ${formatCurrency(converted, selectedToCurrency)}`);
       setConvertAmount('');
       setPin('');
       setView('overview');
@@ -166,7 +167,7 @@ export function MultiCurrencyWallet({ user, accessToken, onBack }: MultiCurrency
 
     setBalances([...balances, newBalance]);
     setView('overview');
-    alert(`${currency.name} wallet added! 🎉`);
+    toast.success(`${currency.name} wallet added! 🎉`);
   };
 
   // Overview

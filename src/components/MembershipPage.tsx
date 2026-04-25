@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -46,27 +47,42 @@ export function MembershipPage({ user, accessToken, onBack }: MembershipPageProp
     loadWalletBalance();
   }, []);
 
-  const loadWalletBalance = () => {
-    const balance = parseFloat(localStorage.getItem('walletBalance') || '50000');
-    setWalletBalance(balance);
+  const loadWalletBalance = async () => {
+    try {
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/balance`,
+        { headers: { 'Authorization': `Bearer ${accessToken}` } }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setWalletBalance(data.balance ?? 0);
+      }
+    } catch {
+      // keep default 0
+    }
   };
 
   const fetchMembership = async () => {
     try {
-      // Check localStorage for membership
-      const storedMembership = localStorage.getItem('userMembership');
-      if (storedMembership) {
-        setMembership(JSON.parse(storedMembership));
-      } else {
-        // Default to basic
-        const defaultMembership = {
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/membership/status`,
+        { headers: { 'Authorization': `Bearer ${accessToken}` } }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setMembership(data.membership ?? {
           tier: 'basic' as const,
           startDate: new Date().toISOString(),
           expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
           autoRenew: false
-        };
-        setMembership(defaultMembership);
-        localStorage.setItem('userMembership', JSON.stringify(defaultMembership));
+        });
+      } else {
+        setMembership({
+          tier: 'basic' as const,
+          startDate: new Date().toISOString(),
+          expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          autoRenew: false
+        });
       }
     } catch (error) {
       console.error('Error fetching membership:', error);
@@ -140,12 +156,12 @@ export function MembershipPage({ user, accessToken, onBack }: MembershipPageProp
     if (!selectedPlan) return;
 
     if (selectedPlan.price === 0) {
-      alert('You are already on the basic plan');
+      toast.success('You are already on the basic plan');
       return;
     }
 
     if (walletBalance < selectedPlan.price) {
-      alert('Insufficient balance in your wallet');
+      toast.error('Insufficient balance in your wallet');
       return;
     }
 
@@ -175,11 +191,11 @@ export function MembershipPage({ user, accessToken, onBack }: MembershipPageProp
         await fetchMembership();
         setActiveView('success');
       } else {
-        alert(data.error || 'Subscription failed');
+        toast.error(data.error || 'Subscription failed');
       }
     } catch (error) {
       console.error('Error subscribing:', error);
-      alert('Subscription failed. Please try again.');
+      toast.error('Subscription failed. Please try again.');
     } finally {
       setProcessing(false);
     }
@@ -368,24 +384,9 @@ export function MembershipPage({ user, accessToken, onBack }: MembershipPageProp
         walletBalance={walletBalance}
         onBack={() => setActiveView('overview')}
         onPaymentSuccess={(tier, method, transactionId) => {
-          // Update membership in localStorage
-          const newMembership = {
-            tier: tier as 'basic' | 'premium' | 'business',
-            startDate: new Date().toISOString(),
-            expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-            autoRenew: false
-          };
-          
-          localStorage.setItem('userMembership', JSON.stringify(newMembership));
-          setMembership(newMembership);
-          
-          // Reload wallet balance
+          fetchMembership();
           loadWalletBalance();
-          
-          // Show success
-          alert(`✅ Welcome to ${tier} membership!\n\nPayment Method: ${method}\nTransaction ID: ${transactionId}`);
-          
-          // Go back to overview
+          toast.success(`Welcome to ${tier} membership! Transaction: ${transactionId}`);
           setActiveView('overview');
         }}
       />

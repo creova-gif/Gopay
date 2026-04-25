@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -139,12 +140,12 @@ export function SettingsPage({ user, accessToken, onBack, onUpdateUser }: Settin
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      toast.error('Please select an image file');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image size should be less than 5MB');
+      toast.error('Image size should be less than 5MB');
       return;
     }
 
@@ -171,13 +172,13 @@ export function SettingsPage({ user, accessToken, onBack, onUpdateUser }: Settin
         if (response.ok) {
           setProfilePhoto(data.photoUrl);
         } else {
-          alert(data.error || 'Upload failed');
+          toast.error(data.error || 'Upload failed');
         }
       };
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error uploading photo:', error);
-      alert('Upload failed. Please try again.');
+      toast.error('Upload failed. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -211,14 +212,14 @@ export function SettingsPage({ user, accessToken, onBack, onUpdateUser }: Settin
           email,
           profilePhoto,
         });
-        alert('Profile updated successfully!');
+        toast.success('Profile updated successfully!');
         setCurrentView('main');
       } else {
-        alert(data.error || 'Update failed');
+        toast.error(data.error || 'Update failed');
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Update failed. Please try again.');
+      toast.error('Update failed. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -226,7 +227,7 @@ export function SettingsPage({ user, accessToken, onBack, onUpdateUser }: Settin
 
   const addAddress = async () => {
     if (!newAddress.label || !newAddress.address) {
-      alert('Please fill in all fields');
+      toast.error('Please fill in all fields');
       return;
     }
 
@@ -259,7 +260,7 @@ export function SettingsPage({ user, accessToken, onBack, onUpdateUser }: Settin
 
   const addTrustedContact = async () => {
     if (!newContact.name || !newContact.phone) {
-      alert('Please fill in name and phone');
+      toast.error('Please fill in name and phone');
       return;
     }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -18,6 +19,7 @@ import {
   X
 } from 'lucide-react';
 import { User } from '../App';
+import { projectId } from '../utils/supabase/info';
 
 interface QuickPayFeaturesProps {
   user: User;
@@ -33,16 +35,30 @@ export function QuickPayFeatures({ user, accessToken, onBack }: QuickPayFeatures
   const [generatedQR, setGeneratedQR] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [nfcActive, setNfcActive] = useState(false);
+  const [nfcSupported] = useState(() => 'NDEFReader' in window);
+  const [virtualCard, setVirtualCard] = useState<{
+    number: string; expiry: string; cvv: string; name: string; type: string; balance: number;
+  } | null>(null);
 
-  // Demo virtual card data
-  const virtualCard = {
-    number: '5284 7821 4532 9876',
-    expiry: '12/27',
-    cvv: '742',
-    name: user.name.toUpperCase(),
-    type: 'VISA',
-    balance: 1250000 // TZS
-  };
+  useEffect(() => {
+    fetch(
+      `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/virtual-card`,
+      { headers: { 'Authorization': `Bearer ${accessToken}` } }
+    )
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => setVirtualCard(data.card))
+      .catch(() => {
+        // Backend not yet wired — show masked placeholder
+        setVirtualCard({
+          number: '**** **** **** ****',
+          expiry: '--/--',
+          cvv: '•••',
+          name: user.name.toUpperCase(),
+          type: 'VISA',
+          balance: 0,
+        });
+      });
+  }, [accessToken]);
 
   const handleGenerateQR = () => {
     if (qrAmount && parseFloat(qrAmount) > 0) {
@@ -53,17 +69,34 @@ export function QuickPayFeatures({ user, accessToken, onBack }: QuickPayFeatures
   };
 
   const handleCopyCardNumber = () => {
+    if (!virtualCard) return;
     navigator.clipboard.writeText(virtualCard.number.replace(/\s/g, ''));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const activateNFC = () => {
-    setNfcActive(true);
-    // Simulate NFC activation
-    setTimeout(() => {
+  const activateNFC = async () => {
+    if (!nfcSupported) {
+      toast.error('NFC is not supported on this device or browser');
+      return;
+    }
+    try {
+      // @ts-expect-error NDEFReader is not in TS lib yet
+      const ndef = new window.NDEFReader();
+      await ndef.scan();
+      setNfcActive(true);
+      ndef.onreading = () => {
+        toast.success('NFC tag read successfully');
+        setNfcActive(false);
+      };
+      ndef.onreadingerror = () => {
+        toast.error('NFC read error. Please try again.');
+        setNfcActive(false);
+      };
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to activate NFC');
       setNfcActive(false);
-    }, 10000);
+    }
   };
 
   const formatCurrency = (amount: number) => {
@@ -117,7 +150,7 @@ export function QuickPayFeatures({ user, accessToken, onBack }: QuickPayFeatures
               </div>
               <div className="flex items-center justify-between">
                 <div className="text-sm text-blue-100">Card Balance</div>
-                <div className="text-xl">{formatCurrency(virtualCard.balance)}</div>
+                <div className="text-xl">{virtualCard ? formatCurrency(virtualCard.balance) : '—'}</div>
               </div>
             </div>
             <div className="absolute -right-10 -bottom-10 opacity-10">
@@ -196,6 +229,13 @@ export function QuickPayFeatures({ user, accessToken, onBack }: QuickPayFeatures
   }
 
   if (activeView === 'card') {
+    if (!virtualCard) {
+      return (
+        <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+          <p className="text-gray-500">Loading card...</p>
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
         {/* Header */}
@@ -376,10 +416,16 @@ export function QuickPayFeatures({ user, accessToken, onBack }: QuickPayFeatures
           </div>
 
           {/* Activate Button */}
+          {!nfcSupported && (
+            <p className="text-center text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-xl p-3">
+              NFC is not supported on this device or browser.
+            </p>
+          )}
           {!nfcActive ? (
-            <Button 
+            <Button
               onClick={activateNFC}
-              className="w-full h-14 bg-purple-600 hover:bg-purple-700 text-lg"
+              disabled={!nfcSupported}
+              className="w-full h-14 bg-purple-600 hover:bg-purple-700 text-lg disabled:opacity-50"
             >
               <Radio className="h-5 w-5 mr-2" />
               Activate NFC Payment

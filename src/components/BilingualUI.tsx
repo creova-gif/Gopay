@@ -16,6 +16,7 @@
  */
 
 import React from 'react';
+import { toast } from 'sonner';
 import { BilingualText as BilingualTextType } from '../utils/language-system';
 import { cn } from '../utils/ui/utils';
 
@@ -425,7 +426,7 @@ export const BilingualUIExamples = () => {
       {/* Button */}
       <div>
         <h3 className="text-sm font-bold text-gray-600 mb-4">BilingualButton</h3>
-        <BilingualButton sw="Endelea" en="Continue" onClick={() => alert('Clicked!')} />
+        <BilingualButton sw="Endelea" en="Continue" onClick={() => toast.error('Clicked!')} />
       </div>
       
       {/* List Item */}

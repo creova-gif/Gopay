@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -28,6 +29,19 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
   const [pin, setPin] = useState('');
   const [transactionRef, setTransactionRef] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sending, setSending] = useState(false);
+  const [balance, setBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!accessToken) return;
+    fetch(
+      `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/balance`,
+      { headers: { 'Authorization': `Bearer ${accessToken}` } }
+    )
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => setBalance(data.balance ?? null))
+      .catch(() => {});
+  }, [accessToken]);
 
   // Recent contacts
   const recentContacts = [
@@ -56,7 +70,7 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
 
   const handleProceedToConfirm = () => {
     if (!recipient || !amount || parseFloat(amount) <= 0) {
-      alert('Please enter recipient and amount');
+      toast.error('Please enter recipient and amount');
       return;
     }
     setStep('confirm');
@@ -64,10 +78,11 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
 
   const handleConfirmTransfer = async () => {
     if (pin.length !== 4) {
-      alert('Please enter a valid 4-digit PIN');
+      toast.error('Please enter a valid 4-digit PIN');
       return;
     }
 
+    setSending(true);
     try {
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/transfer/send`,
@@ -93,14 +108,14 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
         setStep('success');
         setPin('');
       } else {
-        alert('Transfer failed. Please try again.');
+        const err = await response.json();
+        toast.error(err.error || 'Transfer failed. Please try again.');
       }
     } catch (error) {
       console.error('Error processing transfer:', error);
-      // Demo mode
-      setTransactionRef(`TXN${Date.now()}`);
-      setStep('success');
-      setPin('');
+      toast.error('Network error. Please check your connection and try again.');
+    } finally {
+      setSending(false);
     }
   };
 
@@ -248,7 +263,7 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
                 <CreditCard className="size-5" />
               </div>
               <p className="text-2xl mb-1">goPay Wallet</p>
-              <p className="text-green-100 text-sm">Balance: {formatCurrency(450000)}</p>
+              <p className="text-green-100 text-sm">Balance: {balance !== null ? formatCurrency(balance) : '—'}</p>
             </div>
           </div>
 
@@ -278,10 +293,10 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
           {/* Confirm Button */}
           <Button
             onClick={handleConfirmTransfer}
-            disabled={pin.length !== 4}
+            disabled={pin.length !== 4 || sending}
             className="w-full h-14 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full text-lg disabled:opacity-50"
           >
-            Send {formatCurrency(total)}
+            {sending ? 'Sending...' : `Send ${formatCurrency(total)}`}
           </Button>
         </div>
       </div>

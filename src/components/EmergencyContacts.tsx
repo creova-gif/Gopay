@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { ArrowLeft, Plus, Edit2, Trash2, Phone, Mail, Users, Shield, Check, AlertCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { projectId } from '../utils/supabase/info';
@@ -70,7 +71,7 @@ export function EmergencyContacts({ accessToken, onBack }: EmergencyContactsProp
 
   const saveContact = async () => {
     if (!formName || !formPhone) {
-      alert('Name and phone are required');
+      toast.error('Name and phone are required');
       return;
     }
 
@@ -103,7 +104,7 @@ export function EmergencyContacts({ accessToken, onBack }: EmergencyContactsProp
       }
     } catch (error) {
       console.error('Error saving contact:', error);
-      alert('Failed to save contact');
+      toast.error('Failed to save contact');
     }
   };
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -366,13 +367,13 @@ export function CarRentalPage({ user, accessToken, onBack }: CarRentalPageProps)
 
   const handleBooking = async () => {
     if (!selectedVehicle || !pickupDate || !dropoffDate || !pin) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
     const { days } = calculateDuration();
     if (days < 1) {
-      alert('Rental period must be at least 1 day');
+      toast.error('Rental period must be at least 1 day');
       return;
     }
 
@@ -409,11 +410,11 @@ export function CarRentalPage({ user, accessToken, onBack }: CarRentalPageProps)
       if (response.ok) {
         setActiveView('confirmation');
       } else {
-        alert(data.error || 'Booking failed');
+        toast.error(data.error || 'Booking failed');
       }
     } catch (error) {
       console.error('Error booking rental:', error);
-      alert('Booking failed. Please try again.');
+      toast.error('Booking failed. Please try again.');
     } finally {
       setProcessing(false);
     }

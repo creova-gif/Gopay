@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { User } from '../App';
@@ -442,11 +443,11 @@ export function MoviesPage({ user, accessToken, onBack }: MoviesPageProps) {
         setBookingRef(data.bookingReference);
         setActiveView('success');
       } else {
-        alert(data.error || 'Booking failed');
+        toast.error(data.error || 'Booking failed');
       }
     } catch (error) {
       console.error('Error booking ticket:', error);
-      alert('Booking failed. Please try again.');
+      toast.error('Booking failed. Please try again.');
     } finally {
       setProcessing(false);
     }

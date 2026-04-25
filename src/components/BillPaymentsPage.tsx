@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { User } from '../App';
@@ -814,11 +815,11 @@ export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPage
           fetchBalance();
         }
       } else {
-        alert('Payment failed. Please try again.');
+        toast.error('Payment failed. Please try again.');
       }
     } catch (error) {
       console.error('Error processing payment:', error);
-      alert('Payment failed. Please try again.');
+      toast.error('Payment failed. Please try again.');
     } finally {
       setProcessing(false);
     }

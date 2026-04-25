@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -418,7 +419,7 @@ export function ShoppingPage({ user, accessToken, onBack }: ShoppingPageProps) {
 
   const handleCheckout = () => {
     if (cartItems.length === 0) {
-      alert('Your cart is empty');
+      toast.error('Your cart is empty');
       return;
     }
     setShowCheckout(true);
@@ -427,12 +428,12 @@ export function ShoppingPage({ user, accessToken, onBack }: ShoppingPageProps) {
 
   const handleConfirmOrder = async () => {
     if (pin.length !== 4) {
-      alert('Please enter a valid 4-digit PIN');
+      toast.error('Please enter a valid 4-digit PIN');
       return;
     }
 
     if (!deliveryAddress.trim()) {
-      alert('Please enter delivery address');
+      toast.error('Please enter delivery address');
       return;
     }
 
@@ -464,7 +465,7 @@ export function ShoppingPage({ user, accessToken, onBack }: ShoppingPageProps) {
         setShowSuccess(true);
         setPin('');
       } else {
-        alert('Order failed. Please try again.');
+        toast.error('Order failed. Please try again.');
       }
     } catch (error) {
       console.error('Error processing order:', error);

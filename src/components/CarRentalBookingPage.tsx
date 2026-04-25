@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { 
   ArrowLeft, Car, Calendar, MapPin, Users, Check, Star, Shield,
@@ -112,12 +113,12 @@ export function CarRentalBookingPage({ vehicle, pickupDate, dropoffDate, pickupL
 
   const handleBooking = async () => {
     if (!pin || pin.length !== 4) {
-      alert('Please enter your 4-digit PIN');
+      toast.error('Please enter your 4-digit PIN');
       return;
     }
 
     if (withDriver && (!driverName || !driverLicense || !driverPhone)) {
-      alert('Please fill in driver details');
+      toast.error('Please fill in driver details');
       return;
     }
 
@@ -161,11 +162,11 @@ export function CarRentalBookingPage({ vehicle, pickupDate, dropoffDate, pickupL
         setBookingReference(data.bookingReference);
         setActiveStep('confirmation');
       } else {
-        alert(data.error || 'Booking failed');
+        toast.error(data.error || 'Booking failed');
       }
     } catch (error) {
       console.error('Error booking vehicle:', error);
-      alert('Booking failed. Please try again.');
+      toast.error('Booking failed. Please try again.');
     } finally {
       setProcessing(false);
     }

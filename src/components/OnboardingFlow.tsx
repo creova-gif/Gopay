@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Wallet, 
@@ -135,15 +136,15 @@ export function OnboardingFlow({ onComplete, onSkipToDemo }: OnboardingFlowProps
 
   const handleComplete = () => {
     if (userData.pin !== userData.confirmPin) {
-      alert('PINs do not match!');
+      toast.error('PINs do not match!');
       return;
     }
     if (userData.pin.length !== 4) {
-      alert('PIN must be 4 digits');
+      toast.error('PIN must be 4 digits');
       return;
     }
     if (!userData.name || !userData.phone) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
     onComplete(userData);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { MapPin, Navigation, Search, X, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -56,7 +57,7 @@ export function LocationPicker({ onLocationSelect, onClose }: LocationPickerProp
         onLocationSelect(defaultLoc);
         
         // Show friendly message to user
-        alert('📍 Using default location: Masaki, Dar es Salaam\n\nTo use your current location, please enable location services in your browser settings.');
+        toast.info('📍 Using default location: Masaki, Dar es Salaam\n\nTo use your current location, please enable location services in your browser settings.');
         onClose();
       }
     } catch (error: any) {

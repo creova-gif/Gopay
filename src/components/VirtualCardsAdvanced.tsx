@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -102,7 +103,7 @@ export function VirtualCardsAdvanced({ user, accessToken, onBack }: VirtualCards
 
   const handleCreateCard = () => {
     if (!cardName || !cardLimit) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -126,7 +127,7 @@ export function VirtualCardsAdvanced({ user, accessToken, onBack }: VirtualCards
     setCardLimit('');
     setMerchantName('');
     setView('list');
-    alert('Virtual card created successfully! 🎉');
+    toast.success('Virtual card created successfully! 🎉');
   };
 
   const toggleCardStatus = (cardId: string) => {
@@ -513,7 +514,7 @@ export function VirtualCardsAdvanced({ user, accessToken, onBack }: VirtualCards
               )}
             </Button>
             <Button
-              onClick={() => alert('Card details copied!')}
+              onClick={() => toast.success('Card details copied!')}
               className="h-14 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-2xl font-bold"
             >
               <Copy className="size-5 mr-2" />

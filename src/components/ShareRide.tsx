@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { X, Users, Share2, Copy, Check, Mail, MessageSquare } from 'lucide-react';
 import { Button } from './ui/button';
 import { projectId } from '../utils/supabase/info';
@@ -88,7 +89,7 @@ export function ShareRide({ ride, accessToken, onClose }: ShareRideProps) {
 
   const shareRide = async () => {
     if (selectedContacts.size === 0) {
-      alert('Please select at least one contact');
+      toast.error('Please select at least one contact');
       return;
     }
 
@@ -111,14 +112,14 @@ export function ShareRide({ ride, accessToken, onClose }: ShareRideProps) {
       );
 
       if (response.ok) {
-        alert('Ride shared successfully!');
+        toast.success('Ride shared successfully!');
         onClose();
       } else {
         throw new Error('Failed to share ride');
       }
     } catch (error) {
       console.error('Error sharing ride:', error);
-      alert('Failed to share ride. Please try again.');
+      toast.error('Failed to share ride. Please try again.');
     } finally {
       setSharing(false);
     }

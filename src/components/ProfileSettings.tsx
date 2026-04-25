@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -29,12 +30,12 @@ export function ProfileSettings({ user, accessToken, onBack, onUpdateUser }: Pro
 
     // Validate file
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      toast.error('Please select an image file');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image size should be less than 5MB');
+      toast.error('Image size should be less than 5MB');
       return;
     }
 
@@ -63,13 +64,13 @@ export function ProfileSettings({ user, accessToken, onBack, onUpdateUser }: Pro
         if (response.ok) {
           setProfilePhoto(data.photoUrl);
         } else {
-          alert(data.error || 'Upload failed');
+          toast.error(data.error || 'Upload failed');
         }
       };
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error uploading photo:', error);
-      alert('Upload failed. Please try again.');
+      toast.error('Upload failed. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -103,14 +104,14 @@ export function ProfileSettings({ user, accessToken, onBack, onUpdateUser }: Pro
           email,
           profilePhoto,
         });
-        alert('Profile updated successfully!');
+        toast.success('Profile updated successfully!');
         onBack();
       } else {
-        alert(data.error || 'Update failed');
+        toast.error(data.error || 'Update failed');
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Update failed. Please try again.');
+      toast.error('Update failed. Please try again.');
     } finally {
       setSaving(false);
     }

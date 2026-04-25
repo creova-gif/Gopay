@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { 
   ArrowLeft, Film, Check, X, Clock, MapPin, Users, Popcorn, 
@@ -232,7 +233,7 @@ export function MovieBookingPage({ movie, theater, showtime, accessToken, onBack
 
   const handleBooking = async () => {
     if (!pin || pin.length !== 4) {
-      alert('Please enter your 4-digit PIN');
+      toast.error('Please enter your 4-digit PIN');
       return;
     }
 
@@ -278,11 +279,11 @@ export function MovieBookingPage({ movie, theater, showtime, accessToken, onBack
         setBookingReference(data.bookingReference);
         setActiveStep('confirmation');
       } else {
-        alert(data.error || 'Booking failed');
+        toast.error(data.error || 'Booking failed');
       }
     } catch (error) {
       console.error('Error booking movie:', error);
-      alert('Booking failed. Please try again.');
+      toast.error('Booking failed. Please try again.');
     } finally {
       setProcessing(false);
     }

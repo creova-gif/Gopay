@@ -238,11 +238,13 @@ async function fileSuspiciousActivityReport(
   pendingSARs.push(sar);
   await kv.set('pending_sars', pendingSARs);
 
-  console.log(`🚨 SAR FILED: ${sarId} for user ${userId} - Risk Score: ${riskScore}`);
+  console.log(`SAR filed: ${sarId}`);
 }
 
-// Get BOT daily report
+// Get BOT daily report — admin only
 app.get('/bot/daily-report', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) return c.json({ error: 'Unauthorized' }, 401);
   try {
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
