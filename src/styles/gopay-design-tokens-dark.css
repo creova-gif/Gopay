@@ -7,6 +7,9 @@
  * and Bank of Tanzania regulatory submission.
  */
 
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
 :root {
   /* ========================================
      DARK MODE COLORS - Figma AI Spec EXACT
@@ -277,9 +280,6 @@
   text-transform: uppercase;
   color: var(--dark-text-tertiary);
 }
-
-/* Google Fonts Import */
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
 /* Apply fonts globally when dark mode is active */
 .dark-mode {
