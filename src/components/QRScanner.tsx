@@ -18,6 +18,8 @@ export function QRScanner({ user, accessToken, onBack }: QRScannerProps) {
   const [amount, setAmount] = useState('');
   const [pin, setPin] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [pinAttempts, setPinAttempts] = useState(0);
+  const [lockedUntil, setLockedUntil] = useState<number | null>(null);
 
   // Simulate QR scan
   const handleScanDemo = () => {
@@ -34,14 +36,31 @@ export function QRScanner({ user, accessToken, onBack }: QRScannerProps) {
   };
 
   const handlePayment = () => {
-    if (!amount || !pin || pin.length !== 4) {
-      alert('Please enter amount and PIN');
+    if (lockedUntil && Date.now() < lockedUntil) {
+      const remaining = Math.ceil((lockedUntil - Date.now()) / 1000);
+      alert(`Too many incorrect attempts. Try again in ${remaining}s`);
       return;
     }
 
-    // Simulate payment
+    if (!amount || pin.length !== 4) {
+      alert('Please enter amount and 4-digit PIN');
+      return;
+    }
+
+    const newAttempts = pinAttempts + 1;
+    if (newAttempts >= 5) {
+      setPinAttempts(0);
+      setLockedUntil(Date.now() + 30000);
+      setPin('');
+      alert('Too many attempts. Locked for 30 seconds.');
+      return;
+    }
+    setPinAttempts(newAttempts);
+
     setTimeout(() => {
       setShowSuccess(true);
+      setPinAttempts(0);
+      setLockedUntil(null);
     }, 1000);
   };
 

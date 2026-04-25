@@ -137,13 +137,15 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
   }, []);
 
   const fetchWalletData = async () => {
+    setLoading(true);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
     try {
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/balance`,
         {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          },
+          headers: { 'Authorization': `Bearer ${accessToken}` },
+          signal: controller.signal,
         }
       );
 
@@ -154,18 +156,20 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
     } catch (error) {
       console.error('Error fetching wallet balance:', error);
     } finally {
+      clearTimeout(timeout);
       setLoading(false);
     }
   };
 
   const fetchTransactions = async () => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
     try {
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/transactions/recent`,
         {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          },
+          headers: { 'Authorization': `Bearer ${accessToken}` },
+          signal: controller.signal,
         }
       );
 
@@ -175,6 +179,8 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
       }
     } catch (error) {
       console.error('Error fetching transactions:', error);
+    } finally {
+      clearTimeout(timeout);
     }
   };
 

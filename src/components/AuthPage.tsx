@@ -42,12 +42,22 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
     honeypot: ''
   });
 
-  // Demo Mode - Quick Access
-  const handleDemoMode = () => {
-    // Create a demo token for testing
-    const demoToken = 'demo-token-' + Date.now();
-    localStorage.setItem('demo-mode', 'active');
-    onAuthSuccess(demoToken);
+  const handleDemoMode = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const { data, error: anonError } = await supabase.auth.signInAnonymously();
+      if (anonError) throw anonError;
+      if (data.session?.access_token) {
+        onAuthSuccess(data.session.access_token);
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Demo mode unavailable';
+      setError(message);
+      console.error('Demo mode error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
