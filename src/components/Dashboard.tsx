@@ -2457,193 +2457,82 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
       )}
 
       {/* Bottom Navigation */}
-      <nav role="navigation" aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-50 pb-safe" style={{
-        background: 'rgba(8,13,8,0.97)',
-        borderTop: '1px solid rgba(255,255,255,0.06)'
+      {/* ── WORLD-CLASS FLOATING ISLAND BOTTOM NAV ── */}
+      <nav role="navigation" aria-label="Main navigation" style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+        background: 'rgba(8,13,8,0.0)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
       }}>
-        <div className="max-w-md mx-auto px-4 py-3">
-          <div className="flex justify-around items-center relative rounded-[24px] p-1.5" style={{ background: 'rgba(255,255,255,0.02)' }}>
-            {/* Refined floating indicator - smoother animation */}
-            <div 
-              className="absolute h-12 rounded-[18px] transition-all duration-[300ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
-              style={{
-                background: 'linear-gradient(135deg, #16a34a 0%, rgba(22,163,74,0.8) 100%)',
-                boxShadow: '0 4px 12px rgba(22,163,74,0.15), 0 0 0 1px rgba(22,163,74,0.1)',
-                left: `${
-                  currentTab === 'home' ? '1.5%' :
-                  currentTab === 'rewards' ? '17.8%' :
-                  currentTab === 'finance' ? '34.2%' :
-                  currentTab === 'services' ? '50.5%' :
-                  currentTab === 'activity' ? '66.8%' :
-                  '83.2%'
-                }`,
-                width: '14.5%',
-                top: '50%',
-                transform: 'translateY(-50%)',
-              }}
-            />
-            
-            {/* Home - Nyumbani (Swahili-first) */}
-            <button
-              onClick={() => setCurrentTab('home')}
-              aria-label="Home"
-              aria-current={currentTab === 'home' ? 'page' : undefined}
-              className="flex-1 flex flex-col items-center gap-0.5 py-2 transition-all duration-[300ms] ease-out relative z-10 active:scale-[0.92]"
-            >
-              <HomeIcon className={`size-[22px] transition-all duration-[300ms] ${
-                currentTab === 'home' 
-                  ? 'text-white scale-100' 
-                  : 'scale-90'
-              }`} style={{ 
-                stroke: currentTab === 'home' ? '#fff' : 'rgba(255,255,255,0.4)',
-                strokeWidth: currentTab === 'home' ? '2.5' : '2'
-              }} />
-              <span className={`text-[9px] font-semibold tracking-wide transition-all duration-[300ms] mt-0.5 ${
-                currentTab === 'home' 
-                  ? 'text-white opacity-100' 
-                  : 'opacity-50'
-              }`} style={{ 
-                color: currentTab === 'home' ? '#fff' : 'rgba(255,255,255,0.5)',
-                letterSpacing: '0.02em'
-              }}>
-                Nyumbani
-              </span>
-            </button>
+        {/* Gradient fade — masks content scrolling underneath */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,13,8,1) 0%, rgba(8,13,8,0.95) 60%, transparent 100%)', pointerEvents: 'none', zIndex: -1 }} />
 
-            {/* Rewards - Zawadi */}
-            <button
-              onClick={() => setCurrentTab('rewards')}
-              aria-label="Rewards"
-              aria-current={currentTab === 'rewards' ? 'page' : undefined}
-              className="flex-1 flex flex-col items-center gap-0.5 py-2 transition-all duration-[300ms] ease-out relative z-10 active:scale-[0.92]"
-            >
-              <RewardsIcon className={`size-[22px] transition-all duration-[300ms] ${
-                currentTab === 'rewards' 
-                  ? 'text-white scale-100' 
-                  : 'scale-90'
-              }`} style={{ 
-                stroke: currentTab === 'rewards' ? '#fff' : 'rgba(255,255,255,0.4)',
-                strokeWidth: currentTab === 'rewards' ? '2.5' : '2'
-              }} />
-              <span className={`text-[9px] font-semibold tracking-wide transition-all duration-[300ms] mt-0.5 ${
-                currentTab === 'rewards' 
-                  ? 'text-white opacity-100' 
-                  : 'opacity-50'
-              }`} style={{ 
-                color: currentTab === 'rewards' ? '#fff' : 'rgba(255,255,255,0.5)',
-                letterSpacing: '0.02em'
-              }}>
-                Zawadi
-              </span>
-            </button>
-
-            {/* Finance - Fedha */}
-            <button
-              onClick={() => setCurrentTab('finance')}
-              aria-label="Finance"
-              aria-current={currentTab === 'finance' ? 'page' : undefined}
-              className="flex-1 flex flex-col items-center gap-0.5 py-2 transition-all duration-[300ms] ease-out relative z-10 active:scale-[0.92]"
-            >
-              <WalletIcon className={`size-[22px] transition-all duration-[300ms] ${
-                currentTab === 'finance' 
-                  ? 'text-white scale-100' 
-                  : 'scale-90'
-              }`} style={{ 
-                stroke: currentTab === 'finance' ? '#fff' : 'rgba(255,255,255,0.4)',
-                strokeWidth: currentTab === 'finance' ? '2.5' : '2'
-              }} />
-              <span className={`text-[9px] font-semibold tracking-wide transition-all duration-[300ms] mt-0.5 ${
-                currentTab === 'finance' 
-                  ? 'text-white opacity-100' 
-                  : 'opacity-50'
-              }`} style={{ 
-                color: currentTab === 'finance' ? '#fff' : 'rgba(255,255,255,0.5)',
-                letterSpacing: '0.02em'
-              }}>
-                Fedha
-              </span>
-            </button>
-
-            {/* Services - Huduma */}
-            <button
-              onClick={() => setCurrentTab('services')}
-              aria-label="Services"
-              aria-current={currentTab === 'services' ? 'page' : undefined}
-              className="flex-1 flex flex-col items-center gap-0.5 py-2 transition-all duration-[300ms] ease-out relative z-10 active:scale-[0.92]"
-            >
-              <ChartIcon className={`size-[22px] transition-all duration-[300ms] ${
-                currentTab === 'services' 
-                  ? 'text-white scale-100' 
-                  : 'scale-90'
-              }`} style={{ 
-                stroke: currentTab === 'services' ? '#fff' : 'rgba(255,255,255,0.4)',
-                strokeWidth: currentTab === 'services' ? '2.5' : '2'
-              }} />
-              <span className={`text-[9px] font-semibold tracking-wide transition-all duration-[300ms] mt-0.5 ${
-                currentTab === 'services' 
-                  ? 'text-white opacity-100' 
-                  : 'opacity-50'
-              }`} style={{ 
-                color: currentTab === 'services' ? '#fff' : 'rgba(255,255,255,0.5)',
-                letterSpacing: '0.02em'
-              }}>
-                Huduma
-              </span>
-            </button>
-
-            {/* Activity - Shughuli */}
-            <button
-              onClick={() => setCurrentTab('activity')}
-              aria-label="Activity"
-              aria-current={currentTab === 'activity' ? 'page' : undefined}
-              className="flex-1 flex flex-col items-center gap-0.5 py-2 transition-all duration-[300ms] ease-out relative z-10 active:scale-[0.92]"
-            >
-              <History className={`size-[22px] transition-all duration-[300ms] ${
-                currentTab === 'activity' 
-                  ? 'text-white fill-white scale-100' 
-                  : 'scale-90'
-              }`} style={{ 
-                stroke: currentTab === 'activity' ? '#fff' : 'rgba(255,255,255,0.4)',
-                strokeWidth: currentTab === 'activity' ? '2.5' : '2'
-              }} />
-              <span className={`text-[9px] font-semibold tracking-wide transition-all duration-[300ms] mt-0.5 ${
-                currentTab === 'activity' 
-                  ? 'text-white opacity-100' 
-                  : 'opacity-50'
-              }`} style={{ 
-                color: currentTab === 'activity' ? '#fff' : 'rgba(255,255,255,0.5)',
-                letterSpacing: '0.02em'
-              }}>
-                Shughuli
-              </span>
-            </button>
-
-            {/* Profile - Wasifu */}
-            <button
-              onClick={() => setCurrentTab('profile')}
-              aria-label="Profile"
-              aria-current={currentTab === 'profile' ? 'page' : undefined}
-              className="flex-1 flex flex-col items-center gap-0.5 py-2 transition-all duration-[300ms] ease-out relative z-10 active:scale-[0.92]"
-            >
-              <UserIcon className={`size-[22px] transition-all duration-[300ms] ${
-                currentTab === 'profile' 
-                  ? 'text-white fill-white scale-100' 
-                  : 'scale-90'
-              }`} style={{ 
-                stroke: currentTab === 'profile' ? '#fff' : 'rgba(255,255,255,0.4)',
-                strokeWidth: currentTab === 'profile' ? '2.5' : '2'
-              }} />
-              <span className={`text-[9px] font-semibold tracking-wide transition-all duration-[300ms] mt-0.5 ${
-                currentTab === 'profile' 
-                  ? 'text-white opacity-100' 
-                  : 'opacity-50'
-              }`} style={{ 
-                color: currentTab === 'profile' ? '#fff' : 'rgba(255,255,255,0.5)',
-                letterSpacing: '0.02em'
-              }}>
-                Wasifu
-              </span>
-            </button>
+        <div style={{ maxWidth: 480, margin: '0 auto', padding: '0 12px 12px' }}>
+          {/* The floating island */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+            background: 'rgba(14,22,14,0.92)',
+            backdropFilter: 'blur(24px)',
+            borderRadius: 32,
+            border: '1px solid rgba(255,255,255,0.09)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 0 0.5px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.06)',
+            padding: '6px 6px',
+            gap: 2,
+          }}>
+            {([
+              { id: 'home',        Icon: HomeIcon,    label: 'Nyumbani', dot: false },
+              { id: 'rewards',     Icon: RewardsIcon, label: 'Zawadi',   dot: true  },
+              { id: 'finance',     Icon: WalletIcon,  label: 'Fedha',    dot: false },
+              { id: 'services',    Icon: ChartIcon,   label: 'Huduma',   dot: false },
+              { id: 'activity',    Icon: History,     label: 'Shughuli', dot: true  },
+              { id: 'profile',     Icon: UserIcon,    label: 'Wasifu',   dot: false },
+            ] as const).map(({ id, Icon, label, dot }) => {
+              const active = currentTab === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setCurrentTab(id as typeof currentTab)}
+                  aria-label={label}
+                  aria-current={active ? 'page' : undefined}
+                  style={{
+                    flex: active ? '0 0 auto' : '1',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    position: 'relative',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    padding: 0,
+                    transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
+                  }}
+                >
+                  {active ? (
+                    /* Active pill — icon + label + glow */
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                      borderRadius: 24,
+                      padding: '9px 16px',
+                      boxShadow: '0 4px 16px rgba(22,163,74,0.45), 0 0 0 1px rgba(74,222,128,0.2)',
+                      transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
+                    }}>
+                      <Icon style={{ width: 18, height: 18, color: '#fff', flexShrink: 0 }} />
+                      <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff', whiteSpace: 'nowrap', letterSpacing: '-0.2px' }}>{label}</span>
+                    </div>
+                  ) : (
+                    /* Inactive — icon only, muted, with optional dot */
+                    <div style={{ position: 'relative', padding: '10px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 20, transition: 'background 0.2s' }}>
+                      <Icon style={{ width: 20, height: 20, color: 'rgba(255,255,255,0.38)', transition: 'all 0.2s' }} />
+                      {dot && (
+                        <div style={{
+                          position: 'absolute', top: 6, right: 8,
+                          width: 7, height: 7, borderRadius: '50%',
+                          background: '#ef4444',
+                          border: '1.5px solid rgba(14,22,14,0.9)',
+                          boxShadow: '0 0 6px rgba(239,68,68,0.7)',
+                        }} />
+                      )}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       </nav>
