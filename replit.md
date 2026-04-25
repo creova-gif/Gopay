@@ -178,8 +178,9 @@ All pages use the app-wide dark theme:
 | Quick Pay | `QuickPayFeatures.tsx` | Premium virtual card, animated NFC tap rings, SVG QR pattern, 10-min countdown, Swahili labels |
 | Government Services | `GovernmentServicesPage.tsx` | 6 services with actionable flows, NIDA modal, traffic fines, Licenses tab |
 | Budget Tracker | `BudgetTracker.tsx` | SVG spending ring chart, AI tip panel, color-coded thresholds, overview/list toggle |
-| GOrewards | `GOrewardsUltimate.tsx` | Dark theme applied throughout: background, tab pills, cards, modals |
+| GOrewards | `GOrewardsUltimate.tsx` | Full world-class redesign: SVG tier-progress ring, holographic membership card with per-tier gradient glow, horizontal-scroll AI story cards, live event banner with pulse, horizontal tier roadmap stepper, Swahili labels throughout all 7 tabs |
 | Financial Insights | `InsightsPage.tsx` | Full dark redesign, bar/line chart toggle, Swahili labels, custom chart tooltip, AI tip |
+| Multi-Currency Wallet | `MultiCurrencyWallet.tsx` | World-class redesign: live rates ticker strip, horizontal-scroll premium gradient currency cards with SVG sparklines, globe hero with animated glow blobs, dark convert flow with gradient FROM/TO panels |
 | Micro Loans | `MicroLoansPage.tsx` | Dark theme, credit score ring, loan categories, Swahili-first |
 
 ### Swahili-First UI Labels

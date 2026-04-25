@@ -8,7 +8,7 @@ import {
   MessageSquare, Shield, Flame, BadgeCheck, Heart, Home, Store, Banknote,
   Wallet, ArrowRight, Check, X, Play, Send, Download, Upload, Settings,
   Info, AlertCircle, TrendingDown, Clock, Repeat, Filter, Search,
-  Share2, Eye, EyeOff, CreditCard, GraduationCap
+  Share2, Eye, EyeOff, CreditCard, GraduationCap, Plus
 } from 'lucide-react';
 import { projectId } from '../utils/supabase/info';
 
@@ -18,7 +18,6 @@ interface GOrewardsUltimateProps {
   onBack: () => void;
 }
 
-// Icon lookups replacing structural emojis
 const TIER_ICONS = { Bronze: Award, Silver: Star, Gold: Flame, Platinum: Crown } as const;
 const TIER_ICON_COLORS = {
   Bronze: 'text-amber-500', Silver: 'text-slate-300',
@@ -35,6 +34,29 @@ const EVENT_ICON_COLOR: Record<string, string> = { '1': 'text-indigo-300', '2': 
 
 const CASHBACK_TIER_ICONS = { Bronze: Award, Silver: Star, Gold: Flame, Platinum: Crown } as const;
 const CASHBACK_TIER_COLORS = { Bronze: 'text-amber-500', Silver: 'text-slate-300', Gold: 'text-yellow-400', Platinum: 'text-purple-400' } as const;
+
+// Tier accent colours & gradients
+const TIER_META: Record<string, { gradient: string; accent: string; glow: string; track: string }> = {
+  Bronze:   { gradient: 'linear-gradient(135deg,#431407 0%,#7c2d12 60%,#ea580c 100%)',  accent: '#f97316', glow: 'rgba(249,115,22,0.35)',  track: 'rgba(249,115,22,0.12)' },
+  Silver:   { gradient: 'linear-gradient(135deg,#1e293b 0%,#334155 60%,#64748b 100%)',  accent: '#94a3b8', glow: 'rgba(148,163,184,0.35)', track: 'rgba(148,163,184,0.12)' },
+  Gold:     { gradient: 'linear-gradient(135deg,#422006 0%,#713f12 60%,#ca8a04 100%)',  accent: '#fbbf24', glow: 'rgba(251,191,36,0.35)',  track: 'rgba(251,191,36,0.12)' },
+  Platinum: { gradient: 'linear-gradient(135deg,#2e1065 0%,#4c1d95 60%,#7c3aed 100%)', accent: '#a78bfa', glow: 'rgba(167,139,250,0.35)', track: 'rgba(167,139,250,0.12)' },
+};
+
+function TierProgressRing({ progress, accent, track, size = 140 }: { progress: number; accent: string; track: string; size?: number }) {
+  const cx = size / 2, cy = size / 2, r = (size / 2) - 10;
+  const circ = 2 * Math.PI * r;
+  const pct = Math.min(Math.max(progress, 0), 100);
+  const offset = circ - (pct / 100) * circ;
+  return (
+    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={track} strokeWidth="8" />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={accent} strokeWidth="8"
+        strokeDasharray={circ} strokeDashoffset={offset}
+        strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1s ease' }} />
+    </svg>
+  );
+}
 
 export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltimateProps) {
   const [activeTab, setActiveTab] = useState<'home' | 'earn' | 'marketplace' | 'cashback' | 'family' | 'achievements' | 'ai'>('home');
@@ -86,12 +108,12 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
   const fmt = (n: number) =>
     new Intl.NumberFormat('en-TZ', { style: 'currency', currency: 'TZS', minimumFractionDigits: 0 }).format(n);
 
-  // ── Data ─────────────────────────────────────────────────────────────────────
+  // ── Data ──────────────────────────────────────────────────────────────────────
   const tiers = [
-    { name: 'Bronze', color: 'from-orange-400 to-amber-600', multiplier: '1×', requirement: 'Just joined', benefits: ['Earn points', 'Basic cashback', 'Access marketplace'], nextTier: 1000, current: tier === 'Bronze' },
-    { name: 'Silver', color: 'from-slate-300 to-gray-500', multiplier: '1.5×', requirement: '1,000+ points earned', benefits: ['1.5× rewards', '1% cashback', 'Monthly surprises', 'Priority support'], nextTier: 5000, current: tier === 'Silver' },
-    { name: 'Gold', color: 'from-yellow-400 to-yellow-600', multiplier: '2×', requirement: '5,000+ points earned', benefits: ['2× rewards', '2% cashback', 'Free delivery', 'Exclusive deals'], nextTier: 15000, current: tier === 'Gold' },
-    { name: 'Platinum', color: 'from-purple-400 to-pink-600', multiplier: '3×', requirement: '15,000+ points earned', benefits: ['3× rewards', '5% cashback', 'VIP support', 'Early access', 'Partner perks'], nextTier: null, current: tier === 'Platinum' },
+    { name: 'Bronze',   color: 'from-orange-400 to-amber-600',  multiplier: '1×',  requirement: 'Just joined',              benefits: ['Earn points', 'Basic cashback', 'Access marketplace'],                          nextTier: 1000,  current: tier === 'Bronze' },
+    { name: 'Silver',   color: 'from-slate-300 to-gray-500',    multiplier: '1.5×', requirement: '1,000+ points earned',     benefits: ['1.5× rewards', '1% cashback', 'Monthly surprises', 'Priority support'],          nextTier: 5000,  current: tier === 'Silver' },
+    { name: 'Gold',     color: 'from-yellow-400 to-yellow-600', multiplier: '2×',  requirement: '5,000+ points earned',     benefits: ['2× rewards', '2% cashback', 'Free delivery', 'Exclusive deals'],                  nextTier: 15000, current: tier === 'Gold' },
+    { name: 'Platinum', color: 'from-purple-400 to-pink-600',   multiplier: '3×',  requirement: '15,000+ points earned',    benefits: ['3× rewards', '5% cashback', 'VIP support', 'Early access', 'Partner perks'],    nextTier: null,  current: tier === 'Platinum' },
   ];
 
   const marketplaceRewards = [
@@ -141,7 +163,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
       { id: '7', title: 'Pay merchant QR', points: 25, icon: Store, completed: false, frequency: 'Per transaction' },
       { id: '8', title: 'Order delivery', points: 40, icon: Zap, completed: false, frequency: 'Per transaction' },
     ]},
-    { category: 'Neighborhood Bonus (2x Points)', tasks: [
+    { category: 'Neighborhood Bonus (2× Points)', tasks: [
       { id: '9', title: 'Buy from Mama Lishe', points: 50, icon: Heart, completed: false, frequency: 'Per transaction', bonus: true },
       { id: '10', title: 'Pay Bodaboda', points: 30, icon: MapPin, completed: false, frequency: 'Per transaction', bonus: true },
       { id: '11', title: 'Shop at local duka', points: 35, icon: Store, completed: false, frequency: 'Per transaction', bonus: true },
@@ -181,379 +203,385 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
   ];
 
   const aiInsights = [
-    { type: 'opportunity', title: 'Earn 200 points today', description: "You're close to Silver tier. Make 2 more payments to unlock 1.5× rewards.", action: 'View tasks', icon: TrendingUp, color: 'from-green-500 to-emerald-600' },
-    { type: 'deal', title: 'Smart Deal Alert', description: 'The Slipway has 2× points this weekend. Your favourite restaurant!', action: 'Activate', icon: Sparkles, color: 'from-yellow-500 to-orange-600' },
-    { type: 'savings', title: 'Cashback Ready', description: 'You have TZS 45,000 in cashback. Withdraw or spend on delivery.', action: 'Withdraw', icon: Wallet, color: 'from-blue-500 to-cyan-600' },
+    { type: 'opportunity', title: 'Pata Pointi 200 Leo', description: "Uko karibu na Silver tier. Fanya malipo 2 zaidi ili kupata zawadi 1.5×.", action: 'Angalia Kazi', icon: TrendingUp, accent: '#4ade80', bg: 'linear-gradient(135deg,#052e16,#065f46)' },
+    { type: 'deal', title: 'Ofa Maalum!', description: 'The Slipway ina 2× pointi wikendi hii. Mkahawa unaopenda!', action: 'Washa Ofa', icon: Sparkles, accent: '#fbbf24', bg: 'linear-gradient(135deg,#422006,#92400e)' },
+    { type: 'savings', title: 'Cashback Tayari', description: 'Una TZS 45,000 ya cashback. Toa au tumia kwa delivery.', action: 'Toa Sasa', icon: Wallet, accent: '#60a5fa', bg: 'linear-gradient(135deg,#1e3a8a,#1d4ed8)' },
   ];
 
+  // ── Derived values ─────────────────────────────────────────────────────────────
   const currentTierData = tiers.find((t) => t.current) || tiers[0];
   const currentTierIndex = tiers.findIndex((t) => t.current);
   const nextTierData = currentTierIndex < tiers.length - 1 ? tiers[currentTierIndex + 1] : null;
-  const progressToNextTier = nextTierData ? (points / nextTierData.nextTier!) * 100 : 100;
+  const progressToNextTier = nextTierData ? Math.min((points / nextTierData.nextTier!) * 100, 100) : 100;
 
   const CurrentTierIcon = TIER_ICONS[currentTierData.name as keyof typeof TIER_ICONS] ?? Award;
-  const currentTierIconColor = TIER_ICON_COLORS[currentTierData.name as keyof typeof TIER_ICON_COLORS] ?? 'text-white';
-
-  const TABS = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'earn', label: 'Earn', icon: Coins },
-    { id: 'marketplace', label: 'Marketplace', icon: ShoppingBag },
-    { id: 'cashback', label: 'Cashback', icon: Wallet },
-    { id: 'family', label: 'Family Pool', icon: Users },
-    { id: 'achievements', label: 'Achievements', icon: Trophy },
-    { id: 'ai', label: 'AI Insights', icon: Sparkles },
-  ] as const;
+  const tierMeta = TIER_META[currentTierData.name] ?? TIER_META.Bronze;
 
   const cardStyle = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' };
   const infoStyle = (tint: string) => ({ background: `rgba(${tint},0.08)`, border: `1px solid rgba(${tint},0.2)` });
 
+  const TABS = [
+    { id: 'home',         label: 'Home',        icon: Home },
+    { id: 'earn',         label: 'Pata',         icon: Coins },
+    { id: 'marketplace',  label: 'Duka',         icon: ShoppingBag },
+    { id: 'cashback',     label: 'Cashback',     icon: Wallet },
+    { id: 'family',       label: 'Familia',      icon: Users },
+    { id: 'achievements', label: 'Zawadi',       icon: Trophy },
+    { id: 'ai',           label: 'AI',           icon: Sparkles },
+  ] as const;
+
+  // ── Render ────────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#080d08] pb-20 text-white">
-      {/* ── Header ── */}
-      <div className={`bg-gradient-to-br ${currentTierData.color} px-5 pt-10 pb-6 relative overflow-hidden`}>
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 right-10 w-40 h-40 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-10 left-10 w-40 h-40 bg-white rounded-full blur-3xl" />
-        </div>
-
-        <div className="relative z-10">
-          <button
-            onClick={onBack}
-            className="w-9 h-9 rounded-full flex items-center justify-center bg-white/20 hover:bg-white/30 mb-6 transition-colors"
-          >
-            <ArrowLeft className="h-5 w-5 text-white" />
-          </button>
-
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl text-white mb-1 tracking-tight">GOrewards</h1>
-              <p className="text-white/70 text-sm">The Ultimate Reward System</p>
-            </div>
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-white/20">
-              <CurrentTierIcon className={`h-8 w-8 ${currentTierIconColor}`} />
-            </div>
-          </div>
-
-          {/* Points card */}
-          <div className="bg-white/10 backdrop-blur-md rounded-3xl p-5 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-white/60 text-xs mb-1">Your Points</p>
-                <p className="text-white text-3xl font-medium">{points.toLocaleString()}</p>
-                <p className="text-white/50 text-xs mt-1">= {fmt(points * 0.1)}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-white/60 text-xs mb-1">Tier</p>
-                <div className="bg-white/20 rounded-full px-4 py-2">
-                  <p className="text-white text-sm font-medium">{currentTierData.name}</p>
-                </div>
-                <p className="text-white/50 text-xs mt-1">{currentTierData.multiplier} rewards</p>
-              </div>
-            </div>
-            {nextTierData && (
-              <>
-                <div className="h-1.5 bg-white/20 rounded-full overflow-hidden mb-2">
-                  <div
-                    className="h-full bg-white rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(progressToNextTier, 100)}%` }}
-                  />
-                </div>
-                <p className="text-white/60 text-xs text-center">
-                  {nextTierData.nextTier! - points} points to {nextTierData.name}
-                </p>
-              </>
-            )}
-          </div>
-
-          {/* Quick stats */}
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { label: 'Cashback', value: fmt(cashbackBalance) },
-              { label: 'Today', value: `+${todayEarnings}` },
-              { label: 'Streak', value: `${streak}d` },
-            ].map(({ label, value }) => (
-              <div key={label} className="bg-white/10 backdrop-blur-md rounded-2xl p-3">
-                <p className="text-white/60 text-xs mb-1">{label}</p>
-                <p className="text-white font-medium">{value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+    <div style={{ minHeight: '100vh', background: '#080d08', paddingBottom: 80, color: '#fff' }}>
+      <style>{`
+        @keyframes glowPulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+        @keyframes liveBlip { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.4);opacity:.6} }
+        @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+      `}</style>
 
       {/* ── Surprise Reward Modal ── */}
       <AnimatePresence>
         {showSurprise && surpriseRewards.length > 0 && (
-          <motion.div
-            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-5"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="rounded-3xl p-8 max-w-sm w-full text-center"
-              style={{ background: '#0d1a0d', border: '1px solid rgba(74,222,128,0.2)' }}
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-5"
+            style={{ background: 'rgba(0,0,0,0.75)' }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div className="rounded-3xl p-8 max-w-sm w-full text-center"
+              style={{ background: '#0d1a0d', border: '1px solid rgba(74,222,128,0.25)', boxShadow: '0 0 60px rgba(74,222,128,0.15)' }}
               initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            >
-              <div className="w-16 h-16 rounded-full bg-[#16a34a]/20 flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="h-8 w-8 text-[#4ade80]" />
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(22,163,74,0.15)', border: '2px solid rgba(74,222,128,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <Sparkles style={{ width: 32, height: 32, color: '#4ade80' }} />
               </div>
-              <h2 className="text-xl font-semibold mb-2">Surprise Reward!</h2>
-              <p className="text-white/50 text-sm mb-6">You earned a random drop!</p>
-              <div className="rounded-2xl p-5 mb-6" style={{ background: 'linear-gradient(135deg, #16a34a, #0d4d1a)' }}>
-                <p className="text-white text-xl font-medium">{surpriseRewards[0].value}</p>
+              <h2 style={{ fontSize: '22px', fontWeight: 800, marginBottom: 6 }}>Tuzo ya Mshangao!</h2>
+              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>Umeshinda zawadi ya nasibu!</p>
+              <div style={{ borderRadius: 20, padding: '20px', marginBottom: 20, background: 'linear-gradient(135deg,#16a34a,#0d4d1a)', boxShadow: '0 4px 20px rgba(22,163,74,0.3)' }}>
+                <p style={{ fontSize: '24px', fontWeight: 800 }}>{surpriseRewards[0].value}</p>
               </div>
-              <button
-                onClick={() => setShowSurprise(false)}
-                className="w-full py-3.5 rounded-xl bg-[#16a34a] text-white text-sm font-medium"
-              >
-                Claim Reward
+              <button onClick={() => setShowSurprise(false)}
+                style={{ width: '100%', padding: '14px', borderRadius: 16, background: '#16a34a', color: '#fff', fontWeight: 800, fontSize: '15px', border: 'none', cursor: 'pointer' }}>
+                Dai Zawadi
               </button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
+      {/* ── Sticky Header ── */}
+      <div className="sticky top-0 z-20" style={{ background: 'rgba(8,13,8,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ padding: '16px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button onClick={onBack} style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ArrowLeft style={{ width: 20, height: 20, color: '#fff' }} />
+            </button>
+            <div>
+              <h1 style={{ fontSize: '20px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px' }}>GOrewards</h1>
+              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>The Ultimate Reward System</p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 20, background: tierMeta.track, border: `1px solid ${tierMeta.accent}40` }}>
+            <CurrentTierIcon style={{ width: 14, height: 14, color: tierMeta.accent }} />
+            <span style={{ fontSize: '12px', fontWeight: 800, color: tierMeta.accent }}>{currentTierData.name}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── MEMBERSHIP HERO CARD ── */}
+      <div style={{ padding: '20px 16px 0' }}>
+        <div style={{ borderRadius: 28, overflow: 'hidden', position: 'relative', background: tierMeta.gradient, border: `1px solid ${tierMeta.accent}30`, boxShadow: `0 8px 40px ${tierMeta.glow}` }}>
+          {/* Glow blobs */}
+          <div style={{ position: 'absolute', top: -30, right: -30, width: 160, height: 160, borderRadius: '50%', background: `radial-gradient(circle, ${tierMeta.glow} 0%, transparent 70%)`, animation: 'glowPulse 3s ease-in-out infinite' }} />
+          <div style={{ position: 'absolute', bottom: -20, left: 20, width: 100, height: 100, borderRadius: '50%', background: `radial-gradient(circle, ${tierMeta.glow} 0%, transparent 70%)`, animation: 'glowPulse 4s ease-in-out infinite 1.5s' }} />
+
+          <div style={{ position: 'relative', zIndex: 1, padding: '24px 20px 20px', display: 'flex', alignItems: 'center', gap: 20 }}>
+            {/* Progress Ring */}
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <TierProgressRing progress={progressToNextTier} accent={tierMeta.accent} track={tierMeta.track} size={120} />
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                <CurrentTierIcon style={{ width: 24, height: 24, color: tierMeta.accent }} />
+                <span style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 1.2 }}>{Math.round(progressToNextTier)}%</span>
+              </div>
+            </div>
+
+            {/* Points info */}
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.5px', marginBottom: 4 }}>POINTI ZAKO</p>
+              <p style={{ fontSize: '38px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px', lineHeight: 1 }}>{points.toLocaleString()}</p>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>≈ {fmt(points * 0.1)}</p>
+              {nextTierData && (
+                <div style={{ marginTop: 10, padding: '6px 12px', borderRadius: 20, background: 'rgba(0,0,0,0.2)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <ChevronRight style={{ width: 12, height: 12, color: tierMeta.accent }} />
+                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>
+                    {(nextTierData.nextTier! - points).toLocaleString()} pts → {nextTierData.name}
+                  </span>
+                </div>
+              )}
+              {!nextTierData && (
+                <div style={{ marginTop: 10, padding: '6px 12px', borderRadius: 20, background: 'rgba(0,0,0,0.2)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <Crown style={{ width: 12, height: 12, color: tierMeta.accent }} />
+                  <span style={{ fontSize: '11px', color: tierMeta.accent, fontWeight: 700 }}>Daraja la Juu!</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Quick stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            {[
+              { label: 'Cashback', value: `TZS ${(cashbackBalance/1000).toFixed(1)}K` },
+              { label: 'Leo', value: `+${todayEarnings}` },
+              { label: 'Streak', value: `${streak}d 🔥` },
+            ].map(({ label, value }, i) => (
+              <div key={label} style={{ padding: '14px 12px', textAlign: 'center', borderRight: i < 2 ? '1px solid rgba(255,255,255,0.08)' : 'none', background: 'rgba(0,0,0,0.15)' }}>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginBottom: 3 }}>{label}</p>
+                <p style={{ fontSize: '14px', fontWeight: 800, color: '#fff' }}>{value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* ── Tabs ── */}
-      <div className="overflow-x-auto px-4 py-3 scrollbar-hide" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="flex gap-2 min-w-max">
+      <div style={{ overflowX: 'auto', padding: '14px 16px 0', scrollbarWidth: 'none', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ display: 'flex', gap: 8, minWidth: 'max-content', paddingBottom: 12 }}>
           {TABS.map(({ id, label, icon: TabIcon }) => (
-            <button
-              key={id}
-              onClick={() => setActiveTab(id as typeof activeTab)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all"
-              style={
-                activeTab === id
-                  ? { background: '#16a34a', color: 'white' }
-                  : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.08)' }
-              }
-            >
-              <TabIcon className="h-3.5 w-3.5" />
+            <button key={id} onClick={() => setActiveTab(id as typeof activeTab)}
+              style={activeTab === id
+                ? { display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, fontSize: '12px', fontWeight: 800, background: '#16a34a', color: '#fff', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }
+                : { display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, fontSize: '12px', fontWeight: 600, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              <TabIcon style={{ width: 13, height: 13 }} />
               {label}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="px-4 pt-5 pb-6 space-y-5">
-        {/* ── HOME TAB ── */}
+      {/* ── Tab Content ── */}
+      <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+        {/* ═══ HOME TAB ═══ */}
         {activeTab === 'home' && (
           <>
-            {/* AI Insights */}
-            <div className="space-y-3">
-              <p className="text-sm text-white/40">AI Recommendations</p>
-              {aiInsights.map((insight, i) => {
-                const InsightIcon = insight.icon;
-                return (
-                  <div key={i} className={`bg-gradient-to-r ${insight.color} rounded-2xl p-4 text-white`}>
-                    <div className="flex items-start gap-3">
-                      <div className="bg-white/20 p-2 rounded-xl">
-                        <InsightIcon className="h-5 w-5" />
+            {/* GO Friday Live Banner */}
+            {seasonalEvents.find(e => e.active) && (() => {
+              const live = seasonalEvents.find(e => e.active)!;
+              const LiveIcon = EVENT_ICON_MAP[live.id];
+              return (
+                <div style={{ borderRadius: 20, padding: '16px 18px', background: 'linear-gradient(135deg,#7f1d1d,#991b1b,#dc2626)', border: '1px solid rgba(248,113,113,0.3)', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', top: -20, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {LiveIcon && <LiveIcon style={{ width: 24, height: 24, color: '#fca5a5' }} />}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', animation: 'liveBlip 1.5s ease-in-out infinite' }} />
+                        <span style={{ fontSize: '10px', fontWeight: 800, color: '#4ade80', letterSpacing: '0.5px' }}>LIVE SASA</span>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium mb-1">{insight.title}</p>
-                        <p className="text-xs text-white/70 mb-3">{insight.description}</p>
-                        <button className="bg-white text-gray-900 px-4 py-1.5 rounded-full text-xs font-medium hover:bg-gray-100">
-                          {insight.action}
-                        </button>
-                      </div>
+                      <p style={{ fontSize: '16px', fontWeight: 900, color: '#fff', marginBottom: 2 }}>{live.name} — {live.multiplier} Pointi!</p>
+                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>{live.description}</p>
+                    </div>
+                    <div style={{ padding: '8px 14px', borderRadius: 20, background: 'rgba(255,255,255,0.15)', fontSize: '13px', fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+                      {live.multiplier}
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              );
+            })()}
+
+            {/* AI Insights — horizontal scroll story cards */}
+            <div>
+              <p style={{ fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: 10, letterSpacing: '0.4px' }}>MAPENDEKEZO YA AI</p>
+              <div style={{ display: 'flex', gap: 12, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
+                {aiInsights.map((ins, i) => {
+                  const InsIcon = ins.icon;
+                  return (
+                    <div key={i} style={{ flexShrink: 0, width: 230, borderRadius: 20, padding: '18px', background: ins.bg, border: `1px solid ${ins.accent}25`, position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', top: -10, right: -10, width: 80, height: 80, borderRadius: '50%', background: `radial-gradient(circle, ${ins.accent}20, transparent 70%)` }} />
+                      <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                        <InsIcon style={{ width: 20, height: 20, color: ins.accent }} />
+                      </div>
+                      <p style={{ fontSize: '14px', fontWeight: 800, color: '#fff', marginBottom: 6 }}>{ins.title}</p>
+                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5, marginBottom: 14 }}>{ins.description}</p>
+                      <button style={{ padding: '8px 16px', borderRadius: 20, background: ins.accent, color: '#000', fontSize: '12px', fontWeight: 800, border: 'none', cursor: 'pointer' }}>
+                        {ins.action}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Seasonal Events */}
-            <div className="space-y-3">
-              <p className="text-sm text-white/40">Seasonal Events</p>
-              {seasonalEvents.map((event) => {
-                const EventIcon = EVENT_ICON_MAP[event.id] ?? Zap;
-                const iconColor = EVENT_ICON_COLOR[event.id] ?? 'text-white';
-                return (
-                  <div key={event.id} className={`bg-gradient-to-r ${event.color} rounded-2xl p-5 text-white relative overflow-hidden`}>
-                    {event.active && (
-                      <div className="absolute top-3 right-3 bg-white text-green-700 px-3 py-1 rounded-full text-xs font-medium animate-pulse">
-                        LIVE NOW
+            {/* Seasonal Events (non-live) */}
+            <div>
+              <p style={{ fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: 10, letterSpacing: '0.4px' }}>MATUKIO YA KIPINDI</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {seasonalEvents.filter(e => !e.active).map((event) => {
+                  const EvIcon = EVENT_ICON_MAP[event.id] ?? Zap;
+                  return (
+                    <div key={event.id} style={{ borderRadius: 18, padding: '14px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 14 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 13, background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <EvIcon style={{ width: 22, height: 22, color: 'rgba(255,255,255,0.5)' }} />
                       </div>
-                    )}
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-white/20 flex-shrink-0">
-                        <EventIcon className={`h-6 w-6 ${iconColor}`} />
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{event.name}</p>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>{event.description}</p>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-base font-medium mb-1">{event.name}</p>
-                        <p className="text-xs text-white/70 mb-2">{event.description}</p>
-                        <div className="flex items-center gap-3">
-                          <span className="bg-white/20 px-3 py-1 rounded-full text-xs">{event.multiplier} Points</span>
-                          <span className="text-xs text-white/70">{event.active ? 'Active now' : event.startsIn}</span>
-                        </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <p style={{ fontSize: '16px', fontWeight: 900, color: '#4ade80' }}>{event.multiplier}</p>
+                        <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>{event.startsIn}</p>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Tier System */}
-            <div className="space-y-3">
-              <p className="text-sm text-white/40">Tier System</p>
-              {tiers.map((tierItem, i) => {
-                const TierIcon = TIER_ICONS[tierItem.name as keyof typeof TIER_ICONS] ?? Award;
-                const tierColor = TIER_ICON_COLORS[tierItem.name as keyof typeof TIER_ICON_COLORS] ?? 'text-white';
-                return (
-                  <div
-                    key={i}
-                    className={`rounded-2xl p-4 ${tierItem.current ? `bg-gradient-to-r ${tierItem.color} text-white` : ''}`}
-                    style={tierItem.current ? undefined : cardStyle}
-                  >
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tierItem.current ? 'bg-white/20' : 'bg-white/06'}`}
-                        style={tierItem.current ? undefined : { background: 'rgba(255,255,255,0.08)' }}>
-                        <TierIcon className={`h-5 w-5 ${tierItem.current ? 'text-white' : tierColor}`} />
+            {/* Tier Roadmap — horizontal stepper */}
+            <div>
+              <p style={{ fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: 12, letterSpacing: '0.4px' }}>MFUMO WA VYEO</p>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', paddingBottom: 4 }}>
+                {/* Connecting line */}
+                <div style={{ position: 'absolute', top: 20, left: '10%', right: '10%', height: 2, background: 'rgba(255,255,255,0.08)', zIndex: 0 }} />
+                <div style={{ position: 'absolute', top: 20, left: '10%', width: `${Math.min(currentTierIndex / (tiers.length - 1) * 80, 80)}%`, height: 2, background: tierMeta.accent, zIndex: 1, transition: 'width 1s ease' }} />
+                {tiers.map((t, i) => {
+                  const TIcon = TIER_ICONS[t.name as keyof typeof TIER_ICONS] ?? Award;
+                  const tm = TIER_META[t.name] ?? TIER_META.Bronze;
+                  const isCurrent = t.current;
+                  const isPast = i < currentTierIndex;
+                  return (
+                    <div key={t.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, zIndex: 2, flex: 1 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: isCurrent ? tm.accent : isPast ? tm.track : 'rgba(255,255,255,0.08)', border: `2px solid ${isCurrent ? tm.accent : isPast ? tm.accent + '60' : 'rgba(255,255,255,0.1)'}`, boxShadow: isCurrent ? `0 0 16px ${tm.glow}` : 'none' }}>
+                        <TIcon style={{ width: 18, height: 18, color: isCurrent ? '#000' : isPast ? tm.accent : 'rgba(255,255,255,0.3)' }} />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{tierItem.name}</p>
-                        <p className={`text-xs ${tierItem.current ? 'text-white/70' : 'text-white/50'}`}>{tierItem.requirement}</p>
-                      </div>
-                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${tierItem.current ? 'bg-white/20 text-white' : 'text-white/60'}`}
-                        style={tierItem.current ? undefined : { background: 'rgba(255,255,255,0.08)' }}>
-                        {tierItem.multiplier}
-                      </div>
+                      <p style={{ fontSize: '10px', fontWeight: isCurrent ? 800 : 600, color: isCurrent ? tm.accent : isPast ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.3)', textAlign: 'center' }}>{t.name}</p>
+                      <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>{t.multiplier}</p>
                     </div>
-                    <div className="space-y-1.5">
-                      {tierItem.benefits.map((benefit, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <Check className={`h-3.5 w-3.5 flex-shrink-0 ${tierItem.current ? 'text-white' : 'text-[#4ade80]'}`} />
-                          <p className={`text-xs ${tierItem.current ? 'text-white/80' : 'text-white/60'}`}>{benefit}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
 
             {/* Offline Access */}
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-2xl p-5 text-white">
-              <div className="flex items-start gap-3">
-                <WifiOff className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium mb-2">No Internet? No Problem!</p>
-                  <p className="text-xs text-white/70 mb-4">Check your rewards via SMS, USSD, or phone call (IVR)</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {['*123#', 'SMS', 'Call'].map((opt) => (
-                      <button key={opt} className="bg-white/20 rounded-lg py-2 text-xs hover:bg-white/30 transition-colors">{opt}</button>
-                    ))}
-                  </div>
+            <div style={{ borderRadius: 18, padding: '16px', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+              <WifiOff style={{ width: 20, height: 20, color: '#818cf8', flexShrink: 0, marginTop: 2 }} />
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff', marginBottom: 4 }}>Hakuna Mtandao? Hakuna Shida!</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: 12 }}>Angalia tuzo zako kwa SMS, USSD, au simu (IVR)</p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {['*123#', 'SMS', 'Piga Simu'].map(opt => (
+                    <button key={opt} style={{ flex: 1, padding: '8px 4px', borderRadius: 10, background: 'rgba(255,255,255,0.08)', border: 'none', color: 'rgba(255,255,255,0.7)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>{opt}</button>
+                  ))}
                 </div>
               </div>
             </div>
           </>
         )}
 
-        {/* ── EARN TAB ── */}
+        {/* ═══ EARN TAB ═══ */}
         {activeTab === 'earn' && (
           <>
+            {/* Today's potential */}
+            <div style={{ borderRadius: 20, padding: '16px 18px', background: 'linear-gradient(135deg,#052e16,#065f46)', border: '1px solid rgba(74,222,128,0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>Uwezekano wa Leo</p>
+                  <p style={{ fontSize: '28px', fontWeight: 900, color: '#4ade80', letterSpacing: '-1px' }}>+340 pts</p>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>Kazi {earningActivities.reduce((s,c) => s + c.tasks.filter(t => !t.completed).length, 0)} bado</p>
+                </div>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(74,222,128,0.15)', border: '2px solid rgba(74,222,128,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Zap style={{ width: 26, height: 26, color: '#4ade80' }} />
+                </div>
+              </div>
+            </div>
+
             {earningActivities.map((cat, i) => (
-              <div key={i} className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-white/50">{cat.category}</p>
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <p style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.4px' }}>{cat.category.toUpperCase()}</p>
                   {cat.category.includes('Neighborhood') && (
-                    <span className="px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: 'rgba(74,222,128,0.15)', color: '#4ade80' }}>
-                      2x Points
-                    </span>
+                    <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.25)', fontSize: '10px', fontWeight: 800, color: '#4ade80' }}>2× Pointi</span>
                   )}
                 </div>
                 {cat.tasks.map((task) => {
                   const TaskIcon = task.icon;
                   return (
-                    <div
-                      key={task.id}
-                      className="rounded-2xl p-4"
-                      style={task.completed
-                        ? { background: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.15)' }
-                        : cardStyle
-                      }
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${(task as any).bonus ? 'animate-pulse' : ''}`}
-                          style={{ background: 'rgba(255,255,255,0.08)' }}>
-                          <TaskIcon className="h-5 w-5 text-white/60" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-white/80">{task.title}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="px-2 py-0.5 rounded-full text-xs" style={{ background: 'rgba(234,179,8,0.15)', color: '#fbbf24' }}>
-                              +{task.points} pts
-                            </span>
-                            <span className="text-xs text-white/40">{task.frequency}</span>
-                          </div>
-                        </div>
-                        {task.completed ? (
-                          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(74,222,128,0.15)' }}>
-                            <Check className="h-4 w-4 text-[#4ade80]" />
-                          </div>
-                        ) : (
-                          <button className="px-4 py-1.5 rounded-full text-xs font-medium bg-[#16a34a] text-white hover:bg-[#15803d] transition-colors">
-                            Earn
-                          </button>
-                        )}
+                    <div key={task.id} style={{ borderRadius: 16, padding: '14px', display: 'flex', alignItems: 'center', gap: 12,
+                      ...(task.completed
+                        ? { background: 'rgba(74,222,128,0.05)', border: '1px solid rgba(74,222,128,0.12)' }
+                        : cardStyle)
+                    }}>
+                      <div style={{ width: 42, height: 42, borderRadius: 13, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: task.completed ? 'rgba(74,222,128,0.12)' : 'rgba(255,255,255,0.07)' }}>
+                        <TaskIcon style={{ width: 20, height: 20, color: task.completed ? '#4ade80' : 'rgba(255,255,255,0.5)' }} />
                       </div>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: '14px', fontWeight: 700, color: task.completed ? 'rgba(255,255,255,0.6)' : '#fff', textDecoration: task.completed ? 'line-through' : 'none', marginBottom: 3 }}>{task.title}</p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ padding: '2px 8px', borderRadius: 20, background: 'rgba(251,191,36,0.12)', color: '#fbbf24', fontSize: '11px', fontWeight: 800 }}>+{task.points} pts</span>
+                          <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>{task.frequency}</span>
+                        </div>
+                      </div>
+                      {task.completed
+                        ? <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(74,222,128,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check style={{ width: 16, height: 16, color: '#4ade80' }} /></div>
+                        : <button style={{ padding: '7px 14px', borderRadius: 20, background: '#16a34a', color: '#fff', fontSize: '12px', fontWeight: 800, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>Pata</button>
+                      }
                     </div>
                   );
                 })}
               </div>
             ))}
 
-            <div className="bg-gradient-to-r from-purple-600 to-pink-700 rounded-2xl p-5 text-white">
-              <div className="flex items-center gap-3 mb-4">
-                <Play className="h-5 w-5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Watch & Earn (Optional)</p>
-                  <p className="text-xs text-white/70">Watch short ads to earn bonus points</p>
+            {/* Watch & Earn */}
+            <div style={{ borderRadius: 20, padding: '18px', background: 'linear-gradient(135deg,#3b0764,#6d28d9)', border: '1px solid rgba(167,139,250,0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 13, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Play style={{ width: 22, height: 22, color: '#c4b5fd' }} />
+                </div>
+                <div>
+                  <p style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>Tazama & Pata Pointi</p>
+                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>Tazama matangazo mafupi kupata pointi za ziada</p>
                 </div>
               </div>
-              <button className="w-full bg-white text-purple-700 py-3 rounded-full text-sm font-medium hover:bg-gray-100 transition-colors">
-                Watch Ad (+50 points)
+              <button style={{ width: '100%', padding: '13px', borderRadius: 16, background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', fontWeight: 800, fontSize: '14px', cursor: 'pointer' }}>
+                Tazama Tangazo (+50 pointi)
               </button>
             </div>
           </>
         )}
 
-        {/* ── MARKETPLACE TAB ── */}
+        {/* ═══ MARKETPLACE TAB ═══ */}
         {activeTab === 'marketplace' && (
           <>
+            <div style={{ borderRadius: 20, padding: '14px 16px', background: 'linear-gradient(135deg,rgba(22,163,74,0.12),rgba(21,128,61,0.08))', border: '1px solid rgba(74,222,128,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <p style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>Duka la Zawadi</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Tumia pointi zako kwa zawadi za kweli</p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: 2 }}>Pointi</p>
+                <p style={{ fontSize: '18px', fontWeight: 900, color: '#4ade80' }}>{points.toLocaleString()}</p>
+              </div>
+            </div>
+
             {marketplaceRewards.map((cat, i) => (
-              <div key={i} className="space-y-3">
-                <p className="text-sm text-white/40">{cat.category}</p>
-                <div className="grid grid-cols-2 gap-3">
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <p style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.4px' }}>{cat.category.toUpperCase()}</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   {cat.items.map((item) => {
                     const ItemIcon = item.icon;
                     const canRedeem = item.available && points >= item.points;
                     return (
-                      <div
-                        key={item.id}
-                        className={`rounded-2xl p-4 ${!item.available ? 'opacity-50' : ''}`}
-                        style={cardStyle}
-                      >
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 mx-auto" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                          <ItemIcon className="h-5 w-5 text-white/70" />
+                      <div key={item.id} style={{ borderRadius: 18, padding: '16px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: item.available ? 1 : 0.5, ...cardStyle }}>
+                        <div style={{ width: 44, height: 44, borderRadius: 13, background: canRedeem ? 'rgba(74,222,128,0.12)' : 'rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+                          <ItemIcon style={{ width: 22, height: 22, color: canRedeem ? '#4ade80' : 'rgba(255,255,255,0.5)' }} />
                         </div>
-                        <p className="text-xs font-medium text-white/80 text-center mb-1">{item.name}</p>
-                        <p className="text-xs text-white/40 text-center mb-3">{item.value}</p>
+                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#fff', textAlign: 'center', marginBottom: 3 }}>{item.name}</p>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', textAlign: 'center', marginBottom: 10 }}>{item.value}</p>
                         {item.available ? (
-                          canRedeem ? (
-                            <button className="w-full py-2 rounded-full text-xs font-medium bg-[#16a34a] text-white hover:bg-[#15803d] transition-colors">
-                              Redeem ({item.points})
-                            </button>
-                          ) : (
-                            <button className="w-full py-2 rounded-full text-xs text-white/40 transition-colors" style={{ background: 'rgba(255,255,255,0.06)' }} disabled>
-                              {item.points - points} more
-                            </button>
-                          )
+                          canRedeem
+                            ? <button style={{ width: '100%', padding: '8px', borderRadius: 12, background: '#16a34a', color: '#fff', fontSize: '12px', fontWeight: 800, border: 'none', cursor: 'pointer' }}>Dai ({item.points})</button>
+                            : <button disabled style={{ width: '100%', padding: '8px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)', fontSize: '12px', border: 'none', cursor: 'not-allowed' }}>Bado {item.points - points}</button>
                         ) : (
-                          <button className="w-full py-2 rounded-full text-xs text-white/30" style={{ background: 'rgba(255,255,255,0.04)' }} disabled>
-                            Out of Stock
-                          </button>
+                          <button disabled style={{ width: '100%', padding: '8px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.25)', fontSize: '12px', border: 'none' }}>Imeisha</button>
                         )}
                       </div>
                     );
@@ -564,233 +592,248 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
           </>
         )}
 
-        {/* ── CASHBACK TAB ── */}
+        {/* ═══ CASHBACK TAB ═══ */}
         {activeTab === 'cashback' && (
           <>
-            <div className="bg-gradient-to-br from-[#16a34a] to-[#0d4d1a] rounded-3xl p-6 text-white">
-              <p className="text-xs text-white/60 mb-2">Total Cashback Balance</p>
-              <p className="text-4xl font-medium mb-5">{fmt(cashbackBalance)}</p>
-              <div className="grid grid-cols-2 gap-3">
-                <button className="bg-white text-[#16a34a] py-3 rounded-full text-sm font-medium hover:bg-gray-100 transition-colors">Withdraw</button>
-                <button className="bg-white/20 text-white py-3 rounded-full text-sm hover:bg-white/30 transition-colors">Use Now</button>
+            {/* Balance hero */}
+            <div style={{ borderRadius: 24, padding: '28px 24px', background: 'linear-gradient(135deg,#052e16,#065f46,#16a34a)', border: '1px solid rgba(74,222,128,0.2)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: -20, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, rgba(74,222,128,0.2) 0%, transparent 70%)' }} />
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginBottom: 6, letterSpacing: '0.4px' }}>JUMLA YA CASHBACK</p>
+              <p style={{ fontSize: '40px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px', marginBottom: 4 }}>{fmt(cashbackBalance)}</p>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>Daraja: {currentTierData.name} · {currentTierData.multiplier} rewards</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <button style={{ padding: '13px', borderRadius: 16, background: '#fff', color: '#16a34a', fontWeight: 800, fontSize: '14px', border: 'none', cursor: 'pointer' }}>Toa Fedha</button>
+                <button style={{ padding: '13px', borderRadius: 16, background: 'rgba(255,255,255,0.15)', color: '#fff', fontWeight: 800, fontSize: '14px', border: 'none', cursor: 'pointer' }}>Tumia Sasa</button>
               </div>
             </div>
 
-            {/* Cashback Tier Rates */}
-            <div className="rounded-2xl p-5 space-y-3" style={cardStyle}>
-              <p className="text-sm text-white/50 mb-1">Cashback Rates by Tier</p>
-              {[
-                { name: 'Bronze', rate: '0.5%', pill: 'text-white/60' },
-                { name: 'Silver', rate: '1%', pill: 'text-blue-400' },
-                { name: 'Gold', rate: '2%', pill: 'text-yellow-400' },
-                { name: 'Platinum', rate: '5%', pill: 'text-purple-400' },
-              ].map(({ name, rate, pill }) => {
-                const CBIcon = CASHBACK_TIER_ICONS[name as keyof typeof CASHBACK_TIER_ICONS] ?? Award;
-                const cbColor = CASHBACK_TIER_COLORS[name as keyof typeof CASHBACK_TIER_COLORS] ?? 'text-white';
-                return (
-                  <div key={name} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <CBIcon className={`h-5 w-5 ${cbColor}`} />
-                      <span className="text-sm text-white/70">{name}</span>
+            {/* Tier rates */}
+            <div style={{ borderRadius: 20, padding: '18px', ...cardStyle }}>
+              <p style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.4px', marginBottom: 14 }}>VIWANGO VYA CASHBACK KWA DARAJA</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { name: 'Bronze', rate: '0.5%', icon: Award, color: '#f97316', width: 15 },
+                  { name: 'Silver', rate: '1%',   icon: Star,  color: '#94a3b8', width: 30 },
+                  { name: 'Gold',   rate: '2%',   icon: Flame, color: '#fbbf24', width: 55, current: tier === 'Gold' },
+                  { name: 'Platinum', rate: '5%', icon: Crown, color: '#a78bfa', width: 100 },
+                ].map(({ name, rate, icon: TIcon, color, width, current }) => (
+                  <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <TIcon style={{ width: 18, height: 18, color, flexShrink: 0 }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                        <span style={{ fontSize: '13px', fontWeight: current ? 800 : 500, color: current ? '#fff' : 'rgba(255,255,255,0.6)' }}>{name}</span>
+                        <span style={{ fontSize: '13px', fontWeight: 800, color }}>  {rate}</span>
+                      </div>
+                      <div style={{ height: 4, borderRadius: 4, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${width}%`, borderRadius: 4, background: color, transition: 'width 0.8s ease' }} />
+                      </div>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${pill}`} style={{ background: 'rgba(255,255,255,0.08)' }}>{rate}</span>
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
 
-            {/* Recent Cashback */}
-            <div className="space-y-3">
-              <p className="text-sm text-white/40">Recent Cashback</p>
+            {/* Recent cashback */}
+            <div>
+              <p style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.4px', marginBottom: 10 }}>CASHBACK ZA HIVI KARIBUNI</p>
               {[
-                { label: 'Paid at The Slipway', value: '+TZS 500', sub: '2% cashback • 2 hours ago' },
-                { label: 'Electricity Bill', value: '+TZS 200', sub: '1% cashback • Yesterday' },
-                { label: 'Local Duka Purchase', value: '+TZS 350', sub: '2x bonus • 3 days ago' },
+                { label: 'Umelipa The Slipway', value: '+TZS 500', sub: '2% cashback · Masaa 2 yaliyopita' },
+                { label: 'Bili ya Umeme', value: '+TZS 200', sub: '1% cashback · Jana' },
+                { label: 'Manunuzi ya Duka la Mitaa', value: '+TZS 350', sub: '2× bonus · Siku 3 zilizopita' },
               ].map(({ label, value, sub }) => (
-                <div key={label} className="rounded-2xl p-4" style={cardStyle}>
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm text-white/80">{label}</p>
-                    <p className="text-sm text-[#4ade80] font-medium">{value}</p>
+                <div key={label} style={{ borderRadius: 16, padding: '14px', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', ...cardStyle }}>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: 700, color: 'rgba(255,255,255,0.85)', marginBottom: 3 }}>{label}</p>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{sub}</p>
                   </div>
-                  <p className="text-xs text-white/40">{sub}</p>
+                  <p style={{ fontSize: '15px', fontWeight: 900, color: '#4ade80', flexShrink: 0, marginLeft: 12 }}>{value}</p>
                 </div>
               ))}
             </div>
 
-            {/* Fraud Protection */}
-            <div className="rounded-2xl p-5 flex items-start gap-3" style={infoStyle('59,130,246')}>
-              <Shield className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
+            {/* Fraud protection */}
+            <div style={{ borderRadius: 18, padding: '14px 16px', ...infoStyle('59,130,246'), display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <Shield style={{ width: 18, height: 18, color: '#60a5fa', flexShrink: 0, marginTop: 2 }} />
               <div>
-                <p className="text-sm text-blue-300 font-medium mb-1">Fraud Protection Active</p>
-                <p className="text-xs text-blue-300/70">Your cashback is protected with bank-grade security, device fingerprinting, and AI fraud monitoring.</p>
+                <p style={{ fontSize: '13px', fontWeight: 700, color: '#93c5fd', marginBottom: 3 }}>Ulinzi wa Udanganyifu Umewashwa</p>
+                <p style={{ fontSize: '12px', color: 'rgba(147,197,253,0.7)', lineHeight: 1.5 }}>Cashback yako inalindwa na usalama wa kiwango cha benki, AI fraud monitoring, na ulinzi wa kifaa.</p>
               </div>
             </div>
           </>
         )}
 
-        {/* ── FAMILY POOL TAB ── */}
+        {/* ═══ FAMILY POOL TAB ═══ */}
         {activeTab === 'family' && (
           <>
-            <div className="bg-gradient-to-r from-purple-600 to-pink-700 rounded-2xl p-5 text-white">
-              <p className="text-base font-medium mb-1">Family & Friends Pool</p>
-              <p className="text-xs text-white/70">Share rewards, save together, achieve goals as a community</p>
+            <div style={{ borderRadius: 20, padding: '16px 18px', background: 'linear-gradient(135deg,#3b0764,#6d28d9)', border: '1px solid rgba(167,139,250,0.2)' }}>
+              <p style={{ fontSize: '16px', fontWeight: 800, color: '#fff', marginBottom: 4 }}>Mfuko wa Familia & Marafiki</p>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>Shiriki tuzo, okoa pamoja, fikia malengo kama jamii</p>
             </div>
 
-            {familyPools.map((pool) => (
-              <div key={pool.id} className="rounded-2xl p-5 space-y-4" style={cardStyle}>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                    <Users className="h-6 w-6 text-white/60" />
+            {familyPools.map((pool) => {
+              const pct = (pool.totalPoints / pool.goalPoints) * 100;
+              return (
+                <div key={pool.id} style={{ borderRadius: 20, padding: '18px', ...cardStyle }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(167,139,250,0.12)', border: '1px solid rgba(167,139,250,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Users style={{ width: 24, height: 24, color: '#a78bfa' }} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginBottom: 2 }}>{pool.name}</p>
+                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{pool.members} wanachama</p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ fontSize: '13px', fontWeight: 700, color: '#a78bfa' }}>{pool.totalPoints.toLocaleString()}</p>
+                      <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>/ {pool.goalPoints.toLocaleString()}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-white/80">{pool.name}</p>
-                    <p className="text-xs text-white/40">{pool.members} members</p>
+
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Lengo: {pool.goal}</span>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#fff' }}>{Math.round(pct)}%</span>
+                    </div>
+                    <div style={{ height: 8, borderRadius: 8, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${pct}%`, borderRadius: 8, background: 'linear-gradient(90deg,#7c3aed,#a78bfa)', transition: 'width 0.8s ease' }} />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <div style={{ borderRadius: 14, padding: '12px', background: 'rgba(255,255,255,0.05)' }}>
+                      <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: 3 }}>Mchango Wako</p>
+                      <p style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>{pool.yourContribution.toLocaleString()}</p>
+                    </div>
+                    <button style={{ borderRadius: 14, padding: '12px', background: '#7c3aed', color: '#fff', fontWeight: 800, fontSize: '14px', border: 'none', cursor: 'pointer' }}>Changia</button>
                   </div>
                 </div>
+              );
+            })}
 
-                <div>
-                  <div className="flex items-center justify-between text-xs mb-2">
-                    <span className="text-white/50">Goal: {pool.goal}</span>
-                    <span className="text-white/70 font-medium">{pool.totalPoints} / {pool.goalPoints}</span>
-                  </div>
-                  <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                    <div
-                      className="h-full bg-gradient-to-r from-[#16a34a] to-[#4ade80] rounded-full"
-                      style={{ width: `${(pool.totalPoints / pool.goalPoints) * 100}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                    <p className="text-xs text-white/40 mb-1">Your Share</p>
-                    <p className="text-base font-medium text-white/80">{pool.yourContribution}</p>
-                  </div>
-                  <button className="rounded-xl py-3 text-sm font-medium bg-[#16a34a] text-white hover:bg-[#15803d] transition-colors">
-                    Contribute
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            <button
-              className="w-full rounded-2xl p-4 text-sm text-white/50 border-dashed border-2 hover:border-[#4ade80] hover:text-[#4ade80] transition-colors"
-              style={{ borderColor: 'rgba(255,255,255,0.15)', background: 'transparent' }}
-            >
-              + Create New Pool
+            <button style={{ width: '100%', borderRadius: 20, padding: '16px', background: 'transparent', border: '2px dashed rgba(167,139,250,0.25)', color: 'rgba(255,255,255,0.4)', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <Plus style={{ width: 18, height: 18 }} />
+              Unda Mfuko Mpya
             </button>
           </>
         )}
 
-        {/* ── ACHIEVEMENTS TAB ── */}
+        {/* ═══ ACHIEVEMENTS TAB ═══ */}
         {activeTab === 'achievements' && (
           <>
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-600 rounded-2xl p-5 text-white">
-              <p className="text-base font-medium mb-1">Achievement Badges</p>
-              <p className="text-xs text-white/70">{achievements.filter((a) => a.earned).length} of {achievements.length} earned</p>
+            {/* Header stats */}
+            <div style={{ borderRadius: 20, padding: '16px 18px', background: 'linear-gradient(135deg,#422006,#713f12,#ca8a04)', border: '1px solid rgba(251,191,36,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <p style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Beji za Mafanikio</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginTop: 3 }}>
+                  {achievements.filter(a => a.earned).length} kati ya {achievements.length} zimepatikana
+                </p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: '32px', fontWeight: 900, color: '#fbbf24' }}>{achievements.filter(a => a.earned).length}</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Beji</p>
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {achievements.map((ach) => {
                 const AchIcon = ACHIEVEMENT_ICON_MAP[ach.id] ?? Award;
                 return (
-                  <div
-                    key={ach.id}
-                    className={`rounded-2xl p-4 text-center ${ach.earned ? 'bg-gradient-to-br from-yellow-500 to-orange-600 text-white' : ''}`}
-                    style={ach.earned ? undefined : cardStyle}
-                  >
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 ${ach.earned ? 'bg-white/20' : ''}`}
-                      style={ach.earned ? undefined : { background: 'rgba(255,255,255,0.08)' }}>
-                      <AchIcon className={`h-6 w-6 ${ach.earned ? 'text-white' : 'text-white/40'}`} />
+                  <div key={ach.id} style={{ borderRadius: 18, padding: '18px 12px', textAlign: 'center',
+                    ...(ach.earned
+                      ? { background: 'linear-gradient(135deg,#422006,#ca8a04)', border: '1px solid rgba(251,191,36,0.3)', boxShadow: '0 4px 20px rgba(251,191,36,0.2)' }
+                      : cardStyle)
+                  }}>
+                    <div style={{ width: 52, height: 52, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px',
+                      background: ach.earned ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.06)',
+                    }}>
+                      <AchIcon style={{ width: 24, height: 24, color: ach.earned ? '#fff' : 'rgba(255,255,255,0.25)' }} />
                     </div>
-                    <p className={`text-xs font-medium mb-1 ${ach.earned ? 'text-white' : 'text-white/70'}`}>{ach.name}</p>
-                    <p className={`text-xs ${ach.earned ? 'text-white/80' : 'text-white/40'}`}>{ach.description}</p>
+                    <p style={{ fontSize: '12px', fontWeight: 800, color: ach.earned ? '#fff' : 'rgba(255,255,255,0.5)', marginBottom: 4 }}>{ach.name}</p>
+                    <p style={{ fontSize: '11px', color: ach.earned ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.3)', lineHeight: 1.4 }}>{ach.description}</p>
                     {ach.earned && (
-                      <div className="mt-2 bg-white/20 rounded-full px-3 py-0.5 text-xs inline-block">Earned</div>
+                      <div style={{ marginTop: 10, display: 'inline-block', padding: '4px 12px', borderRadius: 20, background: 'rgba(255,255,255,0.2)', fontSize: '10px', fontWeight: 800, color: '#fff' }}>✓ Earned</div>
                     )}
                   </div>
                 );
               })}
             </div>
 
-            {/* Location-Based Rewards */}
-            <div className="rounded-2xl p-5" style={infoStyle('59,130,246')}>
-              <div className="flex items-start gap-3 mb-4">
-                <MapPin className="h-5 w-5 text-blue-400" />
+            {/* Location bonus */}
+            <div style={{ borderRadius: 18, padding: '16px', ...infoStyle('59,130,246') }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
+                <MapPin style={{ width: 18, height: 18, color: '#60a5fa', flexShrink: 0, marginTop: 2 }} />
                 <div>
-                  <p className="text-sm text-blue-300 font-medium mb-1">Location-Based Rewards</p>
-                  <p className="text-xs text-blue-300/70">Visit partner locations to earn bonus points!</p>
+                  <p style={{ fontSize: '13px', fontWeight: 700, color: '#93c5fd', marginBottom: 3 }}>Zawadi za Mahali</p>
+                  <p style={{ fontSize: '11px', color: 'rgba(147,197,253,0.7)' }}>Tembelea maeneo ya washirika kupata pointi za ziada!</p>
                 </div>
               </div>
-              <div className="space-y-2">
-                {[
-                  { name: 'Mlimani City Mall', pts: '+50 pts' },
-                  { name: 'The Slipway', pts: '+75 pts' },
-                ].map(({ name, pts }) => (
-                  <div key={name} className="flex items-center justify-between rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                    <div className="flex items-center gap-2">
-                      <Store className="h-4 w-4 text-white/40" />
-                      <span className="text-xs text-white/70">{name}</span>
-                    </div>
-                    <span className="px-2 py-1 rounded-full text-xs text-blue-300" style={{ background: 'rgba(59,130,246,0.2)' }}>{pts}</span>
+              {[{ name: 'Mlimani City Mall', pts: '+50 pts' }, { name: 'The Slipway', pts: '+75 pts' }].map(({ name, pts }) => (
+                <div key={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: 12, padding: '10px 12px', marginBottom: 6, background: 'rgba(255,255,255,0.06)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Store style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.4)' }} />
+                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>{name}</span>
                   </div>
-                ))}
-              </div>
+                  <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(96,165,250,0.15)', color: '#93c5fd', fontSize: '11px', fontWeight: 800 }}>{pts}</span>
+                </div>
+              ))}
             </div>
           </>
         )}
 
-        {/* ── AI TAB ── */}
+        {/* ═══ AI INSIGHTS TAB ═══ */}
         {activeTab === 'ai' && (
           <>
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl p-5 text-white">
-              <p className="text-base font-medium mb-1">AI Rewards Optimization</p>
-              <p className="text-xs text-white/70">Smart suggestions to maximize your rewards</p>
+            <div style={{ borderRadius: 20, padding: '16px 18px', background: 'linear-gradient(135deg,#1e1b4b,#312e81,#4338ca)', border: '1px solid rgba(129,140,248,0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                <Sparkles style={{ width: 18, height: 18, color: '#818cf8' }} />
+                <p style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Uboreshaji wa AI</p>
+              </div>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>Mapendekezo ya kibinafsi ili kuongeza tuzo zako</p>
             </div>
 
-            <div className="rounded-2xl p-5 space-y-3" style={cardStyle}>
-              <p className="text-sm text-white/50">Personalized for You</p>
+            {/* Personalized cards */}
+            <div style={{ borderRadius: 20, padding: '18px', ...cardStyle }}>
+              <p style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.4px', marginBottom: 14 }}>KWA AJILI YAKO</p>
               {[
-                { color: infoStyle('74,222,128'), label: 'Best Deal Today', accent: 'text-green-300', text: 'Addis in Dar has 2× points until 8 PM. You love Ethiopian food — earn 100 points!', btnBg: '#16a34a', btnLabel: 'View Deal' },
-                { color: infoStyle('59,130,246'), label: 'Smart Suggestion', accent: 'text-blue-300', text: "You're close to Gold tier! Make 2 more payments this week to unlock 2× rewards permanently.", btnBg: '#2563eb', btnLabel: 'See Tasks' },
-                { color: infoStyle('168,85,247'), label: 'Auto-Apply Alert', accent: 'text-purple-300', text: 'AI found a 15% discount at your next checkout. We\'ll apply it automatically!', btnBg: '#7c3aed', btnLabel: 'Enable Auto-Apply' },
-              ].map(({ color, label, accent, text, btnBg, btnLabel }) => (
-                <div key={label} className="rounded-xl p-4" style={color}>
-                  <p className={`text-xs font-medium mb-2 ${accent}`}>{label}</p>
-                  <p className="text-xs text-white/60 mb-3">{text}</p>
-                  <button className="px-4 py-1.5 rounded-full text-xs font-medium text-white" style={{ background: btnBg }}>{btnLabel}</button>
+                { label: 'Ofa Bora Leo', accent: '#4ade80', bg: 'rgba(74,222,128,0.08)', border: 'rgba(74,222,128,0.15)', text: 'Addis in Dar ina 2× pointi mpaka saa 8 jioni. Unapenda chakula cha Ethiopia — pata pointi 100!', btnBg: '#16a34a', btn: 'Angalia Ofa' },
+                { label: 'Pendekezo Zuri', accent: '#60a5fa', bg: 'rgba(96,165,250,0.08)', border: 'rgba(96,165,250,0.15)', text: 'Uko karibu na daraja la Gold! Fanya malipo 2 zaidi wiki hii ili kupata 2× zawadi daima.', btnBg: '#2563eb', btn: 'Angalia Kazi' },
+                { label: 'Punguzo la Auto', accent: '#a78bfa', bg: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.15)', text: 'AI imepata punguzo la 15% kwa malipo yako ya mwisho. Tutaomba moja kwa moja!', btnBg: '#7c3aed', btn: 'Washa Auto-Apply' },
+              ].map(({ label, accent, bg, border, text, btnBg, btn }) => (
+                <div key={label} style={{ borderRadius: 14, padding: '14px', marginBottom: 10, background: bg, border: `1px solid ${border}` }}>
+                  <p style={{ fontSize: '11px', fontWeight: 800, color: accent, marginBottom: 6, letterSpacing: '0.3px' }}>{label.toUpperCase()}</p>
+                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, marginBottom: 12 }}>{text}</p>
+                  <button style={{ padding: '8px 16px', borderRadius: 20, background: btnBg, color: '#fff', fontSize: '12px', fontWeight: 800, border: 'none', cursor: 'pointer' }}>{btn}</button>
                 </div>
               ))}
             </div>
 
-            <div className="rounded-2xl p-5 space-y-3" style={cardStyle}>
-              <p className="text-sm text-white/50">What You'll Love</p>
-              <p className="text-xs text-white/30">Based on your transaction history:</p>
+            {/* Behaviour patterns */}
+            <div style={{ borderRadius: 20, padding: '18px', ...cardStyle }}>
+              <p style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.4px', marginBottom: 14 }}>MWENENDO WAKO</p>
               {[
-                { icon: Heart, label: 'You order pizza on Fridays', badge: '+2x points', badgeStyle: { background: 'rgba(234,179,8,0.15)', color: '#fbbf24' } },
-                { icon: Zap, label: 'Electricity bill due in 5 days', badge: 'Remind Me', badgeStyle: { background: '#16a34a', color: 'white' }, isBtn: true },
-              ].map(({ icon: ItemIcon, label, badge, badgeStyle, isBtn }) => (
-                <div key={label} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                  <ItemIcon className="h-5 w-5 text-white/40 flex-shrink-0" />
-                  <p className="text-sm text-white/60 flex-1">{label}</p>
-                  <span className="px-3 py-1 rounded-full text-xs font-medium" style={badgeStyle}>{badge}</span>
+                { icon: Heart, label: 'Unaagiza pizza Ijumaa', badge: '+2× pointi', badgeBg: 'rgba(251,191,36,0.12)', badgeColor: '#fbbf24' },
+                { icon: Zap, label: 'Bili ya umeme inadai siku 5', badge: 'Nikumbushe', badgeBg: '#16a34a', badgeColor: '#fff', isBtn: true },
+              ].map(({ icon: IcIcon, label, badge, badgeBg, badgeColor }) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px', borderRadius: 12, marginBottom: 8, background: 'rgba(255,255,255,0.04)' }}>
+                  <IcIcon style={{ width: 18, height: 18, color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
+                  <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)', flex: 1 }}>{label}</p>
+                  <span style={{ padding: '5px 12px', borderRadius: 20, background: badgeBg, color: badgeColor, fontSize: '11px', fontWeight: 800, flexShrink: 0 }}>{badge}</span>
                 </div>
               ))}
             </div>
 
-            <div className="rounded-2xl p-5 space-y-3" style={cardStyle}>
-              <p className="text-sm text-white/50">Partner Multipliers</p>
-              <p className="text-xs text-white/30">Local businesses offering extra rewards:</p>
+            {/* Partner multipliers */}
+            <div style={{ borderRadius: 20, padding: '18px', ...cardStyle }}>
+              <p style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.4px', marginBottom: 14 }}>WASHIRIKA WA POINTI ZAIDI</p>
               {[
-                { name: "Mama Halima's Duka", badge: '3x Weekend', badgeColor: 'text-orange-400', badgeBg: 'rgba(249,115,22,0.15)' },
-                { name: 'Karibu Mama Lishe', badge: '2x Daily', badgeColor: 'text-green-400', badgeBg: 'rgba(74,222,128,0.15)' },
+                { name: "Mama Halima's Duka", badge: '3× Wikendi', badgeColor: '#fb923c', badgeBg: 'rgba(249,115,22,0.12)' },
+                { name: 'Karibu Mama Lishe',  badge: '2× Kila Siku',  badgeColor: '#4ade80', badgeBg: 'rgba(74,222,128,0.12)' },
               ].map(({ name, badge, badgeColor, badgeBg }) => (
-                <div key={name} className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)' }}>
-                  <div className="flex items-center gap-2">
-                    <Store className="h-4 w-4 text-white/40" />
-                    <span className="text-xs text-white/70">{name}</span>
+                <div key={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', borderRadius: 12, marginBottom: 8, background: 'rgba(255,255,255,0.04)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Store style={{ width: 16, height: 16, color: 'rgba(255,255,255,0.35)' }} />
+                    <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>{name}</span>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${badgeColor}`} style={{ background: badgeBg }}>{badge}</span>
+                  <span style={{ padding: '5px 12px', borderRadius: 20, background: badgeBg, color: badgeColor, fontSize: '11px', fontWeight: 800 }}>{badge}</span>
                 </div>
               ))}
             </div>
