@@ -259,44 +259,52 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-6">
+    <div className="min-h-screen pb-6" style={{ background: '#080d08' }}>
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-20">
+      <div className="sticky top-0 z-20" style={{ background: '#080d08', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="px-4 py-4">
           <div className="flex items-center gap-4 mb-4">
             <button
               onClick={onBack}
-              className="p-2 hover:bg-gray-100 rounded-full transition-all"
+              className="p-2.5 rounded-full transition-all active:scale-95"
+              style={{ background: 'rgba(255,255,255,0.08)' }}
+              aria-label="Rudi nyuma"
             >
-              <ArrowLeft className="size-6" />
+              <ArrowLeft className="size-5 text-white" />
             </button>
-            <h1 className="text-2xl font-bold flex-1">Shughuli za Malipo</h1>
+            <h1 className="text-xl font-bold flex-1 text-white">Shughuli za Malipo</h1>
             <button
               onClick={handleRefresh}
-              className="p-2 hover:bg-gray-100 rounded-full transition-all"
+              className="p-2.5 rounded-full transition-all active:scale-95"
+              style={{ background: 'rgba(255,255,255,0.08)' }}
               disabled={refreshing}
+              aria-label="Onyesha upya"
             >
-              <RefreshCw className={`size-6 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`size-5 text-white ${refreshing ? 'animate-spin' : ''}`} />
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-all">
-              <Download className="size-6" />
+            <button className="p-2.5 rounded-full transition-all active:scale-95"
+              style={{ background: 'rgba(255,255,255,0.08)' }}
+              aria-label="Pakua">
+              <Download className="size-5 text-white" />
             </button>
           </div>
 
           {/* Search */}
-          <div className="relative mb-4">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-gray-400" />
+          <div className="relative mb-3">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
             <input
               type="text"
               placeholder="Tafuta shughuli..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-12 pr-4 bg-gray-100 rounded-full border-0 focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full h-11 pl-11 pr-4 rounded-2xl border-0 focus:outline-none text-sm"
+              style={{ background: 'rgba(255,255,255,0.06)', color: '#fff' }}
+              aria-label="Tafuta shughuli"
             />
           </div>
 
           {/* Filters */}
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {[
               { id: 'all', label: 'Zote', icon: Filter },
               { id: 'income', label: 'Pato', icon: TrendingUp },
@@ -304,18 +312,21 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
               { id: 'pending', label: 'Inasubiri', icon: Clock }
             ].map((f) => {
               const Icon = f.icon;
+              const active = filter === f.id;
               return (
                 <button
                   key={f.id}
                   onClick={() => setFilter(f.id as FilterType)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all ${
-                    filter === f.id
-                      ? 'bg-black text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-full whitespace-nowrap transition-all active:scale-95"
+                  style={{
+                    background: active ? '#16a34a' : 'rgba(255,255,255,0.06)',
+                    color: active ? '#fff' : 'rgba(255,255,255,0.5)',
+                    border: active ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                  }}
+                  aria-pressed={active}
                 >
-                  <Icon className="size-4" />
-                  <span className="text-sm font-medium">{f.label}</span>
+                  <Icon className="size-3.5" />
+                  <span style={{ fontSize: '12px', fontWeight: 600 }}>{f.label}</span>
                 </button>
               );
             })}
@@ -324,80 +335,69 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
       </div>
 
       {/* Stats Cards */}
-      <div className="px-4 py-6 grid grid-cols-2 gap-3">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-5 text-white shadow-lg"
-        >
+      <div className="px-4 pt-5 pb-4 grid grid-cols-2 gap-3">
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+          className="rounded-2xl p-4"
+          style={{ background: 'rgba(22,163,74,0.1)', border: '1px solid rgba(22,163,74,0.2)' }}>
           <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="size-5" />
-            <p className="text-green-100 text-sm">Total Income</p>
+            <TrendingUp className="size-4" style={{ color: '#4ade80' }} />
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>Jumla Pato</p>
           </div>
-          <p className="text-2xl font-bold">{formatCurrency(totalIncome)}</p>
+          <p style={{ fontSize: '20px', fontWeight: 800, color: '#4ade80', letterSpacing: '-0.5px' }}>{formatCurrency(totalIncome)}</p>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl p-5 text-white shadow-lg"
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          className="rounded-2xl p-4"
+          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }}>
           <div className="flex items-center gap-2 mb-2">
-            <TrendingDown className="size-5" />
-            <p className="text-red-100 text-sm">Total Expense</p>
+            <TrendingDown className="size-4" style={{ color: '#f87171' }} />
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>Jumla Matumizi</p>
           </div>
-          <p className="text-2xl font-bold">{formatCurrency(totalExpense)}</p>
+          <p style={{ fontSize: '20px', fontWeight: 800, color: '#f87171', letterSpacing: '-0.5px' }}>{formatCurrency(totalExpense)}</p>
         </motion.div>
       </div>
 
       {/* Transactions List */}
-      <div className="px-4 space-y-6">
+      <div className="px-4 space-y-5">
         {Object.entries(groupedTransactions).map(([date, txs]: [string, any]) => (
           <div key={date}>
-            <h3 className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wide">
+            <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '10px' }}>
               {date}
-            </h3>
+            </p>
             <div className="space-y-2">
               {txs.map((tx: any, index: number) => (
                 <motion.button
                   key={tx.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
                   onClick={() => setSelectedTx(tx)}
-                  className="w-full bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-all border border-gray-100 text-left"
+                  className="w-full rounded-2xl p-4 text-left transition-all active:scale-[0.98]"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
                 >
-                  <div className="flex items-center gap-4">
-                    {/* Icon */}
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${
-                      tx.type === 'income' ? 'bg-green-100' :
-                      tx.type === 'expense' ? 'bg-red-100' :
-                      'bg-yellow-100'
-                    }`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                      style={{
+                        background: tx.type === 'income' ? 'rgba(22,163,74,0.12)' :
+                          tx.type === 'expense' ? 'rgba(239,68,68,0.1)' : 'rgba(234,179,8,0.1)'
+                      }}>
                       {tx.icon}
                     </div>
-
-                    {/* Details */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-semibold truncate">{tx.title}</p>
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <p style={{ fontSize: '13px', fontWeight: 600, color: '#fff' }} className="truncate">{tx.title}</p>
                         {getStatusIcon(tx.status)}
                       </div>
-                      <p className="text-sm text-gray-500 truncate">{tx.description}</p>
-                      <p className="text-xs text-gray-400 mt-1">{formatDate(tx.timestamp)}</p>
+                      <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }} className="truncate">{tx.description}</p>
                     </div>
-
-                    {/* Amount */}
-                    <div className="text-right">
-                      <p className={`font-bold text-lg ${
-                        tx.type === 'income' ? 'text-green-600' :
-                        tx.type === 'expense' ? 'text-red-600' :
-                        'text-yellow-600'
-                      }`}>
-                        {tx.type === 'income' ? '+' : ''}{formatCurrency(tx.amount)}
+                    <div className="text-right flex-shrink-0">
+                      <p style={{
+                        fontSize: '14px', fontWeight: 700,
+                        color: tx.type === 'income' ? '#4ade80' : tx.type === 'expense' ? '#f87171' : '#facc15'
+                      }}>
+                        {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
                       </p>
+                      <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginTop: '2px' }}>{formatDate(tx.timestamp)}</p>
                     </div>
                   </div>
                 </motion.button>
@@ -407,10 +407,11 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
         ))}
 
         {filteredTransactions.length === 0 && (
-          <div className="bg-white rounded-2xl p-12 text-center shadow-sm">
-            <div className="text-6xl mb-4">📭</div>
-            <h3 className="text-xl font-semibold mb-2">No transactions found</h3>
-            <p className="text-gray-500">Try adjusting your filters</p>
+          <div className="rounded-2xl p-12 text-center"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <p style={{ fontSize: '40px', marginBottom: '12px' }}>📭</p>
+            <p style={{ fontSize: '16px', fontWeight: 600, color: '#fff', marginBottom: '6px' }}>Hakuna shughuli</p>
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>Badilisha vichujio uone zaidi</p>
           </div>
         )}
       </div>
@@ -427,33 +428,38 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
           <div className="space-y-4 pb-2">
             {/* Amount hero */}
             <div className="text-center py-4">
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3 ${
-                selectedTx.type === 'income' ? 'bg-green-100' :
-                selectedTx.type === 'expense' ? 'bg-red-50' : 'bg-yellow-50'
-              }`}>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3"
+                style={{
+                  background: selectedTx.type === 'income' ? 'rgba(22,163,74,0.12)' :
+                    selectedTx.type === 'expense' ? 'rgba(239,68,68,0.1)' : 'rgba(234,179,8,0.1)'
+                }}>
                 {selectedTx.icon}
               </div>
-              <p className={`text-3xl font-bold mb-1 ${
-                selectedTx.type === 'income' ? 'text-green-600' :
-                selectedTx.type === 'expense' ? 'text-red-500' : 'text-yellow-600'
-              }`}>
+              <p style={{
+                fontSize: '32px', fontWeight: 800, letterSpacing: '-1px', marginBottom: '4px',
+                color: selectedTx.type === 'income' ? '#4ade80' : selectedTx.type === 'expense' ? '#f87171' : '#facc15'
+              }}>
                 {selectedTx.type === 'income' ? '+' : '-'}{formatCurrency(selectedTx.amount)}
               </p>
-              <p className="text-gray-500 text-sm">{selectedTx.title}</p>
+              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>{selectedTx.title}</p>
             </div>
 
             {/* Details grid */}
-            <div className="rounded-2xl divide-y divide-gray-100 overflow-hidden border border-gray-100">
+            <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
               {[
                 { label: 'Maelezo', value: selectedTx.description },
                 { label: 'Hali', value: selectedTx.status === 'completed' ? '✅ Imekamilika' : selectedTx.status === 'pending' ? '⏳ Inasubiri' : '❌ Imeshindwa' },
                 { label: 'Tarehe', value: new Date(selectedTx.timestamp).toLocaleString('sw-TZ') },
                 { label: 'Kategoria', value: selectedTx.category },
                 { label: 'Kumbukumbu', value: selectedTx.id },
-              ].map(row => (
-                <div key={row.label} className="flex items-center justify-between px-4 py-3 bg-white">
-                  <span className="text-sm text-gray-500">{row.label}</span>
-                  <span className="text-sm font-medium text-gray-900 max-w-[55%] text-right">{row.value}</span>
+              ].map((row, i, arr) => (
+                <div key={row.label} className="flex items-center justify-between px-4 py-3"
+                  style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none'
+                  }}>
+                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{row.label}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff', maxWidth: '55%', textAlign: 'right' }}>{row.value}</span>
                 </div>
               ))}
             </div>
@@ -462,7 +468,8 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => { navigator.clipboard.writeText(selectedTx.id); toast.success('Kumbukumbu imenakiliwa!'); }}
-                className="flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 transition-all active:scale-95"
+                className="flex items-center justify-center gap-2 h-12 rounded-xl transition-all active:scale-95"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '13px', fontWeight: 600 }}
               >
                 <Copy className="size-4" /> Nakili ID
               </button>
@@ -474,7 +481,8 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
                     toast.info('Shiriki haipatikani');
                   }
                 }}
-                className="flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 transition-all active:scale-95"
+                className="flex items-center justify-center gap-2 h-12 rounded-xl transition-all active:scale-95"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '13px', fontWeight: 600 }}
               >
                 <Share2 className="size-4" /> Shiriki
               </button>
@@ -483,7 +491,8 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
             {/* Dispute link */}
             <button
               onClick={() => { setSelectedTx(null); toast.info('Ripoti ya tatizo imesajiliwa. Tutawasiliana nawe hivi karibuni.'); }}
-              className="w-full flex items-center justify-center gap-2 py-3 text-sm text-red-500 font-medium"
+              className="w-full flex items-center justify-center gap-2 py-3 transition-all active:scale-95"
+              style={{ fontSize: '13px', color: '#f87171', fontWeight: 500 }}
             >
               <AlertCircle className="size-4" />
               Ripoti tatizo kuhusu malipo haya

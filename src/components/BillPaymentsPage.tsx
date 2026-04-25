@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useOfflineQueue } from '../hooks/useOfflineQueue';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { User } from '../App';
 import { 
-  ArrowLeft, Zap, Droplet, Phone, Building2, GraduationCap, 
+  ArrowLeft, Zap, Droplet, Phone, Building2, GraduationCap,
   Tv, ChevronRight, Check, CreditCard, Shield, AlertCircle,
   Search, Star, Clock, Wallet, Smartphone, History, Plus,
-  Calendar, Bell, Save, X, Info, Receipt, Download, LucideIcon
+  Calendar, Bell, Save, X, Info, Receipt, Download, LucideIcon, RefreshCw
 } from 'lucide-react';
 import { projectId } from '../utils/supabase/info';
 
@@ -15,6 +16,7 @@ interface BillPaymentsPageProps {
   user: User;
   accessToken: string;
   onBack: () => void;
+  onNavigate?: (page: 'recurringpayments') => void;
 }
 
 type BillCategory = 'electricity' | 'water' | 'phone' | 'government' | 'education' | 'tv';
@@ -58,7 +60,8 @@ interface ServiceProvider {
   }[];
 }
 
-export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPageProps) {
+export function BillPaymentsPage({ user, accessToken, onBack, onNavigate }: BillPaymentsPageProps) {
+  const { isOnline, enqueue } = useOfflineQueue();
   const [activeView, setActiveView] = useState<'home' | 'category' | 'provider' | 'payment' | 'confirm' | 'success'>('home');
   const [selectedCategory, setSelectedCategory] = useState<BillCategory | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<ServiceProvider | null>(null);
@@ -786,40 +789,39 @@ export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPage
   };
 
   const handlePaymentSubmit = async () => {
+    const payload = {
+      provider: selectedProvider?.id,
+      formData,
+      amount: parseInt(amount),
+      paymentMethod,
+      pin,
+      saveAsFavorite,
+      nickname: saveAsFavorite ? nickname : undefined,
+      schedulePayment,
+    };
+    const endpoint = `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/bills/pay`;
+
+    if (!isOnline) {
+      await enqueue({ type: 'bill', payload, endpoint, accessToken });
+      return;
+    }
+
     setProcessing(true);
     try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/bills/pay`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            provider: selectedProvider?.id,
-            formData,
-            amount: parseInt(amount),
-            paymentMethod,
-            pin,
-            saveAsFavorite,
-            nickname: saveAsFavorite ? nickname : undefined,
-            schedulePayment
-          })
-        }
-      );
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
       if (response.ok) {
         setActiveView('success');
-        if (paymentMethod === 'gopay') {
-          fetchBalance();
-        }
+        if (paymentMethod === 'gopay') fetchBalance();
       } else {
-        toast.error('Payment failed. Please try again.');
+        toast.error('Malipo yameshindwa. Jaribu tena.');
       }
-    } catch (error) {
-      console.error('Error processing payment:', error);
-      toast.error('Payment failed. Please try again.');
+    } catch {
+      await enqueue({ type: 'bill', payload, endpoint, accessToken });
     } finally {
       setProcessing(false);
     }
@@ -885,7 +887,17 @@ export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPage
               <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full">
                 <ArrowLeft className="size-6 text-gray-900" />
               </button>
-              <h1 className="text-xl font-bold text-gray-900">Lipa Bili</h1>
+              <h1 className="text-xl font-bold text-gray-900 flex-1">Lipa Bili</h1>
+              {onNavigate && (
+                <button
+                  onClick={() => onNavigate('recurringpayments')}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
+                  style={{ background: 'rgba(22,163,74,0.1)', color: '#16a34a', border: '1px solid rgba(22,163,74,0.2)' }}
+                >
+                  <RefreshCw className="size-3.5" />
+                  Mara kwa Mara
+                </button>
+              )}
             </div>
 
             {/* Search */}

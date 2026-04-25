@@ -100,6 +100,7 @@ import {
   AzamTVLogo,
   StarTimesTVLogo
 } from './PaymentLogos';
+import { KYCUpgradeBanner } from './KYCUpgradeBanner';
 
 interface DashboardProps {
   user: User;
@@ -129,7 +130,8 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [notificationCount, setNotificationCount] = useState(3);
-  const [language, setLanguage] = useState<'sw' | 'en'>('sw'); // Language toggle
+  const [language, setLanguage] = useState<'sw' | 'en'>('sw');
+  const [showKYCBanner, setShowKYCBanner] = useState(true);
 
   useEffect(() => {
     fetchWalletData();
@@ -365,6 +367,19 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
               </div>
             </div>
           </div>
+
+          {/* KYC Upgrade Banner */}
+          {showKYCBanner && (
+            <div className="px-5 pt-4">
+              <KYCUpgradeBanner
+                accessToken={accessToken}
+                currentLevel={1}
+                trigger="proactive"
+                onDismiss={() => setShowKYCBanner(false)}
+                onUpgraded={() => setShowKYCBanner(false)}
+              />
+            </div>
+          )}
 
           {/* Main Content */}
           <div className="px-5 py-5 space-y-6">

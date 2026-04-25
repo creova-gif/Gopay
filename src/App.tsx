@@ -62,6 +62,7 @@ import { MPesaPage } from './components/MPesaPage';
 import { InvestorDemoMode } from './components/InvestorDemoMode';
 import { GOrewardsCashback } from './components/GOrewardsCashback';
 import { SupportChat } from './components/SupportChat';
+import { RecurringPaymentsPage } from './components/RecurringPaymentsPage';
 import { supabase } from './utils/supabase/client';
 import { projectId } from './utils/supabase/info';
 
@@ -88,7 +89,7 @@ type Page =
   | 'smartshoppingmarketplace' | 'aismartshoppingassistant' | 'deliveryriderdashboard'
   | 'aiassistant' | 'emergencysos' | 'digitaladdress' | 'smebusinesssuite'
   | 'offlineqrpayment' | 'tourism' | 'promos' | 'membership'
-  | 'mpesa' | 'cashbackrewards' | 'demo';
+  | 'mpesa' | 'cashbackrewards' | 'demo' | 'recurringpayments';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('auth');
@@ -177,10 +178,32 @@ export default function App() {
     }
   };
 
+  const registerPushNotifications = async (token: string) => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') return;
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjZJHOdKFaFV7tIatZ5z7MWPNQ2cQ',
+      });
+      await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/integrations/push/register`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ subscription: sub }),
+        }
+      );
+    } catch { /* silently fail */ }
+  };
+
   const handleAuthSuccess = async (token: string) => {
     setAccessToken(token);
     await fetchUserProfile(token);
     setCurrentPage('dashboard');
+    registerPushNotifications(token);
   };
 
   const handleLogout = async () => {
@@ -238,7 +261,7 @@ export default function App() {
           <PaymentsPage user={user} accessToken={accessToken} onBack={goHome} />
         )}
         {currentPage === 'billpayments' && (
-          <BillPaymentsPage user={user} accessToken={accessToken} onBack={goHome} />
+          <BillPaymentsPage user={user} accessToken={accessToken} onBack={goHome} onNavigate={navigate} />
         )}
         {currentPage === 'merchant' && (
           <MerchantPage user={user} accessToken={accessToken} onBack={goHome} />
@@ -400,6 +423,9 @@ export default function App() {
         )}
         {currentPage === 'demo' && (
           <InvestorDemoMode onEnterApp={goHome} />
+        )}
+        {currentPage === 'recurringpayments' && (
+          <RecurringPaymentsPage user={user} accessToken={accessToken} onBack={goHome} />
         )}
         <SupportChat forceOpen={supportOpen} />
         <InstallPrompt />

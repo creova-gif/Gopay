@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useLanguage } from '../hooks/useLanguage';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
@@ -37,7 +38,8 @@ interface TrustedContact {
 
 export function SettingsPage({ user, accessToken, onBack, onUpdateUser }: SettingsPageProps) {
   const [currentView, setCurrentView] = useState<SettingsView>('main');
-  
+  const { language, toggleLanguage } = useLanguage();
+
   // Profile states
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email || '');
@@ -375,6 +377,24 @@ export function SettingsPage({ user, accessToken, onBack, onUpdateUser }: Settin
           <div>
             <h2 className="text-sm font-bold text-gray-500 uppercase mb-3">Preferences</h2>
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              {/* Language Toggle */}
+              <button
+                onClick={toggleLanguage}
+                className="w-full p-4 flex items-center gap-4 hover:bg-gray-50 transition-all border-b border-gray-100"
+              >
+                <div className="bg-teal-100 p-3 rounded-xl">
+                  <Globe className="size-6 text-teal-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-semibold">Lugha / Language</p>
+                  <p className="text-sm text-gray-500">{language === 'sw' ? 'Kiswahili (Swahili)' : 'English'}</p>
+                </div>
+                <div className="px-3 py-1 rounded-full text-xs font-bold"
+                  style={{ background: language === 'sw' ? '#14532d' : '#1e3a5f', color: '#fff' }}>
+                  {language === 'sw' ? 'SW' : 'EN'}
+                </div>
+              </button>
+
               <button
                 onClick={() => setCurrentView('addresses')}
                 className="w-full p-4 flex items-center gap-4 hover:bg-gray-50 transition-all border-b border-gray-100"
