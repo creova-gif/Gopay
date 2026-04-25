@@ -350,7 +350,7 @@ export default function App() {
           <QuickPayFeatures user={user} accessToken={accessToken} onBack={goHome} />
         )}
         {currentPage === 'serviceshub' && (
-          <ServicesHub user={user} accessToken={accessToken} onBack={goHome} />
+          <ServicesHub user={user} accessToken={accessToken} onBack={goHome} onNavigate={setCurrentPage} />
         )}
         {currentPage === 'international' && (
           <InternationalPage user={user} accessToken={accessToken} onBack={goHome} />

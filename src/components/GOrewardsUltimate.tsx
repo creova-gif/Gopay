@@ -379,7 +379,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
   const progressToNextTier = nextTierData ? (points / nextTierData.nextTier!) * 100 : 100;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen pb-20" style={{ background: '#080d08' }}>
       {/* Header */}
       <div className={`bg-gradient-to-br ${currentTierData.color} px-5 pt-8 pb-6 relative overflow-hidden`}>
         <div className="absolute inset-0 opacity-10">
@@ -459,10 +459,10 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
       {/* Surprise Reward Modal */}
       {showSurprise && surpriseRewards.length > 0 && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-5">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center animate-in fade-in zoom-in">
+          <div className="rounded-3xl p-8 max-w-sm w-full text-center animate-in fade-in zoom-in" style={{ background: '#111a11', border: '1px solid rgba(74,222,128,0.2)' }}>
             <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-2xl mb-2">Surprise Reward!</h2>
-            <p className="text-gray-600 mb-6">You've earned a random drop!</p>
+            <h2 className="text-2xl mb-2 text-white">Tuzo ya Mshangao!</h2>
+            <p className="mb-6" style={{ color: 'rgba(255,255,255,0.5)' }}>Umepata tuzo ya nasibu!</p>
             <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-6 mb-6">
               <div className="text-4xl mb-2">{surpriseRewards[0].icon}</div>
               <p className="text-white text-xl">{surpriseRewards[0].value}</p>
@@ -485,7 +485,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
             className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
               activeTab === 'home'
                 ? 'bg-green-600 text-white'
-                : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300'
+                : 'bg-white/06 border border-white/10 text-white/50'
             }`}
           >
             <span className="flex items-center gap-2">
@@ -498,7 +498,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
             className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
               activeTab === 'earn'
                 ? 'bg-green-600 text-white'
-                : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300'
+                : 'bg-white/06 border border-white/10 text-white/50'
             }`}
           >
             <span className="flex items-center gap-2">
@@ -511,7 +511,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
             className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
               activeTab === 'marketplace'
                 ? 'bg-green-600 text-white'
-                : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300'
+                : 'bg-white/06 border border-white/10 text-white/50'
             }`}
           >
             <span className="flex items-center gap-2">
@@ -524,7 +524,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
             className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
               activeTab === 'cashback'
                 ? 'bg-green-600 text-white'
-                : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300'
+                : 'bg-white/06 border border-white/10 text-white/50'
             }`}
           >
             <span className="flex items-center gap-2">
@@ -537,7 +537,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
             className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
               activeTab === 'family'
                 ? 'bg-green-600 text-white'
-                : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300'
+                : 'bg-white/06 border border-white/10 text-white/50'
             }`}
           >
             <span className="flex items-center gap-2">
@@ -550,7 +550,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
             className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
               activeTab === 'achievements'
                 ? 'bg-green-600 text-white'
-                : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300'
+                : 'bg-white/06 border border-white/10 text-white/50'
             }`}
           >
             <span className="flex items-center gap-2">
@@ -563,7 +563,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
             className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
               activeTab === 'ai'
                 ? 'bg-green-600 text-white'
-                : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300'
+                : 'bg-white/06 border border-white/10 text-white/50'
             }`}
           >
             <span className="flex items-center gap-2">
@@ -593,7 +593,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
                         <div className="flex-1">
                           <p className="font-medium mb-1">{insight.title}</p>
                           <p className="text-sm text-white/80 mb-3">{insight.description}</p>
-                          <button className="bg-white text-gray-900 px-4 py-2 rounded-full text-sm hover:bg-gray-100">
+                          <button className="bg-white/15 text-white px-4 py-2 rounded-full text-sm hover:bg-white/20">
                             {insight.action}
                           </button>
                         </div>
@@ -645,21 +645,21 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
                     className={`rounded-2xl p-4 border-2 transition-all ${
                       tierItem.current 
                         ? `bg-gradient-to-r ${tierItem.color} text-white border-transparent` 
-                        : 'bg-white border-gray-200 text-gray-900'
+                        : 'bg-white border-white/15 text-white'
                     }`}
                   >
                     <div className="flex items-center gap-3 mb-3">
                       <div className="text-3xl">{tierItem.icon}</div>
                       <div className="flex-1">
-                        <p className={`font-medium mb-1 ${tierItem.current ? 'text-white' : 'text-gray-900'}`}>
+                        <p className={`font-medium mb-1 ${tierItem.current ? 'text-white' : 'text-white'}`}>
                           {tierItem.name}
                         </p>
-                        <p className={`text-sm ${tierItem.current ? 'text-white/80' : 'text-gray-600'}`}>
+                        <p className={`text-sm ${tierItem.current ? 'text-white/80' : 'text-white/60'}`}>
                           {tierItem.requirement}
                         </p>
                       </div>
                       <div className={`px-3 py-1 rounded-full text-sm ${
-                        tierItem.current ? 'bg-white/20' : 'bg-gray-100'
+                        tierItem.current ? 'bg-white/20' : 'bg-white/10'
                       }`}>
                         {tierItem.multiplier}
                       </div>
@@ -668,7 +668,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
                       {tierItem.benefits.map((benefit, idx) => (
                         <div key={idx} className="flex items-center gap-2">
                           <Check className={`size-4 ${tierItem.current ? 'text-white' : 'text-green-600'}`} />
-                          <p className={`text-sm ${tierItem.current ? 'text-white/90' : 'text-gray-700'}`}>
+                          <p className={`text-sm ${tierItem.current ? 'text-white/90' : 'text-white/80'}`}>
                             {benefit}
                           </p>
                         </div>
@@ -722,9 +722,10 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
                   {category.tasks.map(task => (
                     <div 
                       key={task.id} 
-                      className={`bg-white rounded-2xl p-4 shadow-sm border ${
-                        task.completed ? 'border-green-200' : 'border-gray-100'
+                      className={`rounded-2xl p-4 border ${
+                        task.completed ? 'border-green-500/30' : 'border-white/10'
                       }`}
+                      style={{ background: 'rgba(255,255,255,0.05)' }}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`text-3xl ${task.bonus ? 'animate-pulse' : ''}`}>
@@ -733,10 +734,10 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
                         <div className="flex-1">
                           <p className="font-medium mb-1">{task.title}</p>
                           <div className="flex items-center gap-2">
-                            <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs">
+                            <span className="bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full text-xs">
                               +{task.points} points
                             </span>
-                            <span className="text-xs text-gray-500">{task.frequency}</span>
+                            <span className="text-xs text-white/40">{task.frequency}</span>
                           </div>
                         </div>
                         {task.completed ? (
@@ -764,7 +765,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
                   <p className="text-sm text-white/80">Watch short ads to earn bonus points</p>
                 </div>
               </div>
-              <button className="w-full bg-white text-purple-600 py-3 rounded-full hover:bg-gray-100">
+              <button className="w-full bg-white/10 text-white py-3 rounded-full hover:bg-white/15">
                 Watch Ad (+50 points)
               </button>
             </div>
@@ -783,25 +784,25 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
                       key={item.id} 
                       className={`rounded-2xl p-4 ${
                         item.available 
-                          ? 'bg-white border border-gray-200' 
-                          : 'bg-gray-100 border border-gray-300 opacity-60'
+                          ? 'bg-white/10 border border-white/20' 
+                          : 'bg-white/05 border border-white/10 opacity-60'
                       }`}
                     >
                       <div className="text-3xl mb-3 text-center">{item.icon}</div>
                       <p className="text-sm mb-2 text-center">{item.name}</p>
-                      <p className="text-xs text-gray-500 mb-3 text-center">{item.value}</p>
+                      <p className="text-xs text-white/40 mb-3 text-center">{item.value}</p>
                       {item.available ? (
                         points >= item.points ? (
                           <button className="w-full bg-green-600 text-white py-2 rounded-full text-sm hover:bg-green-700">
                             Redeem ({item.points})
                           </button>
                         ) : (
-                          <button className="w-full bg-gray-300 text-gray-600 py-2 rounded-full text-sm cursor-not-allowed">
+                          <button className="w-full bg-white/10 text-white/40 py-2 rounded-full text-sm cursor-not-allowed">
                             {item.points - points} more
                           </button>
                         )
                       ) : (
-                        <button className="w-full bg-gray-300 text-gray-500 py-2 rounded-full text-sm cursor-not-allowed">
+                        <button className="w-full bg-white/10 text-white/30 py-2 rounded-full text-sm cursor-not-allowed">
                           Out of Stock
                         </button>
                       )}
@@ -820,7 +821,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
               <h3 className="text-sm text-green-100 mb-2">Total Cashback Balance</h3>
               <p className="text-4xl mb-4">{formatCurrency(cashbackBalance)}</p>
               <div className="grid grid-cols-2 gap-3">
-                <button className="bg-white text-green-600 py-3 rounded-full hover:bg-gray-100">
+                <button className="bg-green-600 text-white py-3 rounded-full hover:bg-green-700">
                   Withdraw
                 </button>
                 <button className="bg-white/20 backdrop-blur-sm text-white py-3 rounded-full hover:bg-white/30">
@@ -830,34 +831,34 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
             </div>
 
             {/* Cashback Tiers */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "20px" }} className="">
               <h3 className="text-lg mb-4">Cashback Rates by Tier</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">🌱</span>
-                    <span className="text-gray-700">Bronze</span>
+                    <span className="text-white/80">Bronze</span>
                   </div>
-                  <span className="bg-gray-100 px-3 py-1 rounded-full text-sm">0.5%</span>
+                  <span className="bg-white/10 px-3 py-1 rounded-full text-sm">0.5%</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">💎</span>
-                    <span className="text-gray-700">Silver</span>
+                    <span className="text-white/80">Silver</span>
                   </div>
-                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">1%</span>
+                  <span className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm">1%</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">🔥</span>
-                    <span className="text-gray-700">Gold</span>
+                    <span className="text-white/80">Gold</span>
                   </div>
-                  <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">2%</span>
+                  <span className="bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-full text-sm">2%</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">👑</span>
-                    <span className="text-gray-700">Platinum</span>
+                    <span className="text-white/80">Platinum</span>
                   </div>
                   <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm">5%</span>
                 </div>
@@ -868,26 +869,26 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
             <div>
               <h3 className="text-lg mb-3">Recent Cashback</h3>
               <div className="space-y-3">
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "16px" }} className="">
                   <div className="flex items-center justify-between mb-2">
                     <p className="font-medium">Paid at The Slipway</p>
                     <p className="text-green-600">+TZS 500</p>
                   </div>
-                  <p className="text-sm text-gray-500">2% cashback • 2 hours ago</p>
+                  <p className="text-sm text-white/40">2% cashback • 2 hours ago</p>
                 </div>
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "16px" }} className="">
                   <div className="flex items-center justify-between mb-2">
                     <p className="font-medium">Electricity Bill</p>
                     <p className="text-green-600">+TZS 200</p>
                   </div>
-                  <p className="text-sm text-gray-500">1% cashback • Yesterday</p>
+                  <p className="text-sm text-white/40">1% cashback • Yesterday</p>
                 </div>
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "16px" }} className="">
                   <div className="flex items-center justify-between mb-2">
                     <p className="font-medium">Local Duka Purchase</p>
                     <p className="text-green-600">+TZS 350</p>
                   </div>
-                  <p className="text-sm text-gray-500">2× bonus • 3 days ago</p>
+                  <p className="text-sm text-white/40">2× bonus • 3 days ago</p>
                 </div>
               </div>
             </div>
@@ -916,21 +917,21 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
             </div>
 
             {familyPools.map(pool => (
-              <div key={pool.id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <div key={pool.id} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "20px" }} className="">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="text-3xl">{pool.icon}</div>
                   <div className="flex-1">
                     <p className="font-medium mb-1">{pool.name}</p>
-                    <p className="text-sm text-gray-500">{pool.members} members</p>
+                    <p className="text-sm text-white/40">{pool.members} members</p>
                   </div>
                 </div>
 
                 <div className="mb-4">
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-gray-600">Goal: {pool.goal}</span>
+                    <span className="text-white/60">Goal: {pool.goal}</span>
                     <span className="font-medium">{pool.totalPoints} / {pool.goalPoints}</span>
                   </div>
-                  <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.15)' }}>
                     <div 
                       className="h-full bg-gradient-to-r from-green-500 to-teal-600 rounded-full"
                       style={{ width: `${(pool.totalPoints / pool.goalPoints) * 100}%` }}
@@ -939,8 +940,8 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 rounded-xl p-3">
-                    <p className="text-xs text-gray-500 mb-1">Your Share</p>
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                    <p className="text-xs text-white/40 mb-1">Your Share</p>
                     <p className="text-lg">{pool.yourContribution}</p>
                   </div>
                   <button className="bg-green-600 text-white rounded-xl hover:bg-green-700">
@@ -950,7 +951,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
               </div>
             ))}
 
-            <button className="w-full bg-white border-2 border-dashed border-gray-300 rounded-2xl p-4 text-gray-600 hover:border-green-500 hover:text-green-600">
+            <button className="w-full bg-white border-2 border-dashed border-white/20 rounded-2xl p-4 text-white/60 hover:border-green-500 hover:text-green-600">
               + Create New Pool
             </button>
           </>
@@ -971,14 +972,14 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
                   className={`rounded-2xl p-4 text-center ${
                     achievement.earned 
                       ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white' 
-                      : 'bg-gray-100 border border-gray-300'
+                      : 'bg-white/06 border border-white/10'
                   }`}
                 >
                   <div className="text-4xl mb-2">{achievement.icon}</div>
-                  <p className={`text-sm mb-2 ${achievement.earned ? 'text-white' : 'text-gray-900'}`}>
+                  <p className={`text-sm mb-2 ${achievement.earned ? 'text-white' : 'text-white'}`}>
                     {achievement.name}
                   </p>
-                  <p className={`text-xs ${achievement.earned ? 'text-white/80' : 'text-gray-500'}`}>
+                  <p className={`text-xs ${achievement.earned ? 'text-white/80' : 'text-white/40'}`}>
                     {achievement.description}
                   </p>
                   {achievement.earned && (
@@ -1002,19 +1003,19 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between bg-white rounded-lg p-3">
+                <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: "12px", padding: "12px" }} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">🏪</span>
                     <span className="text-sm">Mlimani City Mall</span>
                   </div>
-                  <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">+50 pts</span>
+                  <span className="bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full text-xs">+50 pts</span>
                 </div>
-                <div className="flex items-center justify-between bg-white rounded-lg p-3">
+                <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: "12px", padding: "12px" }} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">🍽️</span>
                     <span className="text-sm">The Slipway</span>
                   </div>
-                  <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">+75 pts</span>
+                  <span className="bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full text-xs">+75 pts</span>
                 </div>
               </div>
             </div>
@@ -1030,12 +1031,12 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
             </div>
 
             {/* Personalized Suggestions */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "20px" }} className="">
               <h3 className="text-lg mb-4">Personalized for You</h3>
               <div className="space-y-3">
                 <div className="bg-green-50 rounded-xl p-4 border border-green-200">
                   <p className="text-sm text-green-900 mb-2">🎯 Best Deal Today</p>
-                  <p className="text-gray-700">
+                  <p className="text-white/80">
                     Addis in Dar has 2× points until 8 PM. You love Ethiopian food - earn 100 points!
                   </p>
                   <button className="mt-3 bg-green-600 text-white px-4 py-2 rounded-full text-sm hover:bg-green-700">
@@ -1045,7 +1046,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
 
                 <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
                   <p className="text-sm text-blue-900 mb-2">💡 Smart Suggestion</p>
-                  <p className="text-gray-700">
+                  <p className="text-white/80">
                     You're close to Gold tier! Make 2 more payments this week to unlock 2× rewards permanently.
                   </p>
                   <button className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-full text-sm hover:bg-blue-700">
@@ -1055,7 +1056,7 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
 
                 <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
                   <p className="text-sm text-purple-900 mb-2">🔔 Auto-Apply Alert</p>
-                  <p className="text-gray-700">
+                  <p className="text-white/80">
                     AI found a 15% discount at your next checkout. We'll apply it automatically!
                   </p>
                   <button className="mt-3 bg-purple-600 text-white px-4 py-2 rounded-full text-sm hover:bg-purple-700">
@@ -1066,20 +1067,20 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
             </div>
 
             {/* Predictive Insights */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "20px" }} className="">
               <h3 className="text-lg mb-4">What You'll Love</h3>
-              <p className="text-sm text-gray-600 mb-4">Based on your transaction history:</p>
+              <p className="text-sm text-white/60 mb-4">Based on your transaction history:</p>
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.06)' }}>
                   <span className="text-2xl">🍕</span>
                   <div className="flex-1">
                     <p className="text-sm">You order pizza on Fridays</p>
                   </div>
-                  <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
+                  <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full">
                     +2× points
                   </span>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.06)' }}>
                   <span className="text-2xl">⚡</span>
                   <div className="flex-1">
                     <p className="text-sm">Electricity bill due in 5 days</p>
@@ -1092,9 +1093,9 @@ export function GOrewardsUltimate({ user, accessToken, onBack }: GOrewardsUltima
             </div>
 
             {/* Partner Business Rewards */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+            <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "20px" }} className="">
               <h3 className="text-lg mb-4">Partner Multipliers</h3>
-              <p className="text-sm text-gray-600 mb-4">Local businesses offering extra rewards:</p>
+              <p className="text-sm text-white/60 mb-4">Local businesses offering extra rewards:</p>
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-orange-50 rounded-xl border border-orange-200">
                   <div className="flex items-center gap-2">

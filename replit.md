@@ -157,3 +157,35 @@ npm i          # Install dependencies
 npm run dev    # Start Vite dev server
 npm run build  # Production build
 ```
+
+---
+
+## UI/UX Design System
+
+### Global Dark Theme
+
+All pages use the app-wide dark theme:
+- **Background**: `#080d08` (deep forest black)
+- **Card surfaces**: `rgba(255,255,255,0.04–0.08)` with `1px solid rgba(255,255,255,0.06–0.1)` borders
+- **Sticky headers**: `rgba(8,13,8,0.95)` + `backdropFilter: blur(12px)` + bottom border `rgba(255,255,255,0.06)`
+- **Primary accent**: `#16a34a` / `#4ade80` (green)
+- **Text**: white hierarchy — `#fff`, `rgba(255,255,255,0.7)`, `rgba(255,255,255,0.4)`
+
+### Redesigned Pages (UI/UX Audit Session)
+
+| Page | File | Changes |
+|---|---|---|
+| Quick Pay | `QuickPayFeatures.tsx` | Premium virtual card, animated NFC tap rings, SVG QR pattern, 10-min countdown, Swahili labels |
+| Government Services | `GovernmentServicesPage.tsx` | 6 services with actionable flows, NIDA modal, traffic fines, Licenses tab |
+| Budget Tracker | `BudgetTracker.tsx` | SVG spending ring chart, AI tip panel, color-coded thresholds, overview/list toggle |
+| GOrewards | `GOrewardsUltimate.tsx` | Dark theme applied throughout: background, tab pills, cards, modals |
+| Financial Insights | `InsightsPage.tsx` | Full dark redesign, bar/line chart toggle, Swahili labels, custom chart tooltip, AI tip |
+| Micro Loans | `MicroLoansPage.tsx` | Dark theme, credit score ring, loan categories, Swahili-first |
+
+### Swahili-First UI Labels
+
+Key Swahili terms used across pages:
+- Wallet: Pochi ya Dijitali | Pay: Lipa | Send: Tuma | Receive: Pokea
+- Budget: Bajeti | Savings: Akiba | Loans: Mikopo | Points: Pointi
+- Government: Huduma za Serikali | Insights: Uchunguzi wa Fedha
+- Back: (arrow icon only) | Loading: Inapakia…
