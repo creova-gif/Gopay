@@ -82,6 +82,7 @@ import {
   PlusIcon
 } from './CustomIcons';
 import { projectId } from '../utils/supabase/info';
+import { SupportChat } from './SupportChat';
 import { 
   MPesaLogo, 
   TigoPesaLogo, 
@@ -948,19 +949,74 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
                     <Users className="size-5" style={{ color: '#16a34a' }} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm mb-0.5" style={{ color: '#fff' }}>Refer Friends</p>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>When they sign up</p>
+                    <p className="text-sm mb-0.5" style={{ color: '#fff' }}>Alika Marafiki</p>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>Walipousajili</p>
                   </div>
                   <p className="text-xl font-semibold" style={{ color: '#16a34a' }}>+500</p>
                 </div>
-                <button className="w-full py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-80" style={{
+                <button
+                  onClick={() => {
+                    const code = `GOPAY-${user.name.split(' ')[0].toUpperCase().slice(0,6)}`;
+                    if (navigator.share) {
+                      navigator.share({ title: 'Jiunge na goPay', text: `Tumia nambari yangu ${code} upate TZS 1,000 bure ukifungua akaunti!`, url: 'https://gopay.app' });
+                    } else {
+                      navigator.clipboard.writeText(code);
+                    }
+                  }}
+                  className="w-full py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-80" style={{
                   background: 'rgba(22,163,74,0.15)',
                   color: '#16a34a'
                 }}>
-                  Share Referral Link
+                  Shiriki Kiungo
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* Referral Program */}
+          <div className="rounded-2xl p-5" style={{
+            background: 'linear-gradient(135deg, rgba(22,163,74,0.1) 0%, rgba(22,163,74,0.03) 100%)',
+            border: '1px solid rgba(22,163,74,0.2)'
+          }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2.5 rounded-xl" style={{ background: 'rgba(22,163,74,0.2)' }}>
+                <Gift className="size-5" style={{ color: '#4ade80' }} />
+              </div>
+              <div>
+                <p style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>Pata TZS 1,000 kwa kila rafiki</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Pesa halisi, si pointi</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {[
+                { label: 'Waliojisajili', value: '3' },
+                { label: 'Waliolipia', value: '2' },
+                { label: 'Umepata', value: '2K TZS' },
+              ].map(s => (
+                <div key={s.label} className="text-center py-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                  <p style={{ fontSize: '20px', fontWeight: 800, color: '#4ade80' }}>{s.value}</p>
+                  <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>{s.label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 py-3 px-4 rounded-xl mb-3" style={{ background: 'rgba(255,255,255,0.05)' }}>
+              <p style={{ fontSize: '13px', fontWeight: 700, color: '#fff', flex: 1, letterSpacing: '1px' }}>
+                GOPAY-{user.name.split(' ')[0].toUpperCase().slice(0,6)}
+              </p>
+              <button
+                onClick={() => {
+                  const code = `GOPAY-${user.name.split(' ')[0].toUpperCase().slice(0,6)}`;
+                  navigator.clipboard.writeText(code);
+                }}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all active:scale-95"
+                style={{ background: 'rgba(22,163,74,0.2)', color: '#4ade80' }}
+              >
+                Nakili
+              </button>
+            </div>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
+              Rafiki anapaswa kufanya malipo yake ya kwanza ndani ya siku 30
+            </p>
           </div>
 
           {/* Points History */}
@@ -1026,7 +1082,7 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
           <h1 className="text-3xl mb-6 font-black" style={{ color: '#fff' }}>Finance</h1>
 
           {/* Financial Overview */}
-          <div className="rounded-3xl p-6 mb-6 relative overflow-hidden" style={{
+          <div className="rounded-3xl p-6 mb-5 relative overflow-hidden" style={{
             background: 'linear-gradient(135deg, rgba(22,163,74,0.12) 0%, rgba(22,163,74,0.04) 100%)',
             border: '1px solid rgba(22,163,74,0.15)'
           }}>
@@ -1034,12 +1090,46 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
               background: 'radial-gradient(circle, rgba(22,163,74,0.2) 0%, transparent 70%)'
             }} />
             <div className="relative z-10">
-              <p className="text-sm mb-2 font-semibold" style={{ color: 'rgba(255,255,255,0.5)' }}>Total Savings</p>
-              <p className="text-4xl mb-4 font-black" style={{ color: '#fff' }}>{formatCurrency(1250000)}</p>
+              <p className="text-sm mb-2 font-semibold" style={{ color: 'rgba(255,255,255,0.5)' }}>Akiba ya Jumla</p>
+              <p className="text-4xl mb-4 font-black" style={{ color: '#fff' }}>{formatCurrency(balance.balance)}</p>
               <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: '#16a34a' }}>
                 <TrendingUp className="size-4" />
                 <span>+12.5% this month</span>
               </div>
+            </div>
+          </div>
+
+          {/* Spending Insights */}
+          <div className="rounded-2xl p-5 mb-5" style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.07)'
+          }}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>Matumizi ya Mwezi Huu</h3>
+              <button onClick={() => onNavigate('insights')}
+                style={{ fontSize: '12px', color: '#4ade80', fontWeight: 600 }}>Zaidi</button>
+            </div>
+            {/* Spending category bars */}
+            {[
+              { label: 'Bili', pct: 38, amount: 85000, color: '#16a34a' },
+              { label: 'Chakula', pct: 27, amount: 62000, color: '#22c55e' },
+              { label: 'Usafiri', pct: 18, amount: 41000, color: '#4ade80' },
+              { label: 'Vitu vingine', pct: 17, amount: 39000, color: 'rgba(74,222,128,0.5)' },
+            ].map(cat => (
+              <div key={cat.label} className="mb-3">
+                <div className="flex justify-between mb-1">
+                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', fontWeight: 500 }}>{cat.label}</span>
+                  <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>{formatCurrency(cat.amount)}</span>
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  <div className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${cat.pct}%`, background: cat.color }} />
+                </div>
+              </div>
+            ))}
+            <div className="flex justify-between pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>Jumla ya matumizi</span>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{formatCurrency(227000)}</span>
             </div>
           </div>
 
@@ -2494,6 +2584,9 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
           </div>
         </div>
       </nav>
+
+      {/* Support Chat - visible on home tab */}
+      {currentTab === 'home' && <SupportChat />}
     </div>
   );
 }

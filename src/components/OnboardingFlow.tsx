@@ -94,7 +94,7 @@ export function OnboardingFlow({ onComplete, onSkipToDemo }: OnboardingFlowProps
       icon: Award,
       title: 'Earn Rewards',
       subtitle: 'Every Transaction',
-      description: '15% commission + exclusive cashback on every payment',
+      description: '15% cashback rewards on every payment',
       emoji: '🎁',
       features: [
         { icon: Award, text: '4-tier membership', color: 'text-yellow-400' },

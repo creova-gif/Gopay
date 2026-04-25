@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { User } from '../App';
-import { 
-  ArrowLeft, Send, Users, CreditCard, Check, Shield, Clock, 
-  User as UserIcon, Phone, Mail, Contact, Heart, Gift, Banknote,
-  ArrowRight, Search, Star, History
+import {
+  ArrowLeft, Send, CreditCard, Check, Shield, Users,
+  Star, Copy, Share2, RotateCcw
 } from 'lucide-react';
 import { projectId } from '../utils/supabase/info';
+import { PinPad } from './ui/PinPad';
 
 interface SendMoneyPageProps {
   user: User;
@@ -18,71 +16,79 @@ interface SendMoneyPageProps {
 }
 
 type TransferMethod = 'gopay' | 'mobile' | 'bank';
+type Step = 'send' | 'confirm' | 'success';
+
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat('en-TZ', { style: 'currency', currency: 'TZS', minimumFractionDigits: 0 }).format(amount);
+
+const QUICK_AMOUNTS = [5000, 10000, 20000, 50000, 100000, 200000];
+
+const RECENT_CONTACTS = [
+  { id: '1', name: 'Sarah Mwamba', phone: '+255712345001', initials: 'SM', gopayUser: true },
+  { id: '2', name: 'John Kamau', phone: '+255713456002', initials: 'JK', gopayUser: true },
+  { id: '3', name: 'Grace Ndege', phone: '+255714567003', initials: 'GN', gopayUser: false },
+  { id: '4', name: 'David Moshi', phone: '+255715678004', initials: 'DM', gopayUser: true },
+];
 
 export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps) {
+  const [step, setStep] = useState<Step>('send');
   const [transferMethod, setTransferMethod] = useState<TransferMethod>('gopay');
-  const [step, setStep] = useState<'select' | 'details' | 'confirm' | 'success'>('select');
-  const [transferType, setTransferType] = useState<'regular' | 'gift' | 'request'>('regular');
   const [recipient, setRecipient] = useState('');
+  const [recipientName, setRecipientName] = useState('');
   const [amount, setAmount] = useState('');
-  const [message, setMessage] = useState('');
+  const [note, setNote] = useState('');
   const [pin, setPin] = useState('');
-  const [transactionRef, setTransactionRef] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [shakePin, setShakePin] = useState(false);
   const [sending, setSending] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
+  const [optimisticBalance, setOptimisticBalance] = useState<number | null>(null);
+  const [transactionRef, setTransactionRef] = useState('');
 
   useEffect(() => {
     if (!accessToken) return;
     fetch(
       `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/balance`,
-      { headers: { 'Authorization': `Bearer ${accessToken}` } }
+      { headers: { Authorization: `Bearer ${accessToken}` } }
     )
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then(data => setBalance(data.balance ?? null))
+      .then(data => { setBalance(data.balance ?? null); setOptimisticBalance(data.balance ?? null); })
       .catch(() => {});
   }, [accessToken]);
 
-  // Recent contacts
-  const recentContacts = [
-    { id: '1', name: 'Sarah Mwamba', phone: '+255 712 345 001', avatar: '👩', lastAmount: 50000, gopayUser: true },
-    { id: '2', name: 'John Kamau', phone: '+255 713 456 002', avatar: '👨', lastAmount: 25000, gopayUser: true },
-    { id: '3', name: 'Grace Ndege', phone: '+255 714 567 003', avatar: '👩', lastAmount: 100000, gopayUser: false },
-    { id: '4', name: 'David Moshi', phone: '+255 715 678 004', avatar: '👨', lastAmount: 15000, gopayUser: true },
-    { id: '5', name: 'Mary Kimani', phone: '+255 716 789 005', avatar: '👩', lastAmount: 75000, gopayUser: false },
-  ];
+  const numericAmount = parseFloat(amount) || 0;
+  const fee = transferMethod === 'gopay' ? 0 : transferMethod === 'mobile' ? 1000 : 2000;
+  const total = numericAmount + fee;
 
-  // Quick amounts
-  const quickAmounts = [5000, 10000, 20000, 50000, 100000, 200000];
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-TZ', {
-      style: 'currency',
-      currency: 'TZS',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const handleSelectContact = (contact: any) => {
+  const handleSelectContact = (contact: typeof RECENT_CONTACTS[0]) => {
     setRecipient(contact.phone);
-    setStep('details');
+    setRecipientName(contact.name);
   };
 
-  const handleProceedToConfirm = () => {
-    if (!recipient || !amount || parseFloat(amount) <= 0) {
-      toast.error('Please enter recipient and amount');
+  const handleProceed = () => {
+    if (!recipient.trim()) {
+      toast.error('Ingiza namba au chagua mpokeaji');
+      return;
+    }
+    if (numericAmount <= 0) {
+      toast.error('Ingiza kiasi cha kutuma');
+      return;
+    }
+    if (balance !== null && total > balance) {
+      toast.error('Salio halitosha');
       return;
     }
     setStep('confirm');
   };
 
-  const handleConfirmTransfer = async () => {
-    if (pin.length !== 4) {
-      toast.error('Please enter a valid 4-digit PIN');
-      return;
-    }
-
+  const handlePinComplete = async (enteredPin: string) => {
+    setPin(enteredPin);
+    setPinError('');
     setSending(true);
+
+    // Optimistic balance update
+    if (balance !== null) setOptimisticBalance(balance - total);
+
     try {
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/transfer/send`,
@@ -90,14 +96,14 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify({
             method: transferMethod,
-            recipient: recipient,
-            amount: parseFloat(amount),
-            message: message,
-            pin: pin,
+            recipient,
+            amount: numericAmount,
+            message: note,
+            pin: enteredPin,
           }),
         }
       );
@@ -106,471 +112,544 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
         const result = await response.json();
         setTransactionRef(result.reference || `TXN${Date.now()}`);
         setStep('success');
-        setPin('');
       } else {
-        const err = await response.json();
-        toast.error(err.error || 'Transfer failed. Please try again.');
+        const err = await response.json().catch(() => ({}));
+        const msg = err.error || 'Uhamisho umeshindwa. Jaribu tena.';
+        // Roll back optimistic update
+        if (balance !== null) setOptimisticBalance(balance);
+        setPinError(msg);
+        setShakePin(true);
       }
-    } catch (error) {
-      console.error('Error processing transfer:', error);
-      toast.error('Network error. Please check your connection and try again.');
+    } catch {
+      if (balance !== null) setOptimisticBalance(balance);
+      setPinError('Hitilafu ya mtandao. Jaribu tena.');
+      setShakePin(true);
     } finally {
       setSending(false);
     }
   };
 
-  const resetTransfer = () => {
-    setStep('select');
-    setRecipient('');
-    setAmount('');
-    setMessage('');
+  const handleReset = () => {
     setPin('');
-    setTransactionRef('');
+    setPinError('');
+    setShakePin(false);
   };
 
-  // Success screen
-  if (step === 'success') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-3xl p-8 shadow-2xl text-center">
-          <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="size-10 text-green-600" />
-          </div>
-          <h2 className="text-2xl mb-2">Money Sent!</h2>
-          <p className="text-gray-500 mb-6">Transfer completed successfully</p>
-          
-          <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-6 mb-6 text-white">
-            <div className="text-5xl mb-4">💸</div>
-            <div className="text-4xl mb-2">{formatCurrency(parseFloat(amount))}</div>
-            <p className="text-green-100 text-sm">Sent to {recipient}</p>
-          </div>
+  const resetAll = () => {
+    setStep('send');
+    setRecipient('');
+    setRecipientName('');
+    setAmount('');
+    setNote('');
+    setPin('');
+    setPinError('');
+    setTransactionRef('');
+    setTransferMethod('gopay');
+  };
 
-          <div className="bg-gray-50 rounded-2xl p-4 mb-6 text-left space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-500 text-sm">Reference</span>
-              <span className="font-mono text-green-600 text-sm">{transactionRef}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-500 text-sm">Method</span>
-              <span className="text-sm capitalize">{transferMethod === 'gopay' ? 'goPay Wallet' : transferMethod === 'mobile' ? 'Mobile Money' : 'Bank Transfer'}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-500 text-sm">Date & Time</span>
-              <span className="text-sm">{new Date().toLocaleString()}</span>
-            </div>
-            {message && (
-              <div className="pt-3 border-t border-gray-200">
-                <p className="text-gray-500 text-sm mb-1">Message</p>
-                <p className="text-sm">{message}</p>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-6 text-sm text-blue-900">
-            <Shield className="size-5 inline mr-2" />
-            Transaction is secured and encrypted
-          </div>
-
-          <Button
-            onClick={resetTransfer}
-            className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full mb-3"
-          >
-            Send More Money
-          </Button>
-          <Button
-            onClick={onBack}
-            variant="outline"
-            className="w-full h-12 rounded-full"
-          >
-            Back to Home
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Confirm screen
-  if (step === 'confirm') {
-    const transferAmount = parseFloat(amount);
-    const fee = transferMethod === 'gopay' ? 0 : transferMethod === 'mobile' ? 1000 : 2000;
-    const total = transferAmount + fee;
-
-    return (
-      <div className="min-h-screen bg-gray-50 pb-6">
-        <div className="bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 px-4 pt-6 pb-8 rounded-b-3xl shadow-xl">
-          <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={() => setStep('details')}
-              className="bg-white/20 p-3 rounded-full hover:bg-white/30 transition-all"
-            >
-              <ArrowLeft className="size-5 text-white" />
-            </button>
-            <h1 className="text-2xl text-white">Confirm Transfer</h1>
-          </div>
-        </div>
-
-        <div className="px-4 -mt-2 space-y-4">
-          {/* Amount Display */}
-          <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-8 text-white shadow-lg text-center">
-            <p className="text-green-100 text-sm mb-2">You're sending</p>
-            <p className="text-5xl mb-4">{formatCurrency(transferAmount)}</p>
-            <div className="bg-white/20 rounded-xl p-4">
-              <p className="text-sm mb-1">To</p>
-              <p className="text-lg">{recipient}</p>
-            </div>
-          </div>
-
-          {/* Transfer Details */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-base mb-4">Transfer Details</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                <span className="text-gray-600">Transfer Method</span>
-                <span className="capitalize">
-                  {transferMethod === 'gopay' ? 'goPay Wallet' : transferMethod === 'mobile' ? 'Mobile Money' : 'Bank Transfer'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                <span className="text-gray-600">Amount</span>
-                <span>{formatCurrency(transferAmount)}</span>
-              </div>
-              <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                <span className="text-gray-600">Transfer Fee</span>
-                <span className={fee === 0 ? 'text-green-600' : ''}>
-                  {fee === 0 ? 'FREE' : formatCurrency(fee)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-lg pt-2">
-                <span>Total</span>
-                <span className="text-green-600">{formatCurrency(total)}</span>
-              </div>
-            </div>
-          </div>
-
-          {message && (
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <h3 className="text-base mb-3">Message</h3>
-              <p className="text-gray-700 bg-gray-50 rounded-xl p-4">{message}</p>
-            </div>
-          )}
-
-          {/* Payment Method */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-base mb-4">Payment From</h3>
-            <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-5 text-white">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-green-100 text-sm">Source</span>
-                <CreditCard className="size-5" />
-              </div>
-              <p className="text-2xl mb-1">goPay Wallet</p>
-              <p className="text-green-100 text-sm">Balance: {balance !== null ? formatCurrency(balance) : '—'}</p>
-            </div>
-          </div>
-
-          {/* PIN Entry */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <Label htmlFor="transfer-pin" className="text-base mb-3 block">Enter PIN to confirm</Label>
-            <Input
-              id="transfer-pin"
-              type="password"
-              placeholder="••••"
-              maxLength={4}
-              value={pin}
-              onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-              className="text-center text-2xl tracking-widest h-16 rounded-xl"
-            />
-          </div>
-
-          {/* Security Notice */}
-          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-start gap-3">
-            <Shield className="size-5 text-green-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-green-900">
-              <p className="font-medium mb-1">Secure Transfer</p>
-              <p className="text-green-700">Your money will be transferred instantly with end-to-end encryption</p>
-            </div>
-          </div>
-
-          {/* Confirm Button */}
-          <Button
-            onClick={handleConfirmTransfer}
-            disabled={pin.length !== 4 || sending}
-            className="w-full h-14 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full text-lg disabled:opacity-50"
-          >
-            {sending ? 'Sending...' : `Send ${formatCurrency(total)}`}
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Details screen
-  if (step === 'details') {
-    return (
-      <div className="min-h-screen bg-gray-50 pb-6">
-        <div className="bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 px-4 pt-6 pb-8 rounded-b-3xl shadow-xl">
-          <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={() => setStep('select')}
-              className="bg-white/20 p-3 rounded-full hover:bg-white/30 transition-all"
-            >
-              <ArrowLeft className="size-5 text-white" />
-            </button>
-            <h1 className="text-2xl text-white">Transfer Details</h1>
-          </div>
-        </div>
-
-        <div className="px-4 -mt-2 space-y-4">
-          {/* Transfer Method */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-base mb-4">Transfer Method</h3>
-            <div className="space-y-3">
-              <button
-                onClick={() => setTransferMethod('gopay')}
-                className={`w-full p-4 rounded-xl border-2 transition-all ${
-                  transferMethod === 'gopay'
-                    ? 'border-green-600 bg-green-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-green-100 p-3 rounded-full">
-                      <Banknote className="size-6 text-green-600" />
-                    </div>
-                    <div className="text-left">
-                      <p>goPay Wallet</p>
-                      <p className="text-sm text-gray-500">Instant • Free</p>
-                    </div>
-                  </div>
-                  {transferMethod === 'gopay' && (
-                    <Check className="size-6 text-green-600" />
-                  )}
-                </div>
-              </button>
-
-              <button
-                onClick={() => setTransferMethod('mobile')}
-                className={`w-full p-4 rounded-xl border-2 transition-all ${
-                  transferMethod === 'mobile'
-                    ? 'border-green-600 bg-green-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 p-3 rounded-full">
-                      <Phone className="size-6 text-blue-600" />
-                    </div>
-                    <div className="text-left">
-                      <p>Mobile Money</p>
-                      <p className="text-sm text-gray-500">M-Pesa, Tigo, Airtel • TZS 1,000 fee</p>
-                    </div>
-                  </div>
-                  {transferMethod === 'mobile' && (
-                    <Check className="size-6 text-green-600" />
-                  )}
-                </div>
-              </button>
-
-              <button
-                onClick={() => setTransferMethod('bank')}
-                className={`w-full p-4 rounded-xl border-2 transition-all ${
-                  transferMethod === 'bank'
-                    ? 'border-green-600 bg-green-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-purple-100 p-3 rounded-full">
-                      <CreditCard className="size-6 text-purple-600" />
-                    </div>
-                    <div className="text-left">
-                      <p>Bank Transfer</p>
-                      <p className="text-sm text-gray-500">1-2 days • TZS 2,000 fee</p>
-                    </div>
-                  </div>
-                  {transferMethod === 'bank' && (
-                    <Check className="size-6 text-green-600" />
-                  )}
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Recipient */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <Label htmlFor="recipient" className="text-base mb-3 block">
-              {transferMethod === 'gopay' ? 'Recipient goPay ID or Phone' : transferMethod === 'mobile' ? 'Mobile Number' : 'Bank Account Number'}
-            </Label>
-            <Input
-              id="recipient"
-              placeholder={transferMethod === 'gopay' ? '+255 712 345 678' : transferMethod === 'mobile' ? '+255 712 345 678' : '0123456789'}
-              value={recipient}
-              onChange={(e) => setRecipient(e.target.value)}
-              className="h-14 text-lg"
-            />
-          </div>
-
-          {/* Amount */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <Label htmlFor="amount" className="text-base mb-3 block">Amount</Label>
-            <div className="relative mb-4">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xl">TZS</span>
-              <Input
-                id="amount"
-                type="number"
-                placeholder="0"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="pl-20 h-16 text-3xl"
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {quickAmounts.map((amt) => (
-                <button
-                  key={amt}
-                  onClick={() => setAmount(amt.toString())}
-                  className="bg-gray-100 hover:bg-green-100 hover:text-green-700 py-3 rounded-xl transition-all"
-                >
-                  <span className="text-sm">{formatCurrency(amt).replace('TSh', '')}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Message */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <Label htmlFor="message" className="text-base mb-3 block">Message (Optional)</Label>
-            <Input
-              id="message"
-              placeholder="e.g., For groceries, Happy birthday!"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="h-12"
-            />
-          </div>
-
-          {/* Proceed Button */}
-          <Button
-            onClick={handleProceedToConfirm}
-            disabled={!recipient || !amount || parseFloat(amount) <= 0}
-            className="w-full h-14 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-full text-lg disabled:opacity-50"
-          >
-            Continue
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Select recipient screen
   return (
-    <div className="min-h-screen bg-gray-50 pb-6">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-green-600 via-green-700 to-emerald-800 px-4 pt-6 pb-8 rounded-b-3xl shadow-xl">
-        <div className="flex items-center gap-4 mb-6">
-          <button
-            onClick={onBack}
-            className="bg-white/20 p-3 rounded-full hover:bg-white/30 transition-all"
+    <div className="min-h-screen pb-10" style={{ background: '#080d08' }}>
+      <AnimatePresence mode="wait">
+        {step === 'send' && (
+          <motion.div
+            key="send"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.22 }}
           >
-            <ArrowLeft className="size-5 text-white" />
-          </button>
-          <div>
-            <h1 className="text-3xl text-white">Send Money</h1>
-            <p className="text-green-100 text-sm">To family, friends & anyone</p>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="relative">
-          <Search className="size-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-          <Input
-            placeholder="Search contacts or enter number"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 h-12 bg-white/10 border-white/20 text-white placeholder:text-white/60"
-          />
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="px-4 -mt-2 mb-6">
-        <div className="bg-white rounded-2xl p-4 shadow-lg">
-          <div className="grid grid-cols-3 gap-3">
-            <button
-              onClick={() => setStep('details')}
-              className="flex flex-col items-center gap-2 p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-all"
-            >
-              <div className="bg-green-600 p-3 rounded-full">
-                <Send className="size-5 text-white" />
+            {/* Header */}
+            <div className="px-5 pt-8 pb-6" style={{
+              background: 'linear-gradient(135deg, #14532d 0%, #052e16 100%)'
+            }}>
+              <div className="flex items-center gap-4 mb-6">
+                <button
+                  onClick={onBack}
+                  className="p-2.5 rounded-full transition-all active:scale-95"
+                  style={{ background: 'rgba(255,255,255,0.15)' }}
+                >
+                  <ArrowLeft className="size-5 text-white" />
+                </button>
+                <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#fff' }}>Tuma Pesa</h1>
               </div>
-              <span className="text-xs text-gray-700">Send Money</span>
-            </button>
-            <button 
-              onClick={() => {
-                setTransferType('gift');
-                setStep('details');
-              }}
-              className="flex flex-col items-center gap-2 p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-all"
-            >
-              <div className="bg-blue-600 p-3 rounded-full">
-                <Gift className="size-5 text-white" />
-              </div>
-              <span className="text-xs text-gray-700">Send Gift</span>
-            </button>
-            <button 
-              onClick={() => {
-                setTransferType('request');
-                setStep('details');
-              }}
-              className="flex flex-col items-center gap-2 p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-all"
-            >
-              <div className="bg-purple-600 p-3 rounded-full">
-                <Heart className="size-5 text-white" />
-              </div>
-              <span className="text-xs text-gray-700">Request</span>
-            </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Recent Contacts */}
-      <div className="px-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg">Recent</h3>
-          <button className="text-green-600 text-sm">View All</button>
-        </div>
+              {/* Balance pill */}
+              {balance !== null && (
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full"
+                  style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                  <CreditCard className="size-4 text-white opacity-70" />
+                  <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>
+                    Salio: {formatCurrency(optimisticBalance ?? balance)}
+                  </span>
+                </div>
+              )}
+            </div>
 
-        <div className="space-y-3">
-          {recentContacts.map((contact) => (
-            <button
-              key={contact.id}
-              onClick={() => handleSelectContact(contact)}
-              className="w-full bg-white rounded-2xl p-4 shadow-md hover:shadow-lg transition-all border border-gray-100 text-left"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="text-4xl">{contact.avatar}</div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium">{contact.name}</p>
-                      {contact.gopayUser && (
-                        <div className="bg-green-100 px-2 py-0.5 rounded-full">
-                          <span className="text-xs text-green-700">goPay</span>
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-500">{contact.phone}</p>
-                    <p className="text-xs text-gray-400 mt-1">Last sent: {formatCurrency(contact.lastAmount)}</p>
+            <div className="px-5 py-5 space-y-5">
+              {/* Recipient */}
+              <div>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', letterSpacing: '0.3px' }}>
+                  MPOKEAJI
+                </p>
+                <input
+                  type="tel"
+                  placeholder="+255 XXX XXX XXX au jina"
+                  value={recipient}
+                  onChange={e => { setRecipient(e.target.value); if (recipientName) setRecipientName(''); }}
+                  className="w-full h-12 px-4 rounded-xl outline-none"
+                  style={{
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: '#fff',
+                    fontSize: '15px',
+                  }}
+                />
+              </div>
+
+              {/* Recent Contacts */}
+              <div>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: '10px', letterSpacing: '0.3px' }}>
+                  MAWASILIANO YA HIVI KARIBUNI
+                </p>
+                <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                  {RECENT_CONTACTS.map(c => (
+                    <button
+                      key={c.id}
+                      onClick={() => handleSelectContact(c)}
+                      className="flex-shrink-0 flex flex-col items-center gap-1.5 transition-all active:scale-95"
+                    >
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold relative"
+                        style={{
+                          background: recipient === c.phone
+                            ? '#16a34a'
+                            : 'rgba(255,255,255,0.08)',
+                          color: '#fff',
+                          border: recipient === c.phone ? '2px solid #4ade80' : '2px solid transparent',
+                        }}>
+                        {c.initials}
+                        {c.gopayUser && (
+                          <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center"
+                            style={{ background: '#16a34a', border: '1.5px solid #080d08' }}>
+                            <Star className="size-2.5" style={{ color: '#fff', fill: '#fff' }} />
+                          </span>
+                        )}
+                      </div>
+                      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', textAlign: 'center', maxWidth: '52px', lineHeight: '1.2' }}>
+                        {c.name.split(' ')[0]}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Amount */}
+              <div>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', letterSpacing: '0.3px' }}>
+                  KIASI
+                </p>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2"
+                    style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
+                    TZS
+                  </span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
+                    className="w-full h-16 pl-16 pr-4 rounded-xl outline-none"
+                    style={{
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      color: '#fff',
+                      fontSize: '28px',
+                      fontWeight: 700,
+                      letterSpacing: '-1px',
+                    }}
+                  />
+                </div>
+
+                {/* Quick amounts */}
+                <div className="grid grid-cols-3 gap-2 mt-3">
+                  {QUICK_AMOUNTS.map(q => (
+                    <button
+                      key={q}
+                      onClick={() => setAmount(String(q))}
+                      className="py-2 rounded-xl text-center transition-all active:scale-95"
+                      style={{
+                        background: amount === String(q)
+                          ? 'rgba(22,163,74,0.2)'
+                          : 'rgba(255,255,255,0.05)',
+                        border: amount === String(q)
+                          ? '1px solid rgba(22,163,74,0.4)'
+                          : '1px solid rgba(255,255,255,0.08)',
+                        fontSize: '12px',
+                        color: amount === String(q) ? '#4ade80' : 'rgba(255,255,255,0.6)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {(q / 1000).toFixed(0)}K
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Transfer method */}
+              <div>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', letterSpacing: '0.3px' }}>
+                  NJIA YA UHAMISHO
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { id: 'gopay', label: 'goPay', fee: 'Bure' },
+                    { id: 'mobile', label: 'Mobile Money', fee: '1,000 TZS' },
+                    { id: 'bank', label: 'Benki', fee: '2,000 TZS' },
+                  ] as const).map(m => (
+                    <button
+                      key={m.id}
+                      onClick={() => setTransferMethod(m.id)}
+                      className="p-3 rounded-xl text-center transition-all active:scale-95"
+                      style={{
+                        background: transferMethod === m.id ? 'rgba(22,163,74,0.15)' : 'rgba(255,255,255,0.04)',
+                        border: transferMethod === m.id ? '1px solid rgba(22,163,74,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      <p style={{ fontSize: '12px', fontWeight: 600, color: transferMethod === m.id ? '#4ade80' : '#fff', marginBottom: '2px' }}>
+                        {m.label}
+                      </p>
+                      <p style={{ fontSize: '10px', color: transferMethod === m.id ? 'rgba(74,222,128,0.7)' : 'rgba(255,255,255,0.4)' }}>
+                        {m.fee}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Note (optional) */}
+              <div>
+                <input
+                  type="text"
+                  placeholder="Ongeza ujumbe (si lazima)"
+                  value={note}
+                  onChange={e => setNote(e.target.value)}
+                  maxLength={80}
+                  className="w-full h-11 px-4 rounded-xl outline-none"
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    color: '#fff',
+                    fontSize: '14px',
+                  }}
+                />
+              </div>
+
+              {/* Fee preview */}
+              {numericAmount > 0 && (
+                <div className="rounded-xl p-4"
+                  style={{ background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.12)' }}>
+                  <div className="flex justify-between text-sm mb-1.5">
+                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>Kiasi</span>
+                    <span style={{ color: '#fff', fontWeight: 500 }}>{formatCurrency(numericAmount)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm mb-1.5">
+                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>Ada ya huduma</span>
+                    <span style={{ color: fee === 0 ? '#4ade80' : '#fff', fontWeight: 500 }}>
+                      {fee === 0 ? 'BURE' : formatCurrency(fee)}
+                    </span>
+                  </div>
+                  <div className="h-px my-2" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                  <div className="flex justify-between">
+                    <span style={{ color: '#fff', fontWeight: 600, fontSize: '14px' }}>Jumla</span>
+                    <span style={{ color: '#4ade80', fontWeight: 700, fontSize: '14px' }}>{formatCurrency(total)}</span>
                   </div>
                 </div>
-                <ArrowRight className="size-5 text-gray-400" />
+              )}
+
+              {/* Proceed button */}
+              <button
+                onClick={handleProceed}
+                className="w-full h-14 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                style={{
+                  background: numericAmount > 0 && recipient ? '#16a34a' : 'rgba(255,255,255,0.08)',
+                  color: numericAmount > 0 && recipient ? '#fff' : 'rgba(255,255,255,0.3)',
+                  fontSize: '15px',
+                  fontWeight: 700,
+                }}
+              >
+                <Send className="size-5" />
+                Endelea
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {step === 'confirm' && (
+          <motion.div
+            key="confirm"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.22 }}
+            className="px-5"
+          >
+            {/* Back */}
+            <div className="pt-8 pb-6 flex items-center gap-4">
+              <button
+                onClick={() => setStep('send')}
+                className="p-2.5 rounded-full transition-all active:scale-95"
+                style={{ background: 'rgba(255,255,255,0.08)' }}
+              >
+                <ArrowLeft className="size-5 text-white" />
+              </button>
+              <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#fff' }}>Thibitisha Malipo</h1>
+            </div>
+
+            {/* Summary card */}
+            <div className="rounded-2xl p-5 mb-5"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: 600, marginBottom: '12px', letterSpacing: '0.3px' }}>
+                UNAWEZA KUTUMA
+              </p>
+              <div className="flex items-baseline gap-2 mb-4">
+                <span style={{ fontSize: '40px', fontWeight: 800, color: '#fff', letterSpacing: '-2px' }}>
+                  {formatCurrency(numericAmount)}
+                </span>
               </div>
-            </button>
-          ))}
-        </div>
-      </div>
+              <div className="flex items-center gap-3 py-3"
+                style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold"
+                  style={{ background: 'rgba(22,163,74,0.2)', color: '#4ade80' }}>
+                  {recipientName ? recipientName.slice(0, 2).toUpperCase() : recipient.slice(-2)}
+                </div>
+                <div>
+                  {recipientName && (
+                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>{recipientName}</p>
+                  )}
+                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{recipient}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Fee breakdown */}
+            <div className="rounded-2xl p-4 mb-5 space-y-2.5"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex justify-between text-sm">
+                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Kiasi cha kutuma</span>
+                <span style={{ color: '#fff', fontWeight: 500 }}>{formatCurrency(numericAmount)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Njia</span>
+                <span style={{ color: '#fff', fontWeight: 500 }}>
+                  {transferMethod === 'gopay' ? 'goPay Wallet' : transferMethod === 'mobile' ? 'Mobile Money' : 'Benki'}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Ada ya huduma</span>
+                <span style={{ color: fee === 0 ? '#4ade80' : '#fff', fontWeight: 500 }}>
+                  {fee === 0 ? 'BURE' : formatCurrency(fee)}
+                </span>
+              </div>
+              <div className="h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+              <div className="flex justify-between">
+                <span style={{ fontSize: '15px', fontWeight: 700, color: '#fff' }}>Jumla itakayotolewa</span>
+                <span style={{ fontSize: '15px', fontWeight: 700, color: '#4ade80' }}>{formatCurrency(total)}</span>
+              </div>
+            </div>
+
+            {/* PinPad */}
+            <div className="rounded-2xl p-5 mb-5"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              {sending ? (
+                <div className="flex flex-col items-center gap-3 py-8">
+                  <div className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin"
+                    style={{ borderColor: '#16a34a', borderTopColor: 'transparent' }} />
+                  <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)' }}>Inatuma...</p>
+                </div>
+              ) : (
+                <PinPad
+                  length={4}
+                  label="Ingiza PIN yako"
+                  sublabel="PIN ya tarakimu 4"
+                  onComplete={handlePinComplete}
+                  onReset={handleReset}
+                  error={pinError}
+                  shake={shakePin}
+                  disabled={sending}
+                />
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 justify-center pb-4">
+              <Shield className="size-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>
+                Malipo yalindwa na encryption ya hali ya juu
+              </p>
+            </div>
+          </motion.div>
+        )}
+
+        {step === 'success' && (
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, type: 'spring', damping: 20 }}
+            className="min-h-screen flex flex-col items-center justify-center px-5 pb-10 pt-8"
+          >
+            {/* Success icon */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.1, type: 'spring', damping: 15, stiffness: 200 }}
+              className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
+              style={{ background: 'rgba(22,163,74,0.15)', border: '2px solid rgba(22,163,74,0.3)' }}
+            >
+              <Check className="size-12" style={{ color: '#4ade80', strokeWidth: 2.5 }} />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-center mb-8"
+            >
+              <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#fff', marginBottom: '6px', letterSpacing: '-0.5px' }}>
+                Pesa Imetumwa!
+              </h2>
+              <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.5)' }}>
+                {formatCurrency(numericAmount)} → {recipientName || recipient}
+              </p>
+            </motion.div>
+
+            {/* Receipt card */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="w-full rounded-2xl p-5 mb-6 space-y-3"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+            >
+              <div className="flex justify-between text-sm">
+                <span style={{ color: 'rgba(255,255,255,0.4)' }}>Kumbukumbu</span>
+                <span style={{ color: '#4ade80', fontWeight: 600, fontFamily: 'monospace' }}>{transactionRef}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span style={{ color: 'rgba(255,255,255,0.4)' }}>Kiasi</span>
+                <span style={{ color: '#fff', fontWeight: 600 }}>{formatCurrency(numericAmount)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span style={{ color: 'rgba(255,255,255,0.4)' }}>Ada</span>
+                <span style={{ color: fee === 0 ? '#4ade80' : '#fff', fontWeight: 500 }}>
+                  {fee === 0 ? 'BURE' : formatCurrency(fee)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span style={{ color: 'rgba(255,255,255,0.4)' }}>Wakati</span>
+                <span style={{ color: '#fff', fontWeight: 500 }}>{new Date().toLocaleTimeString('sw-TZ', { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+              {note && (
+                <>
+                  <div className="h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                  <div className="flex justify-between text-sm">
+                    <span style={{ color: 'rgba(255,255,255,0.4)' }}>Ujumbe</span>
+                    <span style={{ color: '#fff', fontWeight: 500, maxWidth: '60%', textAlign: 'right' }}>{note}</span>
+                  </div>
+                </>
+              )}
+            </motion.div>
+
+            {/* New balance pill */}
+            {optimisticBalance !== null && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.35 }}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-full mb-8"
+                style={{ background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.15)' }}
+              >
+                <CreditCard className="size-4" style={{ color: '#4ade80', opacity: 0.7 }} />
+                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', fontWeight: 500 }}>
+                  Salio jipya: {formatCurrency(optimisticBalance)}
+                </span>
+              </motion.div>
+            )}
+
+            {/* Action buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="w-full space-y-3"
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(transactionRef).then(() => toast.success('Kumbukumbu imenakiliwa!'));
+                  }}
+                  className="flex items-center justify-center gap-2 h-12 rounded-xl transition-all active:scale-95"
+                  style={{
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#fff',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                  }}
+                >
+                  <Copy className="size-4" />
+                  Nakili risiti
+                </button>
+                <button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: 'Risiti ya goPay',
+                        text: `Nimetuma ${formatCurrency(numericAmount)} kwa ${recipientName || recipient}. Kumbukumbu: ${transactionRef}`,
+                      });
+                    } else {
+                      toast.info('Shiriki risiti hapatikani kwenye kifaa hiki');
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 h-12 rounded-xl transition-all active:scale-95"
+                  style={{
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: '#fff',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                  }}
+                >
+                  <Share2 className="size-4" />
+                  Shiriki
+                </button>
+              </div>
+
+              <button
+                onClick={resetAll}
+                className="w-full h-14 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                style={{ background: '#16a34a', color: '#fff', fontSize: '15px', fontWeight: 700 }}
+              >
+                <RotateCcw className="size-5" />
+                Tuma Tena
+              </button>
+
+              <button
+                onClick={onBack}
+                className="w-full h-12 rounded-2xl transition-all active:scale-[0.98]"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: 'rgba(255,255,255,0.6)',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                }}
+              >
+                Rudi Nyumbani
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

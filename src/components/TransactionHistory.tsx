@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Button } from './ui/button';
 import { User } from '../App';
-import { 
+import {
   ArrowLeft, TrendingUp, TrendingDown, Filter, Search,
   Calendar, Download, ChevronRight, ShoppingBag, Zap, Send, Plane,
-  CreditCard, RefreshCw, CheckCircle, Clock, XCircle
+  CreditCard, RefreshCw, CheckCircle, Clock, XCircle, Copy, Share2,
+  AlertCircle
 } from 'lucide-react';
 import { projectId } from '../utils/supabase/info';
 import { motion } from 'motion/react';
+import { BottomSheet } from './ui/BottomSheet';
 
 interface TransactionHistoryProps {
   user: User;
@@ -26,6 +27,7 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
   const [category, setCategory] = useState<CategoryType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedTx, setSelectedTx] = useState<any | null>(null);
 
   useEffect(() => {
     fetchTransactions();
@@ -355,6 +357,7 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
+                  onClick={() => setSelectedTx(tx)}
                   className="w-full bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-all border border-gray-100 text-left"
                 >
                   <div className="flex items-center gap-4">
@@ -402,6 +405,83 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
           </div>
         )}
       </div>
+
+      {/* Transaction Detail BottomSheet */}
+      <BottomSheet
+        open={!!selectedTx}
+        onClose={() => setSelectedTx(null)}
+        title="Maelezo ya Malipo"
+        showCloseButton
+        showHandle
+      >
+        {selectedTx && (
+          <div className="space-y-4 pb-2">
+            {/* Amount hero */}
+            <div className="text-center py-4">
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3 ${
+                selectedTx.type === 'income' ? 'bg-green-100' :
+                selectedTx.type === 'expense' ? 'bg-red-50' : 'bg-yellow-50'
+              }`}>
+                {selectedTx.icon}
+              </div>
+              <p className={`text-3xl font-bold mb-1 ${
+                selectedTx.type === 'income' ? 'text-green-600' :
+                selectedTx.type === 'expense' ? 'text-red-500' : 'text-yellow-600'
+              }`}>
+                {selectedTx.type === 'income' ? '+' : '-'}{formatCurrency(selectedTx.amount)}
+              </p>
+              <p className="text-gray-500 text-sm">{selectedTx.title}</p>
+            </div>
+
+            {/* Details grid */}
+            <div className="rounded-2xl divide-y divide-gray-100 overflow-hidden border border-gray-100">
+              {[
+                { label: 'Maelezo', value: selectedTx.description },
+                { label: 'Hali', value: selectedTx.status === 'completed' ? '✅ Imekamilika' : selectedTx.status === 'pending' ? '⏳ Inasubiri' : '❌ Imeshindwa' },
+                { label: 'Tarehe', value: new Date(selectedTx.timestamp).toLocaleString('sw-TZ') },
+                { label: 'Kategoria', value: selectedTx.category },
+                { label: 'Kumbukumbu', value: selectedTx.id },
+              ].map(row => (
+                <div key={row.label} className="flex items-center justify-between px-4 py-3 bg-white">
+                  <span className="text-sm text-gray-500">{row.label}</span>
+                  <span className="text-sm font-medium text-gray-900 max-w-[55%] text-right">{row.value}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Actions */}
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { navigator.clipboard.writeText(selectedTx.id); toast.success('Kumbukumbu imenakiliwa!'); }}
+                className="flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 transition-all active:scale-95"
+              >
+                <Copy className="size-4" /> Nakili ID
+              </button>
+              <button
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({ title: 'Risiti ya goPay', text: `${selectedTx.title}: ${formatCurrency(selectedTx.amount)} — ${new Date(selectedTx.timestamp).toLocaleDateString()}` });
+                  } else {
+                    toast.info('Shiriki haipatikani');
+                  }
+                }}
+                className="flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 transition-all active:scale-95"
+              >
+                <Share2 className="size-4" /> Shiriki
+              </button>
+            </div>
+
+            {/* Dispute link */}
+            <button
+              onClick={() => { setSelectedTx(null); toast.info('Ripoti ya tatizo imesajiliwa. Tutawasiliana nawe hivi karibuni.'); }}
+              className="w-full flex items-center justify-center gap-2 py-3 text-sm text-red-500 font-medium"
+            >
+              <AlertCircle className="size-4" />
+              Ripoti tatizo kuhusu malipo haya
+            </button>
+          </div>
+        )}
+      </BottomSheet>
     </div>
   );
 }

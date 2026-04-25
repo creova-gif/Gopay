@@ -30,7 +30,6 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
     name: '',
     email: '',
     phone: '',
-    nida: '',
     password: '',
     honeypot: '' // Honeypot field - bots will fill this
   });
@@ -172,7 +171,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
               lineHeight: '1.1'
             }}
           >
-            GoPay
+            goPay
           </h1>
 
           {/* Tagline: 13px, rgba(255,255,255,0.5), weight 400 */}
@@ -308,7 +307,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
                   fontWeight: 700
                 }}
               >
-                Karibu GoPay
+                Karibu goPay
               </CardTitle>
               <CardDescription 
                 className="text-center"
@@ -441,20 +440,6 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
                         style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}
                         value={signUpData.phone}
                         onChange={(e) => setSignUpData({ ...signUpData, phone: e.target.value })}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-nida" style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.9)' }}>
-                        Namba ya NIDA
-                      </Label>
-                      <Input
-                        id="signup-nida"
-                        placeholder="Namba ya Kitambulisho"
-                        className="h-12 border bg-transparent text-white placeholder:text-white/40"
-                        style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}
-                        value={signUpData.nida}
-                        onChange={(e) => setSignUpData({ ...signUpData, nida: e.target.value })}
                         required
                       />
                     </div>
