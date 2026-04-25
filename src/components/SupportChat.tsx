@@ -32,7 +32,12 @@ function getAutoReply(text: string): string {
   return AUTO_REPLIES.default;
 }
 
-export function SupportChat() {
+interface SupportChatProps {
+  forceOpen?: boolean;
+  proactiveMessage?: string;
+}
+
+export function SupportChat({ forceOpen, proactiveMessage }: SupportChatProps = {}) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -53,6 +58,15 @@ export function SupportChat() {
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
     }
   }, [open, messages]);
+
+  useEffect(() => {
+    if (forceOpen) {
+      setOpen(true);
+      if (proactiveMessage) {
+        setTimeout(() => send(proactiveMessage), 300);
+      }
+    }
+  }, [forceOpen]);
 
   const send = (text: string) => {
     if (!text.trim()) return;

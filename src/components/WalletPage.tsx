@@ -8,6 +8,7 @@ import { ArrowLeft, Plus, Send, Smartphone, Building, CreditCard, ChevronRight, 
 import { projectId } from '../utils/supabase/info';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { InlinePinPad } from './ui/PinPad';
 import { getDemoBalance, setDemoBalance, DEMO_LINKED_ACCOUNTS, addDemoTransaction, updateDemoRewards } from '../utils/demoData';
 
 interface WalletPageProps {
@@ -724,20 +725,14 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="add-pin">PIN</Label>
-              <Input
-                id="add-pin"
-                type="password"
-                placeholder="Enter your PIN"
-                className="h-12 rounded-xl"
-                maxLength={4}
+              <Label>PIN</Label>
+              <InlinePinPad
                 value={addFundsData.pin}
-                onChange={(e) => setAddFundsData({ ...addFundsData, pin: e.target.value })}
-                required
+                onChange={(v) => setAddFundsData({ ...addFundsData, pin: v })}
               />
             </div>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full h-12 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white rounded-xl"
             >
               Add Money
@@ -778,20 +773,14 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="send-pin">PIN</Label>
-              <Input
-                id="send-pin"
-                type="password"
-                placeholder="Enter your PIN"
-                className="h-12 rounded-xl"
-                maxLength={4}
+              <Label>PIN</Label>
+              <InlinePinPad
                 value={sendMoneyData.pin}
-                onChange={(e) => setSendMoneyData({ ...sendMoneyData, pin: e.target.value })}
-                required
+                onChange={(v) => setSendMoneyData({ ...sendMoneyData, pin: v })}
               />
             </div>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full h-12 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white rounded-xl"
             >
               Send Money
@@ -898,16 +887,10 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="link-pin">PIN</Label>
-              <Input
-                id="link-pin"
-                type="password"
-                placeholder="Enter your PIN"
-                className="h-12 rounded-xl"
-                maxLength={4}
+              <Label>PIN</Label>
+              <InlinePinPad
                 value={linkAccountData.pin}
-                onChange={(e) => setLinkAccountData({ ...linkAccountData, pin: e.target.value })}
-                required
+                onChange={(v) => setLinkAccountData({ ...linkAccountData, pin: v })}
               />
             </div>
             <Button 

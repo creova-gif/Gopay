@@ -115,15 +115,16 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
       } else {
         const err = await response.json().catch(() => ({}));
         const msg = err.error || 'Uhamisho umeshindwa. Jaribu tena.';
-        // Roll back optimistic update
         if (balance !== null) setOptimisticBalance(balance);
         setPinError(msg);
         setShakePin(true);
+        window.dispatchEvent(new CustomEvent('gopay:open-support'));
       }
     } catch {
       if (balance !== null) setOptimisticBalance(balance);
       setPinError('Hitilafu ya mtandao. Jaribu tena.');
       setShakePin(true);
+      window.dispatchEvent(new CustomEvent('gopay:open-support'));
     } finally {
       setSending(false);
     }
@@ -148,7 +149,7 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
   };
 
   return (
-    <div className="min-h-screen pb-10" style={{ background: '#080d08' }}>
+    <div className="min-h-screen pb-10" style={{ background: '#080d08' }} role="main" aria-label="Tuma Pesa">
       <AnimatePresence mode="wait">
         {step === 'send' && (
           <motion.div
@@ -496,6 +497,9 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, type: 'spring', damping: 20 }}
             className="min-h-screen flex flex-col items-center justify-center px-5 pb-10 pt-8"
+            role="status"
+            aria-live="assertive"
+            aria-label="Pesa imetumwa kwa mafanikio"
           >
             {/* Success icon */}
             <motion.div

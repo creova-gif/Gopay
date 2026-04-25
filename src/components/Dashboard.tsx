@@ -82,7 +82,6 @@ import {
   PlusIcon
 } from './CustomIcons';
 import { projectId } from '../utils/supabase/info';
-import { SupportChat } from './SupportChat';
 import { 
   MPesaLogo, 
   TigoPesaLogo, 
@@ -105,7 +104,7 @@ import {
 interface DashboardProps {
   user: User;
   accessToken: string;
-  onNavigate: (page: 'wallet' | 'payments' | 'billpayments' | 'merchant' | 'travel' | 'cards' | 'export' | 'rewards' | 'shop' | 'international' | 'subscriptions' | 'shopping' | 'sendmoney' | 'groupmoney' | 'communitywallet' | 'microlans' | 'multicurrencywallet' | 'virtualcardsadvanced' | 'movies' | 'restaurants' | 'rides' | 'rentals' | 'gofood' | 'gosafari' | 'ferrybooking' | 'multimodaltripplanner' | 'parcelshipping' | 'smartshoppingmarketplace' | 'aismartshoppingassistant' | 'deliveryriderdashboard' | 'governmentservices' | 'aiassistant' | 'emergencysos' | 'digitaladdress' | 'smebusinesssuite' | 'offlineqrpayment' | 'securitycenter' | 'tourism' | 'promos' | 'insights' | 'budget' | 'notifications' | 'profile' | 'security' | 'membership' | 'quickpay') => void;
+  onNavigate: (page: 'wallet' | 'payments' | 'billpayments' | 'merchant' | 'travel' | 'cards' | 'export' | 'rewards' | 'shop' | 'international' | 'subscriptions' | 'shopping' | 'sendmoney' | 'groupmoney' | 'communitywallet' | 'microlans' | 'multicurrencywallet' | 'virtualcardsadvanced' | 'movies' | 'restaurants' | 'rides' | 'rentals' | 'gofood' | 'gosafari' | 'ferrybooking' | 'multimodaltripplanner' | 'parcelshipping' | 'smartshoppingmarketplace' | 'aismartshoppingassistant' | 'deliveryriderdashboard' | 'governmentservices' | 'aiassistant' | 'emergencysos' | 'digitaladdress' | 'smebusinesssuite' | 'offlineqrpayment' | 'securitycenter' | 'tourism' | 'promos' | 'insights' | 'budget' | 'notifications' | 'profile' | 'security' | 'membership' | 'quickpay' | 'mpesa' | 'cashbackrewards' | 'demo') => void;
   onLogout: () => void;
 }
 
@@ -315,19 +314,23 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
                       Main Balance
                     </p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setBalanceVisible(!balanceVisible)}
                     className="hover:opacity-80 p-2 rounded-lg transition-all active:scale-95"
                     style={{ background: 'rgba(255,255,255,0.1)' }}
+                    aria-label={balanceVisible ? 'Ficha salio' : 'Onyesha salio'}
+                    aria-pressed={balanceVisible}
                   >
                     {balanceVisible ? <Eye className="size-4 text-white" /> : <EyeOff className="size-4 text-white" />}
                   </button>
                 </div>
                 {loading ? (
-                  <div className="h-10 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.1)' }} />
+                  <div className="h-10 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.1)' }}
+                    role="status" aria-label="Inapakia salio..." />
                 ) : (
-                  <div>
-                    <p style={{ fontSize: '38px', fontWeight: 800, color: '#fff', letterSpacing: '-2px', marginBottom: '3px' }}>
+                  <div aria-live="polite" aria-atomic="true">
+                    <p style={{ fontSize: '38px', fontWeight: 800, color: '#fff', letterSpacing: '-2px', marginBottom: '3px' }}
+                      aria-label={balanceVisible ? `Salio: ${formatCurrency(balance.balance)}` : 'Salio limefichwa'}>
                       {balanceVisible ? formatCurrency(balance.balance) : '••••••'}
                     </p>
                     <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontWeight: 300 }}>
@@ -587,8 +590,28 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
             {/* Food & Dining */}
             <RestaurantsSection onNavigate={onNavigate} />
 
+            {/* Recent Transactions Skeleton */}
+            {loading && (
+              <div>
+                <div className="h-5 w-48 rounded-full mb-4 animate-pulse" style={{ background: 'rgba(255,255,255,0.07)' }} />
+                <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  {[0, 1, 2].map(i => (
+                    <div key={i} className="p-4 flex items-center gap-3 animate-pulse"
+                      style={{ borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.04)' : 'none', animationDelay: `${i * 80}ms` }}>
+                      <div className="w-10 h-10 rounded-xl flex-shrink-0" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-3.5 rounded-full w-2/3" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                        <div className="h-3 rounded-full w-1/3" style={{ background: 'rgba(255,255,255,0.05)' }} />
+                      </div>
+                      <div className="h-4 w-14 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Recent Transactions */}
-            {transactions.length > 0 && (
+            {!loading && transactions.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h3 style={{ fontSize: '17px', fontWeight: 600, color: '#fff', letterSpacing: '-0.5px' }}>
@@ -1074,6 +1097,31 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
               </div>
             </div>
           </div>
+
+          {/* Cashback Rewards Banner */}
+          <button
+            onClick={() => onNavigate('cashbackrewards')}
+            className="w-full p-5 rounded-2xl text-left transition-all active:scale-[0.98]"
+            style={{
+              background: 'linear-gradient(135deg, rgba(22,163,74,0.15) 0%, rgba(22,163,74,0.05) 100%)',
+              border: '1px solid rgba(22,163,74,0.25)'
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p style={{ fontSize: '13px', fontWeight: 700, color: '#4ade80', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                  CASHBACK YA TZS
+                </p>
+                <p style={{ fontSize: '22px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px' }}>TZS 12,750</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '4px' }}>
+                  Inayosubiri kutolewa • Bonyeza kuona ofa
+                </p>
+              </div>
+              <div className="p-3 rounded-2xl" style={{ background: 'rgba(22,163,74,0.2)' }}>
+                <ChevronRight className="size-5" style={{ color: '#4ade80' }} />
+              </div>
+            </div>
+          </button>
         </div>
       )}
 
@@ -1519,7 +1567,7 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
 
                 {/* Mobile Money */}
                 <button
-                  onClick={() => onNavigate('wallet')}
+                  onClick={() => onNavigate('mpesa')}
                   className="p-4 rounded-xl transition-all active:scale-95 text-left relative overflow-hidden group min-h-[120px]"
                   style={{
                     background: 'rgba(255,255,255,0.03)',
@@ -2586,7 +2634,6 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
       </nav>
 
       {/* Support Chat - visible on home tab */}
-      {currentTab === 'home' && <SupportChat />}
     </div>
   );
 }

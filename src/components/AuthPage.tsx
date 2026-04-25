@@ -13,9 +13,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface AuthPageProps {
   onAuthSuccess: (accessToken: string) => void;
+  onViewDemo?: () => void;
 }
 
-export function AuthPage({ onAuthSuccess }: AuthPageProps) {
+export function AuthPage({ onAuthSuccess, onViewDemo }: AuthPageProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showChallenge, setShowChallenge] = useState(false);
@@ -506,6 +507,15 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
               </Tabs>
             </CardContent>
           </Card>
+          {onViewDemo && (
+            <button
+              onClick={onViewDemo}
+              className="w-full mt-4 py-3 text-center"
+              style={{ fontSize: '12px', color: 'rgba(255,255,255,0.25)' }}
+            >
+              Investor Deck →
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -885,7 +885,7 @@ export function BillPaymentsPage({ user, accessToken, onBack }: BillPaymentsPage
               <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full">
                 <ArrowLeft className="size-6 text-gray-900" />
               </button>
-              <h1 className="text-xl font-bold text-gray-900">Pay Bills</h1>
+              <h1 className="text-xl font-bold text-gray-900">Lipa Bili</h1>
             </div>
 
             {/* Search */}

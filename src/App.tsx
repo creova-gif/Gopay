@@ -58,6 +58,10 @@ import { OfflineQRPayment } from './components/OfflineQRPayment';
 import { TourismDiscoveryPage } from './components/TourismDiscoveryPage';
 import { PromosPage } from './components/PromosPage';
 import { MembershipPage } from './components/MembershipPage';
+import { MPesaPage } from './components/MPesaPage';
+import { InvestorDemoMode } from './components/InvestorDemoMode';
+import { GOrewardsCashback } from './components/GOrewardsCashback';
+import { SupportChat } from './components/SupportChat';
 import { supabase } from './utils/supabase/client';
 import { projectId } from './utils/supabase/info';
 
@@ -83,13 +87,15 @@ type Page =
   | 'gofood' | 'gosafari' | 'multimodaltripplanner' | 'parcelshipping'
   | 'smartshoppingmarketplace' | 'aismartshoppingassistant' | 'deliveryriderdashboard'
   | 'aiassistant' | 'emergencysos' | 'digitaladdress' | 'smebusinesssuite'
-  | 'offlineqrpayment' | 'tourism' | 'promos' | 'membership';
+  | 'offlineqrpayment' | 'tourism' | 'promos' | 'membership'
+  | 'mpesa' | 'cashbackrewards' | 'demo';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('auth');
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [supportOpen, setSupportOpen] = useState(false);
   const profileFetchInFlight = useRef(false);
 
   useEffect(() => {
@@ -191,6 +197,12 @@ export default function App() {
   const navigate = (page: Page) => setCurrentPage(page);
   const goHome = () => setCurrentPage('dashboard');
 
+  useEffect(() => {
+    const handler = () => setSupportOpen(true);
+    window.addEventListener('gopay:open-support', handler);
+    return () => window.removeEventListener('gopay:open-support', handler);
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#080d08' }}>
@@ -203,7 +215,11 @@ export default function App() {
     return (
       <ErrorBoundary>
         <Toaster position="top-center" richColors />
-        <AuthPage onAuthSuccess={handleAuthSuccess} />
+        {currentPage === 'demo' ? (
+          <InvestorDemoMode onEnterApp={() => setCurrentPage('auth')} />
+        ) : (
+          <AuthPage onAuthSuccess={handleAuthSuccess} onViewDemo={() => setCurrentPage('demo')} />
+        )}
       </ErrorBoundary>
     );
   }
@@ -376,6 +392,16 @@ export default function App() {
         {currentPage === 'membership' && (
           <MembershipPage user={user} accessToken={accessToken} onBack={goHome} />
         )}
+        {currentPage === 'mpesa' && (
+          <MPesaPage user={user} accessToken={accessToken} onBack={goHome} />
+        )}
+        {currentPage === 'cashbackrewards' && (
+          <GOrewardsCashback user={user} accessToken={accessToken} onBack={goHome} />
+        )}
+        {currentPage === 'demo' && (
+          <InvestorDemoMode onEnterApp={goHome} />
+        )}
+        <SupportChat forceOpen={supportOpen} />
         <InstallPrompt />
         <PerformanceMonitor />
       </div>

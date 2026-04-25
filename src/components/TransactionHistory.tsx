@@ -236,14 +236,23 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full mx-auto mb-4"
-          />
-          <p className="text-gray-500">Loading transactions...</p>
+      <div className="min-h-screen pb-6" style={{ background: '#080d08' }}>
+        <div className="px-4 pt-8 pb-4 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-full animate-pulse" style={{ background: 'rgba(255,255,255,0.08)' }} />
+          <div className="h-6 w-40 rounded-xl animate-pulse" style={{ background: 'rgba(255,255,255,0.08)' }} />
+        </div>
+        <div className="px-4 space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3 p-4 rounded-2xl animate-pulse"
+              style={{ background: 'rgba(255,255,255,0.04)', animationDelay: `${i * 60}ms` }}>
+              <div className="w-11 h-11 rounded-xl flex-shrink-0" style={{ background: 'rgba(255,255,255,0.08)' }} />
+              <div className="flex-1 space-y-2">
+                <div className="h-3.5 rounded-full w-3/4" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                <div className="h-3 rounded-full w-1/2" style={{ background: 'rgba(255,255,255,0.05)' }} />
+              </div>
+              <div className="h-4 w-16 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -261,7 +270,7 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
             >
               <ArrowLeft className="size-6" />
             </button>
-            <h1 className="text-2xl font-bold flex-1">Transactions</h1>
+            <h1 className="text-2xl font-bold flex-1">Shughuli za Malipo</h1>
             <button
               onClick={handleRefresh}
               className="p-2 hover:bg-gray-100 rounded-full transition-all"
@@ -279,7 +288,7 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search transactions..."
+              placeholder="Tafuta shughuli..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-12 pl-12 pr-4 bg-gray-100 rounded-full border-0 focus:outline-none focus:ring-2 focus:ring-black"
@@ -289,10 +298,10 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
           {/* Filters */}
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             {[
-              { id: 'all', label: 'All', icon: Filter },
-              { id: 'income', label: 'Income', icon: TrendingUp },
-              { id: 'expense', label: 'Expense', icon: TrendingDown },
-              { id: 'pending', label: 'Pending', icon: Clock }
+              { id: 'all', label: 'Zote', icon: Filter },
+              { id: 'income', label: 'Pato', icon: TrendingUp },
+              { id: 'expense', label: 'Matumizi', icon: TrendingDown },
+              { id: 'pending', label: 'Inasubiri', icon: Clock }
             ].map((f) => {
               const Icon = f.icon;
               return (
