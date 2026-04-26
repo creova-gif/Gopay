@@ -147,53 +147,75 @@ export function CommunityWalletPage({ user, accessToken, onBack }: CommunityWall
     }).format(amount);
   };
 
-  const handleCreateWallet = () => {
+  const handleCreateWallet = async () => {
     if (!walletName || !walletPurpose) {
       toast.error('Please fill in all required fields');
       return;
     }
+    setProcessing(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/make-server-69a10ee8/groups/community/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ name: walletName, purpose: walletPurpose, goal: walletGoal || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Hitilafu ya seva');
 
-    const purposeData = purposeOptions.find(p => p.id === walletPurpose);
-    
-    const newWallet: CommunityWallet = {
-      id: Date.now().toString(),
-      name: walletName,
-      purpose: purposeData?.label || walletPurpose,
-      icon: purposeData?.icon || Users,
-      color: 'from-gray-500 to-gray-700',
-      balance: 0,
-      members: 1,
-      goal: walletGoal ? parseFloat(walletGoal) : undefined,
-      role: 'admin',
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-
-    setCommunityWallets([newWallet, ...communityWallets]);
-    setWalletName('');
-    setWalletPurpose('');
-    setWalletGoal('');
-    setView('list');
-    toast.success('Community wallet created! Invite members to start contributing.');
+      const purposeData = purposeOptions.find(p => p.id === walletPurpose);
+      const newWallet: CommunityWallet = {
+        id: data.walletId,
+        name: walletName,
+        purpose: purposeData?.label || walletPurpose,
+        icon: purposeData?.icon || Users,
+        color: 'from-gray-500 to-gray-700',
+        balance: 0,
+        members: 1,
+        goal: walletGoal ? parseFloat(walletGoal) : undefined,
+        role: 'admin',
+        createdAt: new Date().toISOString().split('T')[0],
+      };
+      setCommunityWallets([newWallet, ...communityWallets]);
+      setWalletName('');
+      setWalletPurpose('');
+      setWalletGoal('');
+      setView('list');
+      toast.success('Community wallet created! Invite members to start contributing.');
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setProcessing(false);
+    }
   };
 
-  const handleAddFunds = () => {
+  const handleAddFunds = async () => {
     if (!selectedWallet || !amount || pin.length !== 4) {
       toast.error('Please complete all fields');
       return;
     }
+    setProcessing(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/make-server-69a10ee8/groups/community/add-funds`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ communityWalletId: selectedWallet.id, amount: parseFloat(amount), pin }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Hitilafu ya seva');
 
-    const contribution = parseFloat(amount);
-    
-    setCommunityWallets(communityWallets.map(w =>
-      w.id === selectedWallet.id
-        ? { ...w, balance: w.balance + contribution }
-        : w
-    ));
-
-    toast.success(`Contributed ${formatCurrency(contribution)} to ${selectedWallet.name}`);
-    setAmount('');
-    setPin('');
-    setView('details');
+      const contribution = parseFloat(amount);
+      setCommunityWallets(communityWallets.map(w =>
+        w.id === selectedWallet.id ? { ...w, balance: data.newBalance ?? w.balance + contribution } : w
+      ));
+      toast.success(`Contributed ${formatCurrency(contribution)} to ${selectedWallet.name}`);
+      setAmount('');
+      setPin('');
+      setView('details');
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setProcessing(false);
+    }
   };
 
   // List View
@@ -461,10 +483,10 @@ export function CommunityWalletPage({ user, accessToken, onBack }: CommunityWall
 
           <Button
             onClick={handleCreateWallet}
-            disabled={!walletName || !walletPurpose}
+            disabled={!walletName || !walletPurpose || processing}
             className="w-full h-14 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white rounded-full font-bold text-lg disabled:opacity-50"
           >
-            Create Wallet
+            {processing ? 'Inaunda...' : 'Create Wallet'}
           </Button>
         </div>
       </div>
@@ -682,10 +704,10 @@ export function CommunityWalletPage({ user, accessToken, onBack }: CommunityWall
 
           <Button
             onClick={handleAddFunds}
-            disabled={!amount || pin.length !== 4}
+            disabled={!amount || pin.length !== 4 || processing}
             className="w-full h-14 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white rounded-full font-bold text-lg disabled:opacity-50"
           >
-            Contribute {amount && formatCurrency(parseFloat(amount))}
+            {processing ? 'Inatuma...' : `Toa Mchango ${amount ? formatCurrency(parseFloat(amount)) : ''}`}
           </Button>
         </div>
       </div>

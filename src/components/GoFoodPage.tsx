@@ -80,6 +80,10 @@ export function GoFoodPage({ user, accessToken, onBack }: GoFoodPageProps) {
   const [orderType, setOrderType] = useState<'delivery' | 'takeaway' | 'dine-in'>('delivery');
   const [selectedTime, setSelectedTime] = useState<'now' | 'schedule'>('now');
   const [scheduledTime, setScheduledTime] = useState('');
+  const [checkoutPin, setCheckoutPin] = useState('');
+  const [placing, setPlacing] = useState(false);
+  const [orderRef, setOrderRef] = useState('');
+  const [estimatedDelivery, setEstimatedDelivery] = useState('');
 
   const tanzaniaRegions = [
     'Dar es Salaam', 'Arusha', 'Mwanza', 'Dodoma', 'Mbeya', 
@@ -1078,6 +1082,178 @@ export function GoFoodPage({ user, accessToken, onBack }: GoFoodPageProps) {
       vegetarian: true
     }
   ];
+
+  const handlePlaceOrder = async () => {
+    if (checkoutPin.length !== 4) return;
+    if (!selectedRestaurant) return;
+    setPlacing(true);
+    const subtotal = getCartTotal();
+    const deliveryFee = orderType === 'delivery' ? (selectedRestaurant.deliveryFee || 0) : 0;
+    const platformFee = Math.round(subtotal * 0.05);
+    const total = subtotal + deliveryFee + platformFee;
+    try {
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/restaurants/order`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+          body: JSON.stringify({
+            restaurantId: selectedRestaurant.id,
+            restaurantName: selectedRestaurant.name,
+            items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
+            orderType,
+            deliveryAddress,
+            subtotal,
+            deliveryFee,
+            platformFee,
+            discount: 0,
+            total,
+            pin: checkoutPin,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        const { toast: toastFn } = await import('sonner');
+        toastFn.error(data.error || 'Agizo limeshindwa. Jaribu tena.');
+        setPlacing(false);
+        return;
+      }
+      setOrderRef(data.orderId || data.orderReference || `GP-${Date.now()}`);
+      setEstimatedDelivery(data.estimatedDelivery || new Date(Date.now() + 45 * 60000).toISOString());
+      setCart([]);
+      setCheckoutPin('');
+      setActiveView('tracking');
+    } catch {
+      const { toast: toastFn } = await import('sonner');
+      toastFn.error('Hitilafu ya mtandao. Jaribu tena.');
+    } finally {
+      setPlacing(false);
+    }
+  };
+
+  if (activeView === 'checkout') {
+    const subtotal = getCartTotal();
+    const deliveryFee = orderType === 'delivery' ? (selectedRestaurant?.deliveryFee || 0) : 0;
+    const platformFee = Math.round(subtotal * 0.05);
+    const total = subtotal + deliveryFee + platformFee;
+    return (
+      <div className="min-h-screen bg-gray-50 pb-32">
+        <div className="bg-white border-b sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => setActiveView('cart')}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="font-bold text-xl">Thibitisha Agizo</h1>
+              <p className="text-sm text-gray-600">{selectedRestaurant?.name}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
+          {/* Order summary */}
+          <div className="bg-white rounded-xl p-4">
+            <h2 className="font-bold mb-3">Muhtasari wa Agizo</h2>
+            {cart.map(item => (
+              <div key={item.id} className="flex justify-between py-2 border-b last:border-0 text-sm">
+                <span>{item.quantity}× {item.name}</span>
+                <span className="font-semibold">{formatCurrency(item.price * item.quantity)}</span>
+              </div>
+            ))}
+            <div className="mt-3 space-y-1 text-sm">
+              <div className="flex justify-between text-gray-600"><span>Jumla ndogo</span><span>{formatCurrency(subtotal)}</span></div>
+              {orderType === 'delivery' && <div className="flex justify-between text-gray-600"><span>Ada ya utoaji</span><span>{formatCurrency(deliveryFee)}</span></div>}
+              <div className="flex justify-between text-gray-600"><span>Ada ya huduma (5%)</span><span>{formatCurrency(platformFee)}</span></div>
+              <div className="flex justify-between font-bold text-base pt-2 border-t"><span>Jumla</span><span className="text-[#1a5f3f]">{formatCurrency(total)}</span></div>
+            </div>
+          </div>
+
+          {/* Delivery address */}
+          {orderType === 'delivery' && (
+            <div className="bg-white rounded-xl p-4">
+              <h2 className="font-bold mb-2">Anwani ya Utoaji</h2>
+              <input
+                type="text"
+                value={deliveryAddress}
+                onChange={e => setDeliveryAddress(e.target.value)}
+                placeholder="Weka anwani yako ya utoaji..."
+                className="w-full border rounded-lg px-3 py-2 text-sm"
+              />
+            </div>
+          )}
+
+          {/* PIN */}
+          <div className="bg-white rounded-xl p-4">
+            <h2 className="font-bold mb-1">Ingiza PIN yako</h2>
+            <p className="text-xs text-gray-500 mb-3">Thibitisha malipo ya {formatCurrency(total)}</p>
+            <input
+              type="password"
+              inputMode="numeric"
+              maxLength={4}
+              value={checkoutPin}
+              onChange={e => setCheckoutPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+              placeholder="••••"
+              className="w-32 border-2 rounded-xl px-4 py-3 text-center text-xl tracking-widest font-bold"
+              style={{ borderColor: checkoutPin.length === 4 ? '#1a5f3f' : '#e5e7eb' }}
+            />
+          </div>
+
+          <Button
+            onClick={handlePlaceOrder}
+            disabled={checkoutPin.length !== 4 || placing || (orderType === 'delivery' && !deliveryAddress.trim())}
+            className="w-full bg-[#1a5f3f] hover:bg-[#164d33] h-14 text-base font-bold"
+          >
+            {placing ? 'Inaweka Agizo...' : `Lipa ${formatCurrency(total)}`}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (activeView === 'tracking') {
+    const eta = estimatedDelivery ? new Date(estimatedDelivery).toLocaleTimeString('en-TZ', { hour: '2-digit', minute: '2-digit' }) : '—';
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="bg-[#1a5f3f] text-white px-4 pt-12 pb-8 text-center">
+          <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold mb-1">Agizo Limepokewa!</h1>
+          <p className="text-green-100 text-sm">Ref: {orderRef}</p>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <div className="bg-white rounded-2xl p-5 text-center shadow-sm">
+            <p className="text-sm text-gray-500 mb-1">Muda wa Uasilishaji</p>
+            <p className="text-4xl font-bold text-[#1a5f3f]">{eta}</p>
+            <p className="text-sm text-gray-500 mt-1">~ dakika 30–45</p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 shadow-sm">
+            <h3 className="font-bold mb-3">Hali ya Agizo</h3>
+            {[
+              { label: 'Agizo limepokelewa', done: true },
+              { label: 'Mkahawa unaandaa', done: true },
+              { label: 'Dereva amepewa', done: false },
+              { label: 'Njiani kwako', done: false },
+            ].map((step, i) => (
+              <div key={i} className="flex items-center gap-3 py-2">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${step.done ? 'bg-[#1a5f3f]' : 'bg-gray-200'}`}>
+                  {step.done && <Check className="w-3.5 h-3.5 text-white" />}
+                </div>
+                <span className={`text-sm ${step.done ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>{step.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <Button onClick={() => { setActiveView('home'); setSelectedRestaurant(null); }} className="w-full bg-[#1a5f3f] hover:bg-[#164d33]">
+            Rudi Nyumbani
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (activeView === 'home') {
     return (

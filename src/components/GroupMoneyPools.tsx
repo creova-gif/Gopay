@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { projectId } from '../utils/supabase/info';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { 
@@ -173,15 +174,37 @@ export function GroupMoneyPools({ user, accessToken, onBack }: GroupMoneyPoolsPr
     }
   };
 
+  const [creating, setCreating] = useState(false);
+  const [contributing, setContributing] = useState(false);
+
   const handleCreatePool = async () => {
     if (!newPool.name || !newPool.targetAmount || !newPool.deadline) {
       toast.error('Please fill in all required fields');
       return;
     }
-
-    // TODO: API call to create pool
-    toast.success(`Pool "${newPool.name}" created! Share link: gopay.tz/pool/${newPool.name.toLowerCase().replace(/\s+/g, '-')}`);
-    setView('home');
+    setCreating(true);
+    try {
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/groups/pool/create`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+          body: JSON.stringify(newPool),
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        toast.error(data.error || 'Imeshindwa kuunda pool');
+        return;
+      }
+      toast.success(`Pool "${newPool.name}" imeundwa! Shiriki: ${data.shareLink}`);
+      setNewPool({ name: '', description: '', targetAmount: '', deadline: '', category: 'savings', visibility: 'private', autoDisburse: false });
+      setView('home');
+    } catch {
+      toast.error('Hitilafu ya mtandao. Jaribu tena.');
+    } finally {
+      setCreating(false);
+    }
   };
 
   const handleContribute = async () => {
@@ -189,11 +212,30 @@ export function GroupMoneyPools({ user, accessToken, onBack }: GroupMoneyPoolsPr
       toast.error('Please enter a valid amount');
       return;
     }
-
-    // TODO: API call to contribute
-    toast.success(`✅ Contributed ${formatCurrency(parseFloat(contributionAmount))} to "${selectedPool?.name}"`);
-    setView('pool-detail');
-    setContributionAmount('');
+    if (!selectedPool) return;
+    setContributing(true);
+    try {
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/groups/pool/contribute`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+          body: JSON.stringify({ poolId: selectedPool.id, amount: parseFloat(contributionAmount), paymentMethod }),
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        toast.error(data.error || 'Mchango umeshindwa');
+        return;
+      }
+      toast.success(`✅ Mchango wa ${formatCurrency(parseFloat(contributionAmount))} kwa "${selectedPool.name}" umekamilika!`);
+      setView('pool-detail');
+      setContributionAmount('');
+    } catch {
+      toast.error('Hitilafu ya mtandao. Jaribu tena.');
+    } finally {
+      setContributing(false);
+    }
   };
 
   const copyShareLink = (link: string) => {
@@ -620,9 +662,10 @@ export function GroupMoneyPools({ user, accessToken, onBack }: GroupMoneyPoolsPr
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 max-w-md mx-auto">
           <Button
             onClick={handleCreatePool}
+            disabled={creating}
             className="w-full h-14 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-full font-bold text-lg"
           >
-            Create Pool & Get Link
+            {creating ? 'Inaunda...' : 'Create Pool & Get Link'}
           </Button>
         </div>
       </div>
@@ -897,9 +940,10 @@ export function GroupMoneyPools({ user, accessToken, onBack }: GroupMoneyPoolsPr
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 max-w-md mx-auto">
           <Button
             onClick={handleContribute}
-            className="w-full h-14 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-full font-bold text-lg"
+            disabled={contributing}
+            className="w-full h-14 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-full font-bold text-lg disabled:opacity-60"
           >
-            Contribute {contributionAmount ? formatCurrency(parseFloat(contributionAmount)) : ''}
+            {contributing ? 'Inatuma...' : `Toa Mchango ${contributionAmount ? formatCurrency(parseFloat(contributionAmount)) : ''}`}
           </Button>
         </div>
       </div>

@@ -237,8 +237,24 @@ export default function App() {
     }
   };
 
-  const navigate = (page: Page) => setCurrentPage(page);
-  const goHome = () => setCurrentPage('dashboard');
+  const navigate = (page: Page) => {
+    setCurrentPage(page);
+    history.pushState({ page }, '', `/${page === 'dashboard' ? '' : page}`);
+  };
+  const goHome = () => navigate('dashboard');
+
+  useEffect(() => {
+    // Sync URL → state on browser back/forward
+    const onPopState = (e: PopStateEvent) => {
+      const page = (e.state?.page as Page) ?? 'dashboard';
+      setCurrentPage(page);
+    };
+    window.addEventListener('popstate', onPopState);
+    // Set initial history entry so the first back-press has a state
+    const initialPage = (window.location.pathname.replace('/', '') || 'dashboard') as Page;
+    history.replaceState({ page: initialPage }, '', window.location.pathname);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
 
   useEffect(() => {
     track('page_view', { page: currentPage });

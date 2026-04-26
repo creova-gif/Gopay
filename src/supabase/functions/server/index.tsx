@@ -31,6 +31,7 @@ import recurringApp from './recurring.tsx';
 import subscriptionsApp from './subscriptions.tsx';
 import parcelApp from './parcel.tsx';
 import rewardsApp from './rewards.tsx';
+import groupsApp from './groups.tsx';
 
 const app = new Hono();
 
@@ -90,6 +91,7 @@ app.route('/make-server-69a10ee8/recurring',     recurringApp);
 app.route('/make-server-69a10ee8/subscriptions', subscriptionsApp);
 app.route('/make-server-69a10ee8/parcel',        parcelApp);
 app.route('/make-server-69a10ee8/rewards',       rewardsApp);
+app.route('/make-server-69a10ee8/groups',        groupsApp);
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;

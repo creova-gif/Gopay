@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { User } from '../App';
-import { 
-  ArrowLeft, MapPin, Calendar, Users, Sparkles, ChevronRight, 
+import { projectId } from '../utils/supabase/info';
+import {
+  ArrowLeft, MapPin, Calendar, Users, Sparkles, ChevronRight,
   Mountain, Compass, Camera, Star, Shield, Clock, Heart,
   Search, Info, Check, Filter, Award, Zap, TrendingUp,
-  Trees, Fish, Bird, Tent, Bike, Plane, Car, Palmtree, Sun
+  Trees, Fish, Bird, Tent, Bike, Plane, Car, Palmtree, Sun, X
 } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
@@ -55,13 +56,59 @@ export function GoSafariPage({ user, accessToken, onBack }: GoSafariPageProps) {
   const [travelers, setTravelers] = useState(2);
   const [selectedDate, setSelectedDate] = useState('');
   const [sortBy, setSortBy] = useState<'popular' | 'price' | 'nearest'>('popular');
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [safariPin, setSafariPin] = useState('');
+  const [booking, setBooking] = useState(false);
+  const [bookingRef, setBookingRef] = useState('');
+  const [booked, setBooked] = useState(false);
 
   const handleBookSafari = () => {
     if (!selectedDate) {
       toast.error('Please select a travel date');
       return;
     }
-    toast.success(`Booking request submitted for ${selectedPark?.name}! A safari coordinator will contact you within 24 hours.`);
+    setShowPinModal(true);
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!selectedPark || safariPin.length !== 4) return;
+    setBooking(true);
+    try {
+      const fee = user?.nida ? selectedPark.citizenFee : selectedPark.nonResidentFee;
+      const total = fee * travelers;
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/travel/parks/book`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+          body: JSON.stringify({
+            park: selectedPark.id,
+            package: 'day-visit',
+            date: selectedDate,
+            visitors: travelers,
+            visitorName: user?.name || '',
+            visitorPhone: user?.phone || '',
+            nationality: user?.nida ? 'TZ' : 'international',
+            total,
+            pin: safariPin,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        toast.error(data.error || 'Uhifadhi umeshindwa. Jaribu tena.');
+        setBooking(false);
+        return;
+      }
+      setBookingRef(data.reference || `TANAPA-${Date.now()}`);
+      setBooked(true);
+      setShowPinModal(false);
+      setSafariPin('');
+    } catch {
+      toast.error('Hitilafu ya mtandao. Jaribu tena.');
+    } finally {
+      setBooking(false);
+    }
   };
 
   const circuits = [
@@ -716,6 +763,7 @@ export function GoSafariPage({ user, accessToken, onBack }: GoSafariPageProps) {
     const estimatedCost = (selectedPark.citizenFee * travelers) + (travelers * 150000); // Park fee + estimated accommodation/transport
 
     return (
+      <>
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="relative h-80">
@@ -960,18 +1008,70 @@ export function GoSafariPage({ user, accessToken, onBack }: GoSafariPageProps) {
                 </p>
               </div>
 
-              <Button onClick={handleBookSafari} className="w-full bg-[#1a5f3f] hover:bg-[#164d33] py-6 text-lg">
-                <Calendar className="w-5 h-5 mr-2" />
-                Book Safari Package - {formatCurrency(estimatedCost)}
-              </Button>
-
-              <p className="text-xs text-gray-500 text-center">
-                By booking, you agree to our terms. Free cancellation up to 48 hours before departure.
-              </p>
+              {booked ? (
+                <div className="bg-green-50 border-2 border-green-400 rounded-xl p-5 text-center">
+                  <Check className="w-10 h-10 text-green-600 mx-auto mb-2" />
+                  <p className="font-bold text-green-900 text-lg">Uhifadhi Umekamilika!</p>
+                  <p className="text-sm text-green-700 mt-1">Ref: {bookingRef}</p>
+                  <p className="text-xs text-gray-500 mt-2">Uhifadhi umehifadhiwa kwenye akaunti yako. Angalia barua pepe yako.</p>
+                  <Button onClick={() => { setBooked(false); setSelectedPark(null); }} className="mt-4 bg-[#1a5f3f] hover:bg-[#164d33] w-full">
+                    Rudi kwa Mbuga
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Button onClick={handleBookSafari} className="w-full bg-[#1a5f3f] hover:bg-[#164d33] py-6 text-lg">
+                    <Calendar className="w-5 h-5 mr-2" />
+                    Book Safari Package - {formatCurrency(estimatedCost)}
+                  </Button>
+                  <p className="text-xs text-gray-500 text-center">
+                    By booking, you agree to our terms. Free cancellation up to 48 hours before departure.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* PIN confirmation modal */}
+      {showPinModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setShowPinModal(false)}>
+          <div className="bg-white rounded-t-3xl w-full max-w-md p-6 pb-10" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-bold text-lg">Thibitisha Uhifadhi</h3>
+              <button onClick={() => setShowPinModal(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="bg-green-50 rounded-xl p-4 mb-5">
+              <p className="text-sm text-gray-600 mb-1">{selectedPark?.name}</p>
+              <p className="text-sm text-gray-600">{selectedDate} · {travelers} msafiri</p>
+              <p className="text-xl font-bold text-[#1a5f3f] mt-2">{formatCurrency(estimatedCost)}</p>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">Ingiza PIN yako kukubaliana na malipo:</p>
+            <input
+              type="password"
+              inputMode="numeric"
+              maxLength={4}
+              value={safariPin}
+              onChange={e => setSafariPin(e.target.value.replace(/\D/g, '').slice(0, 4))}
+              placeholder="••••"
+              className="w-32 border-2 rounded-xl px-4 py-3 text-center text-xl tracking-widest font-bold mb-5"
+              style={{ borderColor: safariPin.length === 4 ? '#1a5f3f' : '#e5e7eb' }}
+              autoFocus
+            />
+            <Button
+              onClick={handleConfirmBooking}
+              disabled={safariPin.length !== 4 || booking}
+              className="w-full bg-[#1a5f3f] hover:bg-[#164d33] h-12 font-bold"
+            >
+              {booking ? 'Inaweka...' : 'Thibitisha Uhifadhi'}
+            </Button>
+          </div>
+        </div>
+      )}
+      </>
     );
   }
 
