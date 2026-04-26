@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { User } from '../App';
 import { RestaurantsSection } from './RestaurantsSection';
@@ -1387,7 +1388,7 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
                   <span className="text-xs font-medium text-center" style={{ color: 'rgba(255,255,255,0.8)' }}>Travel</span>
                 </button>
                 <button
-                  onClick={() => onNavigate('government')}
+                  onClick={() => onNavigate('governmentservices')}
                   className="flex flex-col items-center gap-2 p-3 rounded-2xl transition-all active:scale-95"
                   style={{ background: 'rgba(255,255,255,0.05)' }}
                 >
@@ -1422,7 +1423,7 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
               </div>
               <div className="space-y-3">
                 <button
-                  onClick={() => onNavigate('government')}
+                  onClick={() => onNavigate('governmentservices')}
                   className="w-full p-4 rounded-2xl transition-all active:scale-95 flex items-center justify-between group"
                   style={{
                     background: 'rgba(255,255,255,0.03)',
@@ -1445,7 +1446,7 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
                 </button>
 
                 <button
-                  onClick={() => onNavigate('government')}
+                  onClick={() => onNavigate('governmentservices')}
                   className="w-full p-4 rounded-2xl transition-all active:scale-95 flex items-center justify-between group"
                   style={{
                     background: 'rgba(255,255,255,0.03)',
@@ -1468,7 +1469,7 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
                 </button>
 
                 <button
-                  onClick={() => onNavigate('government')}
+                  onClick={() => onNavigate('governmentservices')}
                   className="w-full p-4 rounded-2xl transition-all active:scale-95 flex items-center justify-between group"
                   style={{
                     background: 'rgba(255,255,255,0.03)',
@@ -1491,7 +1492,7 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
                 </button>
 
                 <button
-                  onClick={() => onNavigate('government')}
+                  onClick={() => onNavigate('governmentservices')}
                   className="w-full p-4 rounded-2xl transition-all active:scale-95 flex items-center justify-between group"
                   style={{
                     background: 'rgba(255,255,255,0.03)',
@@ -2129,7 +2130,7 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
               </div>
               <div className="space-y-3">
                 <button
-                  onClick={() => onNavigate('loans')}
+                  onClick={() => onNavigate('microlans')}
                   className="w-full p-4 rounded-2xl transition-all active:scale-95 flex items-center justify-between group"
                   style={{
                     background: 'rgba(255,255,255,0.03)',
@@ -2152,7 +2153,7 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
                 </button>
 
                 <button
-                  onClick={() => onNavigate('insurance')}
+                  onClick={() => toast.info('Bima itapatikana hivi karibuni')}
                   className="w-full p-4 rounded-2xl transition-all active:scale-95 flex items-center justify-between group"
                   style={{
                     background: 'rgba(255,255,255,0.03)',
@@ -2175,7 +2176,7 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
                 </button>
 
                 <button
-                  onClick={() => onNavigate('investments')}
+                  onClick={() => toast.info('Uwekezaji utapatikana hivi karibuni')}
                   className="w-full p-4 rounded-2xl transition-all active:scale-95 flex items-center justify-between group"
                   style={{
                     background: 'rgba(255,255,255,0.03)',

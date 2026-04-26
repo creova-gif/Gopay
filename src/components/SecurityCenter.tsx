@@ -103,7 +103,7 @@ export function SecurityCenter({ onBack, onNavigate }: SecurityCenterProps) {
       subtitle: 'View alerts & patterns',
       icon: AlertTriangle,
       color: 'bg-gradient-to-br from-purple-600 to-purple-700',
-      action: () => onNavigate('frauddetection')
+      action: () => onNavigate('advancedsecurity')
     },
     {
       id: 'kyc',
@@ -111,7 +111,7 @@ export function SecurityCenter({ onBack, onNavigate }: SecurityCenterProps) {
       subtitle: 'Identity & compliance',
       icon: FileText,
       color: 'bg-gradient-to-br from-green-600 to-green-700',
-      action: () => onNavigate('enhancedkyc')
+      action: () => onNavigate('advancedsecurity')
     }
   ];
 

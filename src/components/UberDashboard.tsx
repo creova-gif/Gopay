@@ -992,7 +992,7 @@ export function UberDashboard({ user, accessToken, onNavigate, onLogout }: UberD
               <ChevronRight className="size-5" />
             </button>
             <button 
-              onClick={() => onNavigate('privacy')}
+              onClick={() => onNavigate('security')}
               className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl p-4 flex items-center justify-between hover:from-green-600 hover:to-emerald-700 transition-all shadow-md"
             >
               <div className="flex items-center gap-3">
