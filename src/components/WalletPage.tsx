@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { TopUpModal } from './TopUpModal';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -30,6 +31,7 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
   const [balance, setBalance] = useState(0);
   const [linkedAccounts, setLinkedAccounts] = useState<LinkedAccount[]>([]);
   const [showAddFunds, setShowAddFunds] = useState(false);
+  const [showTopUpModal, setShowTopUpModal] = useState(false);
   const [showSendMoney, setShowSendMoney] = useState(false);
   const [showRequestMoney, setShowRequestMoney] = useState(false);
   const [showLinkAccount, setShowLinkAccount] = useState(false);
@@ -350,7 +352,7 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
             
             <div className="grid grid-cols-4 gap-2">
               <button
-                onClick={() => setShowAddFunds(true)}
+                onClick={() => { setShowAddFunds(true); setShowTopUpModal(true); }}
                 className="flex flex-col items-center gap-1 p-3 bg-blue-50 hover:bg-blue-100 rounded-2xl transition-all"
               >
                 <div className="bg-blue-600 p-2 rounded-xl">
@@ -926,7 +928,7 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
                 )}
               </div>
               <div className="text-center text-sm text-gray-500">
-                {qrCodeData.amount > 0 
+                {qrCodeData.amount > 0
                   ? 'This QR code is for a specific amount'
                   : 'This QR code can be used for any amount'}
               </div>
@@ -934,6 +936,14 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
           )}
         </DialogContent>
       </Dialog>
+
+      <TopUpModal
+        open={showTopUpModal}
+        onClose={() => setShowTopUpModal(false)}
+        accessToken={accessToken}
+        userId={user.id}
+        onSuccess={fetchWalletData}
+      />
     </div>
   );
 }
