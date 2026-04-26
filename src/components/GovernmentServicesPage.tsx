@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ArrowLeft, Shield, Car, GraduationCap, Building2, FileText,
@@ -296,7 +297,14 @@ export function GovernmentServicesPage({ onBack, onNavigate }: GovernmentService
                         if (service.id === 'nida') { setShowNidaModal(true); return; }
                         if (service.id === 'fines') { setActiveTab('fines'); return; }
                         if (service.id === 'business' || service.id === 'licenses') { setActiveTab('licenses'); return; }
-                        if (!locked) { /* navigate to sub-page */ }
+                        if (!locked) {
+                          const messages: Record<string, string> = {
+                            education: 'Lipa ada: weka namba ya udahili na kiasi. Hivi karibuni!',
+                            municipal: 'Huduma za manispaa: kodi ya ardhi, maji, taka. Hivi karibuni!',
+                            tra: 'Huduma za TRA: kodi ya mapato, TIN. Hivi karibuni!',
+                          };
+                          toast.info(messages[service.id] ?? 'Huduma hii itapatikana hivi karibuni.');
+                        }
                       }}
                       disabled={locked}
                       className="text-left rounded-3xl p-4 transition-all active:scale-95 relative overflow-hidden"

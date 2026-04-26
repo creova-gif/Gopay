@@ -49,8 +49,15 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
   const [mobileNetwork, setMobileNetwork] = useState<'mpesa' | 'tigo' | 'airtel' | 'halopesa'>('mpesa');
   const { track } = useAnalytics(accessToken);
 
+  const isDemoMode = accessToken === 'demo-token-active';
+
   const fetchBalance = () => {
     if (!accessToken) return;
+    if (isDemoMode) {
+      setBalance(250000);
+      setOptimisticBalance(250000);
+      return;
+    }
     fetch(
       `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/balance`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -125,6 +132,14 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
 
     // Optimistic balance update
     if (balance !== null) setOptimisticBalance(balance - total);
+
+    if (isDemoMode) {
+      await new Promise(r => setTimeout(r, 1000));
+      setTransactionRef(`DEMO-${Date.now()}`);
+      setStep('success');
+      setSending(false);
+      return;
+    }
 
     try {
       const isExternal = transferMethod === 'mobile';

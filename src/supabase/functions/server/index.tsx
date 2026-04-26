@@ -26,6 +26,11 @@ import carsApp from './cars.tsx';
 import complianceApp from './compliance.tsx';
 import travelApp from './travel.tsx';
 import paymentAggregatorApp from './payment-aggregator.tsx';
+import loansApp from './loans.tsx';
+import recurringApp from './recurring.tsx';
+import subscriptionsApp from './subscriptions.tsx';
+import parcelApp from './parcel.tsx';
+import rewardsApp from './rewards.tsx';
 
 const app = new Hono();
 
@@ -80,6 +85,11 @@ app.route('/make-server-69a10ee8/cars',          carsApp);
 // compliance mounts at root prefix so /kyc/submit and /kyc/status resolve correctly
 app.route('/make-server-69a10ee8',               complianceApp);
 app.route('/make-server-69a10ee8/travel',        travelApp);
+app.route('/make-server-69a10ee8/loans',         loansApp);
+app.route('/make-server-69a10ee8/recurring',     recurringApp);
+app.route('/make-server-69a10ee8/subscriptions', subscriptionsApp);
+app.route('/make-server-69a10ee8/parcel',        parcelApp);
+app.route('/make-server-69a10ee8/rewards',       rewardsApp);
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -395,6 +405,32 @@ app.get('/make-server-69a10ee8/transactions/recent', async (c) => {
     return c.json({ transactions: userTransactions });
   } catch (error: any) {
     console.error('Error fetching transactions:', error);
+    return c.json({ error: error.message }, 500);
+  }
+});
+
+// Full Transaction History (paginated)
+app.get('/make-server-69a10ee8/transactions/history', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
+  try {
+    const limit = Math.min(Number(c.req.query('limit') ?? 20), 50);
+    const offset = Math.max(Number(c.req.query('offset') ?? 0), 0);
+
+    const allTransactions = await kv.getByPrefix('transaction:');
+    const userTransactions = allTransactions
+      .filter((tx: any) => tx.userId === userId)
+      .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    const total = userTransactions.length;
+    const page = userTransactions.slice(offset, offset + limit);
+
+    return c.json({ transactions: page, total, hasMore: offset + limit < total });
+  } catch (error: any) {
+    console.error('Error fetching transaction history:', error);
     return c.json({ error: error.message }, 500);
   }
 });

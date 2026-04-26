@@ -62,6 +62,7 @@ import { InvestorDemoMode } from './components/InvestorDemoMode';
 import { GOrewardsCashback } from './components/GOrewardsCashback';
 import { SupportChat } from './components/SupportChat';
 import { RecurringPaymentsPage } from './components/RecurringPaymentsPage';
+import { OnboardingFlow } from './components/OnboardingFlow';
 import { supabase } from './utils/supabase/client';
 import { projectId } from './utils/supabase/info';
 import { useAnalytics } from './hooks/useAnalytics';
@@ -96,6 +97,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [loading, setLoading] = useState(true);
   const [supportOpen, setSupportOpen] = useState(false);
   const profileFetchInFlight = useRef(false);
@@ -205,19 +207,23 @@ export default function App() {
     } catch { /* silently fail */ }
   };
 
-  const handleAuthSuccess = async (token: string) => {
+  const handleAuthSuccess = async (token: string, isNewUser = false) => {
     const demo = token === 'demo-token-active';
     setIsDemoMode(demo);
     setAccessToken(token);
 
     if (demo) {
       setUser({ id: 'demo', email: 'demo@gopay.tz', name: 'Demo User', phone: '+255 700 000 000', nida: '' });
+      setCurrentPage('dashboard');
     } else {
       await fetchUserProfile(token);
       registerPushNotifications(token);
+      if (isNewUser) {
+        setShowOnboarding(true);
+      } else {
+        setCurrentPage('dashboard');
+      }
     }
-
-    setCurrentPage('dashboard');
   };
 
   const handleLogout = async () => {
@@ -267,6 +273,24 @@ export default function App() {
         ) : (
           <AuthPage onAuthSuccess={handleAuthSuccess} onViewDemo={() => setCurrentPage('demo')} />
         )}
+      </ErrorBoundary>
+    );
+  }
+
+  if (showOnboarding) {
+    return (
+      <ErrorBoundary>
+        <Toaster position="top-center" richColors />
+        <OnboardingFlow
+          onComplete={() => {
+            setShowOnboarding(false);
+            setCurrentPage('dashboard');
+          }}
+          onSkipToDemo={() => {
+            setShowOnboarding(false);
+            setCurrentPage('dashboard');
+          }}
+        />
       </ErrorBoundary>
     );
   }

@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface AuthPageProps {
-  onAuthSuccess: (accessToken: string) => void;
+  onAuthSuccess: (accessToken: string, isNewUser?: boolean) => void;
   onViewDemo?: () => void;
 }
 
@@ -79,7 +79,7 @@ export function AuthPage({ onAuthSuccess, onViewDemo }: AuthPageProps) {
 
       if (signInError) throw signInError;
       if (session?.access_token) {
-        onAuthSuccess(session.access_token);
+        onAuthSuccess(session.access_token, true);
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred during sign up');
@@ -107,6 +107,28 @@ export function AuthPage({ onAuthSuccess, onViewDemo }: AuthPageProps) {
     } catch (err: any) {
       setError(err.message || 'Invalid email or password');
       console.error('Sign in error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
+
+  const handleForgotPassword = async () => {
+    if (!signInData.email) {
+      setError('Weka barua pepe yako kwanza');
+      return;
+    }
+    setIsLoading(true);
+    setError('');
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(signInData.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (resetError) throw resetError;
+      setForgotPasswordSent(true);
+    } catch (err: any) {
+      setError(err.message || 'Imeshindwa kutuma barua pepe ya kurekebisha nenosiri');
     } finally {
       setIsLoading(false);
     }
@@ -374,8 +396,31 @@ export function AuthPage({ onAuthSuccess, onViewDemo }: AuthPageProps) {
                         required
                       />
                     </div>
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        disabled={isLoading}
+                        style={{ fontSize: '12px', color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      >
+                        Umesahau nenosiri?
+                      </button>
+                    </div>
+                    {forgotPasswordSent && (
+                      <div
+                        className="border px-4 py-3 rounded-lg"
+                        style={{
+                          backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                          borderColor: 'rgba(22, 163, 74, 0.3)',
+                          color: '#4ade80',
+                          fontSize: '13px'
+                        }}
+                      >
+                        Barua pepe ya kurekebisha nenosiri imetumwa. Angalia sanduku lako.
+                      </div>
+                    )}
                     {error && (
-                      <div 
+                      <div
                         className="border px-4 py-3 rounded-lg"
                         style={{
                           backgroundColor: 'rgba(220, 38, 38, 0.1)',
@@ -387,8 +432,8 @@ export function AuthPage({ onAuthSuccess, onViewDemo }: AuthPageProps) {
                         {error}
                       </div>
                     )}
-                    <Button 
-                      type="submit" 
+                    <Button
+                      type="submit"
                       className="w-full h-12 text-white rounded-xl"
                       style={{
                         backgroundColor: '#16a34a',

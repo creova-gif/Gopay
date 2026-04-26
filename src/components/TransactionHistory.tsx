@@ -20,9 +20,14 @@ interface TransactionHistoryProps {
 type FilterType = 'all' | 'income' | 'expense' | 'pending';
 type CategoryType = 'all' | 'shopping' | 'bills' | 'transfer' | 'travel';
 
+const PAGE_SIZE = 20;
+
 export function TransactionHistory({ user, accessToken, onBack }: TransactionHistoryProps) {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [offset, setOffset] = useState(0);
   const [filter, setFilter] = useState<FilterType>('all');
   const [category, setCategory] = useState<CategoryType>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,14 +35,14 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
   const [selectedTx, setSelectedTx] = useState<any | null>(null);
 
   useEffect(() => {
-    fetchTransactions();
+    fetchTransactions(0, true);
   }, []);
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = async (newOffset: number, replace: boolean) => {
     try {
-      setLoading(true);
+      if (replace) setLoading(true); else setLoadingMore(true);
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/transactions/history`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/transactions/history?limit=${PAGE_SIZE}&offset=${newOffset}`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -47,25 +52,31 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
 
       if (response.ok) {
         const data = await response.json();
-        setTransactions(data.transactions || []);
+        const incoming = data.transactions || [];
+        setTransactions(prev => replace ? incoming : [...prev, ...incoming]);
+        setHasMore(data.hasMore ?? false);
+        setOffset(newOffset + incoming.length);
       } else {
         toast.error('Failed to load transactions');
-        setTransactions([]);
+        if (replace) setTransactions([]);
       }
     } catch (error) {
       console.error('Error fetching transactions:', error);
       toast.error('Network error. Could not load transactions.');
-      setTransactions([]);
+      if (replace) setTransactions([]);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await fetchTransactions();
+    await fetchTransactions(0, true);
     setTimeout(() => setRefreshing(false), 1000);
   };
+
+  const handleLoadMore = () => fetchTransactions(offset, false);
 
   const demoTransactions = [
     {
@@ -413,6 +424,21 @@ export function TransactionHistory({ user, accessToken, onBack }: TransactionHis
             <p style={{ fontSize: '16px', fontWeight: 600, color: '#fff', marginBottom: '6px' }}>Hakuna shughuli</p>
             <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>Badilisha vichujio uone zaidi</p>
           </div>
+        )}
+
+        {hasMore && !searchQuery && filter === 'all' && category === 'all' && (
+          <button
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="w-full py-3 rounded-2xl text-sm font-semibold transition-all active:scale-95"
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: loadingMore ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.7)',
+            }}
+          >
+            {loadingMore ? 'Inapakia...' : 'Pakia Zaidi'}
+          </button>
         )}
       </div>
 

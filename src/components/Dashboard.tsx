@@ -138,7 +138,14 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
     fetchTransactions();
   }, []);
 
+  const isDemoMode = accessToken === 'demo-token-active';
+
   const fetchWalletData = async () => {
+    if (isDemoMode) {
+      setBalance({ balance: 250000, currency: 'TZS' });
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
@@ -164,6 +171,14 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
   };
 
   const fetchTransactions = async () => {
+    if (isDemoMode) {
+      setTransactions([
+        { id: 'dt1', type: 'expense', amount: -25000, description: 'Umeme (TANESCO)', timestamp: new Date(Date.now() - 3600000).toISOString(), status: 'completed' },
+        { id: 'dt2', type: 'income', amount: 50000, description: 'Malipo yaliyopokelewa', timestamp: new Date(Date.now() - 7200000).toISOString(), status: 'completed' },
+        { id: 'dt3', type: 'expense', amount: -15000, description: 'Chakula cha mchana', timestamp: new Date(Date.now() - 86400000).toISOString(), status: 'completed' },
+      ]);
+      return;
+    }
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
     try {
