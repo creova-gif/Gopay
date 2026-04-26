@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { User } from '../App';
-import { ArrowLeft, Plus, Send, Smartphone, Building, CreditCard, ChevronRight, QrCode, Download, UserPlus, Wifi, ArrowDownToLine } from 'lucide-react';
+import { ArrowLeft, Plus, Send, Smartphone, Building, CreditCard, ChevronRight, QrCode, Download, UserPlus, Wifi, ArrowDownToLine, X } from 'lucide-react';
 import { projectId } from '../utils/supabase/info';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -855,68 +855,174 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
         </DialogContent>
       </Dialog>
 
-      {/* Link Account Dialog */}
-      <Dialog open={showLinkAccount} onOpenChange={setShowLinkAccount}>
-        <DialogContent className="rounded-3xl">
-          <DialogHeader>
-            <DialogTitle>Add Payment Method</DialogTitle>
-            <DialogDescription>Link a new account or card</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleLinkAccount} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="link-type">Account Type</Label>
-              <Select
-                value={linkAccountData.type}
-                onValueChange={(value) => setLinkAccountData({ ...linkAccountData, type: value })}
-              >
-                <SelectTrigger className="h-12 rounded-xl">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="mobile_money">Mobile Money</SelectItem>
-                  <SelectItem value="bank">Bank Account</SelectItem>
-                  <SelectItem value="card">Debit/Credit Card</SelectItem>
-                </SelectContent>
-              </Select>
+      {/* ── Link Account Dark Bottom Sheet ── */}
+      {showLinkAccount && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 200 }}>
+          <div onClick={() => setShowLinkAccount(false)}
+            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, borderRadius: '24px 24px 0 0',
+            background: 'linear-gradient(180deg,#0f1a0f 0%,#080d08 100%)',
+            border: '1px solid rgba(255,255,255,0.08)', borderBottom: 'none',
+            maxHeight: '92vh', overflowY: 'auto', paddingBottom: 36 }}>
+
+            {/* Drag handle */}
+            <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.2)', margin: '14px auto 0' }} />
+
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px 20px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Plus style={{ width: 22, height: 22, color: '#4ade80' }} />
+                </div>
+                <div>
+                  <p style={{ fontSize: '18px', fontWeight: 900, color: '#fff', marginBottom: 2 }}>Unganisha Akaunti</p>
+                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>Ongeza njia mpya ya malipo</p>
+                </div>
+              </div>
+              <button onClick={() => setShowLinkAccount(false)}
+                style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                <X style={{ width: 15, height: 15, color: 'rgba(255,255,255,0.6)' }} />
+              </button>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="link-provider">Provider</Label>
-              <Input
-                id="link-provider"
-                placeholder="M-Pesa, CRDB, etc."
-                className="h-12 rounded-xl"
-                value={linkAccountData.provider}
-                onChange={(e) => setLinkAccountData({ ...linkAccountData, provider: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="link-account">Account Number</Label>
-              <Input
-                id="link-account"
-                placeholder="Enter account number"
-                className="h-12 rounded-xl"
-                value={linkAccountData.accountNumber}
-                onChange={(e) => setLinkAccountData({ ...linkAccountData, accountNumber: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>PIN</Label>
-              <InlinePinPad
-                value={linkAccountData.pin}
-                onChange={(v) => setLinkAccountData({ ...linkAccountData, pin: v })}
-              />
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full h-12 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white rounded-xl"
-            >
-              Link Account
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
+
+            <form onSubmit={handleLinkAccount} style={{ padding: '20px' }}>
+
+              {/* ── Account Type ── */}
+              <div style={{ marginBottom: 22 }}>
+                <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 10 }}>AINA YA AKAUNTI</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                  {[
+                    { value: 'mobile_money', icon: '📱', label: 'M-Money',  accentColor: '#4ade80' },
+                    { value: 'bank',         icon: '🏦', label: 'Benki',    accentColor: '#60a5fa' },
+                    { value: 'card',         icon: '💳', label: 'Kadi',     accentColor: '#fb923c' },
+                  ].map(opt => {
+                    const selected = linkAccountData.type === opt.value;
+                    return (
+                      <button type="button" key={opt.value}
+                        onClick={() => setLinkAccountData({ ...linkAccountData, type: opt.value, provider: '' })}
+                        style={{ padding: '14px 8px', borderRadius: 16, textAlign: 'center', cursor: 'pointer', transition: 'all 0.15s',
+                          border: `1px solid ${selected ? opt.accentColor : 'rgba(255,255,255,0.08)'}`,
+                          background: selected ? `${opt.accentColor}18` : 'rgba(255,255,255,0.04)',
+                          boxShadow: selected ? `0 0 16px ${opt.accentColor}25` : 'none' }}>
+                        <div style={{ fontSize: '26px', marginBottom: 7 }}>{opt.icon}</div>
+                        <p style={{ fontSize: '11px', fontWeight: 800, color: selected ? opt.accentColor : 'rgba(255,255,255,0.55)' }}>{opt.label}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── Provider quick-picks ── */}
+              {linkAccountData.type && (
+                <div style={{ marginBottom: 22 }}>
+                  <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 10 }}>MTOA HUDUMA</p>
+                  {linkAccountData.type === 'mobile_money' && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                      {[
+                        { name: 'M-Pesa',       emoji: '🟢' },
+                        { name: 'Airtel Money', emoji: '🔴' },
+                        { name: 'Tigo Pesa',    emoji: '🔵' },
+                        { name: 'Halopesa',     emoji: '🟠' },
+                      ].map(p => {
+                        const sel = linkAccountData.provider === p.name;
+                        return (
+                          <button type="button" key={p.name}
+                            onClick={() => setLinkAccountData({ ...linkAccountData, provider: p.name })}
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
+                              border: `1px solid ${sel ? '#4ade80' : 'rgba(255,255,255,0.1)'}`,
+                              background: sel ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.04)',
+                              color: sel ? '#4ade80' : 'rgba(255,255,255,0.6)' }}>
+                            <span>{p.emoji}</span>{p.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {linkAccountData.type === 'bank' && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                      {['CRDB', 'NMB', 'NBC', 'DTB', 'Stanbic', 'Equity'].map(p => {
+                        const sel = linkAccountData.provider === p;
+                        return (
+                          <button type="button" key={p}
+                            onClick={() => setLinkAccountData({ ...linkAccountData, provider: p })}
+                            style={{ padding: '7px 14px', borderRadius: 20, fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
+                              border: `1px solid ${sel ? '#60a5fa' : 'rgba(255,255,255,0.1)'}`,
+                              background: sel ? 'rgba(96,165,250,0.15)' : 'rgba(255,255,255,0.04)',
+                              color: sel ? '#60a5fa' : 'rgba(255,255,255,0.6)' }}>
+                            {p}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {linkAccountData.type === 'card' && (
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                      {[{ name: 'Visa', emoji: '💙' }, { name: 'Mastercard', emoji: '🔶' }].map(p => {
+                        const sel = linkAccountData.provider === p.name;
+                        return (
+                          <button type="button" key={p.name}
+                            onClick={() => setLinkAccountData({ ...linkAccountData, provider: p.name })}
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderRadius: 20, fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
+                              border: `1px solid ${sel ? '#fb923c' : 'rgba(255,255,255,0.1)'}`,
+                              background: sel ? 'rgba(251,146,60,0.15)' : 'rgba(255,255,255,0.04)',
+                              color: sel ? '#fb923c' : 'rgba(255,255,255,0.6)' }}>
+                            <span>{p.emoji}</span>{p.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <input type="text"
+                    placeholder={linkAccountData.type === 'mobile_money' ? 'Au andika jina la mtoa...' : linkAccountData.type === 'bank' ? 'Au andika jina la benki...' : 'Au andika mtoa...'}
+                    value={linkAccountData.provider}
+                    onChange={e => setLinkAccountData({ ...linkAccountData, provider: e.target.value })}
+                    style={{ width: '100%', height: 50, padding: '0 16px', borderRadius: 14, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' as const }} />
+                </div>
+              )}
+
+              {/* ── Account / Phone Number ── */}
+              {linkAccountData.type && (
+                <div style={{ marginBottom: 24 }}>
+                  <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 8 }}>
+                    {linkAccountData.type === 'mobile_money' ? 'NAMBARI YA SIMU' : linkAccountData.type === 'card' ? 'NAMBARI YA KADI' : 'NAMBARI YA AKAUNTI'}
+                  </p>
+                  <input type="text" required
+                    placeholder={linkAccountData.type === 'mobile_money' ? '+255 XXX XXX XXX' : linkAccountData.type === 'card' ? '•••• •••• •••• ••••' : 'Ingiza nambari ya akaunti'}
+                    value={linkAccountData.accountNumber}
+                    onChange={e => setLinkAccountData({ ...linkAccountData, accountNumber: e.target.value })}
+                    style={{ width: '100%', height: 52, padding: '0 16px', borderRadius: 14, background: 'rgba(255,255,255,0.06)', border: `1px solid ${linkAccountData.accountNumber ? 'rgba(74,222,128,0.4)' : 'rgba(255,255,255,0.1)'}`, color: '#fff', fontSize: '15px', outline: 'none', boxSizing: 'border-box' as const, transition: 'border 0.2s' }} />
+                </div>
+              )}
+
+              {/* ── PIN ── */}
+              {linkAccountData.type && (
+                <div style={{ marginBottom: 28 }}>
+                  <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 14 }}>PIN YA KUTHIBITISHA</p>
+                  <InlinePinPad
+                    value={linkAccountData.pin}
+                    onChange={v => setLinkAccountData({ ...linkAccountData, pin: v })}
+                  />
+                </div>
+              )}
+
+              {/* ── Submit ── */}
+              {linkAccountData.type && (
+                <button type="submit"
+                  disabled={!linkAccountData.type || !linkAccountData.provider || !linkAccountData.accountNumber || linkAccountData.pin.length < 4}
+                  style={{ width: '100%', height: 54, borderRadius: 18, fontSize: '15px', fontWeight: 900, color: '#fff', border: 'none', cursor: 'pointer', transition: 'all 0.2s',
+                    background: (linkAccountData.provider && linkAccountData.accountNumber && linkAccountData.pin.length >= 4)
+                      ? 'linear-gradient(135deg,#16a34a,#15803d)'
+                      : 'rgba(22,163,74,0.3)',
+                    boxShadow: (linkAccountData.provider && linkAccountData.accountNumber && linkAccountData.pin.length >= 4)
+                      ? '0 6px 24px rgba(22,163,74,0.35)'
+                      : 'none' }}>
+                  Unganisha Akaunti
+                </button>
+              )}
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* QR Code Dialog */}
       <Dialog open={showQRCode} onOpenChange={setShowQRCode}>
