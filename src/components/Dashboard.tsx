@@ -2460,13 +2460,11 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
       {/* ── WORLD-CLASS FLOATING ISLAND BOTTOM NAV ── */}
       <nav role="navigation" aria-label="Main navigation" style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
-        background: 'rgba(8,13,8,0.0)',
+        background: 'rgba(8,13,8,0.97)',
+        borderTop: '1px solid rgba(255,255,255,0.06)',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}>
-        {/* Gradient fade — masks content scrolling underneath */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,13,8,1) 0%, rgba(8,13,8,0.95) 60%, transparent 100%)', pointerEvents: 'none', zIndex: -1 }} />
-
-        <div style={{ maxWidth: 480, margin: '0 auto', padding: '0 12px 12px' }}>
+        <div style={{ maxWidth: 480, margin: '0 auto', padding: '8px 12px 12px' }}>
           {/* The floating island */}
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-around',
