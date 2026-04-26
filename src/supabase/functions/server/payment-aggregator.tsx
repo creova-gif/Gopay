@@ -1,6 +1,16 @@
 import { Hono } from 'npm:hono';
 import { cors } from 'npm:hono/cors';
 import * as kv from './kv_store.tsx';
+import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { processTopUp, processWithdrawal, processExternalSend } from './payments/payment-service.ts';
+import { handleSelcomWebhook, handleFlutterwaveWebhook } from './payments/webhook-handler.ts';
+
+function getDb() {
+  return createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  );
+}
 
 const paymentAggregatorApp = new Hono();
 
@@ -963,5 +973,123 @@ async function disburseTigo(phone: string, amount: number, ref: string): Promise
     reference: ref,
   });
 }
+
+// ── C2B Top-Up ────────────────────────────────────────────────
+paymentAggregatorApp.post('/topup', async (c) => {
+  try {
+    const authHeader = c.req.header('Authorization') ?? '';
+    const { data: { user }, error: authError } = await createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } },
+    ).auth.getUser();
+    if (authError || !user) return c.json({ error: 'Unauthorized' }, 401);
+
+    const { network, amount } = await c.req.json();
+    if (!network || !amount || amount <= 0) return c.json({ error: 'Missing network or amount' }, 400);
+
+    const wallet = await kv.get(`wallet:${user.id}`);
+    const phone = (wallet as Record<string, string>)?.phone ?? '';
+
+    const reference = `GO-TOP-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const result = await processTopUp(getDb(), {
+      userId: user.id, type: 'topup', network, amount,
+      currency: 'TZS', phone, reference, description: 'Wallet top-up',
+    });
+    return c.json(result, result.success ? 200 : 400);
+  } catch (e: unknown) {
+    console.error('topup error:', e);
+    return c.json({ error: 'Internal error' }, 500);
+  }
+});
+
+// ── B2C Withdrawal ────────────────────────────────────────────
+paymentAggregatorApp.post('/withdraw', async (c) => {
+  try {
+    const authHeader = c.req.header('Authorization') ?? '';
+    const { data: { user }, error: authError } = await createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } },
+    ).auth.getUser();
+    if (authError || !user) return c.json({ error: 'Unauthorized' }, 401);
+
+    const { network, amount, phone } = await c.req.json();
+    if (!network || !amount || !phone) return c.json({ error: 'Missing fields' }, 400);
+
+    const wallet = (await kv.get(`wallet:${user.id}`)) as { balance: number } | null;
+    const balance = wallet?.balance ?? 0;
+
+    const reference = `GO-WD-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const result = await processWithdrawal(getDb(), {
+      userId: user.id, type: 'withdrawal', network, amount,
+      currency: 'TZS', phone, reference, description: 'Wallet withdrawal',
+    }, balance);
+
+    if (result.success) {
+      await kv.set(`wallet:${user.id}`, { ...wallet, balance: balance - amount });
+    }
+    return c.json(result, result.success ? 200 : 400);
+  } catch (e: unknown) {
+    console.error('withdraw error:', e);
+    return c.json({ error: 'Internal error' }, 500);
+  }
+});
+
+// ── P2P External Send ─────────────────────────────────────────
+paymentAggregatorApp.post('/send-external', async (c) => {
+  try {
+    const authHeader = c.req.header('Authorization') ?? '';
+    const { data: { user }, error: authError } = await createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } },
+    ).auth.getUser();
+    if (authError || !user) return c.json({ error: 'Unauthorized' }, 401);
+
+    const { network, amount, phone } = await c.req.json();
+    if (!network || !amount || !phone) return c.json({ error: 'Missing fields' }, 400);
+
+    const wallet = (await kv.get(`wallet:${user.id}`)) as { balance: number } | null;
+    const balance = wallet?.balance ?? 0;
+
+    const reference = `GO-EXT-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const result = await processExternalSend(getDb(), {
+      userId: user.id, type: 'p2p_send', network, amount,
+      currency: 'TZS', phone, reference, description: 'External transfer',
+    }, balance);
+
+    if (result.success) {
+      await kv.set(`wallet:${user.id}`, { ...wallet, balance: balance - amount });
+    }
+    return c.json(result, result.success ? 200 : 400);
+  } catch (e: unknown) {
+    console.error('send-external error:', e);
+    return c.json({ error: 'Internal error' }, 500);
+  }
+});
+
+// ── Webhooks ──────────────────────────────────────────────────
+paymentAggregatorApp.post('/webhook/:provider', async (c) => {
+  const provider = c.req.param('provider');
+  const rawBody = await c.req.text();
+  const db = getDb();
+
+  if (provider === 'selcom') {
+    const sig = c.req.header('Digest') ?? '';
+    const secret = Deno.env.get('SELCOM_WEBHOOK_SECRET') ?? '';
+    const res = await handleSelcomWebhook(rawBody, sig, secret, db, kv);
+    return c.json(res.body, res.status as 200 | 400 | 401 | 500);
+  }
+
+  if (provider === 'flutterwave') {
+    const verifHash = c.req.header('verif-hash') ?? '';
+    const storedHash = Deno.env.get('FLUTTERWAVE_WEBHOOK_HASH') ?? '';
+    const res = await handleFlutterwaveWebhook(rawBody, verifHash, storedHash, db, kv);
+    return c.json(res.body, res.status as 200 | 400 | 401 | 500);
+  }
+
+  return c.json({ error: 'Unknown provider' }, 400);
+});
 
 export default paymentAggregatorApp;
