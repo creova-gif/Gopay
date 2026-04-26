@@ -1,12 +1,10 @@
 import { UnifiedBookingSystemUltimate as UnifiedBookingSystem } from './UnifiedBookingSystemUltimate';
 import { useState } from 'react';
-import { Button } from './ui/button';
 import { User } from '../App';
-import { 
-  ArrowLeft, Bus, Ship, Plane, Hotel, Mountain, Calendar, Users, MapPin, 
-  Clock, ChevronRight, Star, Check, CreditCard, Train, Ticket, Search,
-  ArrowRight, Info, Shield, AlertCircle, Sparkles, TrendingUp, Zap, Heart,
-  Wifi, Coffee, UtensilsCrossed, Waves, TreePalm
+import {
+  ArrowLeft, Bus, Ship, Plane, Hotel, Mountain, Users, MapPin,
+  ChevronRight, Star, Check, Train, Search,
+  ArrowRight, Shield, Sparkles, TrendingUp, Zap, Heart,
 } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
@@ -18,197 +16,178 @@ interface TravelPageRedesignedProps {
 
 type BookingService = 'flights' | 'buses' | 'sgr' | 'hotels' | 'parks';
 
+const SVC = {
+  flights: { accent: '#60a5fa', glow: 'rgba(96,165,250,0.25)',  gradient: 'linear-gradient(160deg,#0f172a 0%,#1e3a8a 55%,#1d4ed8 100%)' },
+  ferry:   { accent: '#22d3ee', glow: 'rgba(34,211,238,0.25)',  gradient: 'linear-gradient(160deg,#0c1a2e 0%,#0c4a6e 55%,#0369a1 100%)' },
+  buses:   { accent: '#4ade80', glow: 'rgba(74,222,128,0.25)',  gradient: 'linear-gradient(160deg,#052e16 0%,#14532d 55%,#166534 100%)' },
+  sgr:     { accent: '#f87171', glow: 'rgba(248,113,113,0.25)', gradient: 'linear-gradient(160deg,#1c0707 0%,#7f1d1d 55%,#991b1b 100%)' },
+  hotels:  { accent: '#fb923c', glow: 'rgba(251,146,60,0.25)',  gradient: 'linear-gradient(160deg,#1c0a00 0%,#7c2d12 55%,#c2410c 100%)' },
+  parks:   { accent: '#34d399', glow: 'rgba(52,211,153,0.25)',  gradient: 'linear-gradient(160deg,#022c22 0%,#065f46 55%,#047857 100%)' },
+};
+
 export function TravelPageRedesigned({ user, accessToken, onBack }: TravelPageRedesignedProps) {
   const [showUnifiedBooking, setShowUnifiedBooking] = useState(false);
   const [selectedBookingService, setSelectedBookingService] = useState<BookingService | null>(null);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-TZ', {
-      style: 'currency',
-      currency: 'TZS',
-      minimumFractionDigits: 0,
-    }).format(amount).replace('TSh', 'TZS');
-  };
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-TZ', { style: 'currency', currency: 'TZS', minimumFractionDigits: 0 })
+      .format(amount).replace('TSh', 'TZS');
 
-  // Quick Book Destinations
   const quickBookDestinations = [
     {
       name: 'Zanzibar Paradise',
       subtitle: 'Beach & Culture',
       image: 'https://images.unsplash.com/photo-1707296450219-2d9cc08bdef0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxaYW56aWJhciUyMGJlYWNoJTIwc3Vuc2V0fGVufDF8fHx8MTc2NzkwMTQ4OHww&ixlib=rb-4.1.0&q=80&w=1080',
-      from: 25000,
-      gradient: 'from-cyan-500 to-blue-600',
-      popular: true
+      from: 25000, badge: 'LIVE DEAL', discount: '-30%', service: 'flights' as BookingService,
     },
     {
       name: 'Serengeti Safari',
       subtitle: 'Wildlife Adventure',
       image: 'https://images.unsplash.com/photo-1641133292545-32e441e60190?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxTZXJlbmdldGklMjBzYWZhcmklMjB3aWxkbGlmZXxlbnwxfHx8fDE3Njc4NzU1NzN8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      from: 280000,
-      gradient: 'from-amber-500 to-orange-600',
-      popular: true
+      from: 280000, badge: 'MAARUFU', discount: null, service: 'parks' as BookingService,
     },
     {
       name: 'Kilimanjaro Trek',
       subtitle: 'Mountain Expedition',
       image: 'https://images.unsplash.com/photo-1650668302197-7f556c34cb91?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxNb3VudCUyMEtpbGltYW5qYXJvJTIwc3Vuc2V0fGVufDF8fHx8MTc2NzkwMTUyOHww&ixlib=rb-4.1.0&q=80&w=1080',
-      from: 450000,
-      gradient: 'from-purple-500 to-indigo-600',
-      popular: false
+      from: 450000, badge: null, discount: null, service: 'hotels' as BookingService,
     },
   ];
 
-  // Check if unified booking system should be shown
+  const goBook = (service: BookingService) => { setSelectedBookingService(service); setShowUnifiedBooking(true); };
+
   if (showUnifiedBooking && selectedBookingService) {
     return (
       <UnifiedBookingSystem
         user={user}
-        onBack={() => {
-          setShowUnifiedBooking(false);
-          setSelectedBookingService(null);
-        }}
+        onBack={() => { setShowUnifiedBooking(false); setSelectedBookingService(null); }}
         initialService={selectedBookingService}
       />
     );
   }
 
+  const tickerText = '🔥 Zanzibar Ferry 30% OFF  •  Precision Air TZS 155K  •  SGR 25% OFF  •  Hotels kuanzia TZS 80K  •  Serengeti Safari TZS 280K  •  ';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50/30 to-blue-50/20 pb-6">
-      {/* Hero Header with Live Elements */}
-      <div className="relative bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 px-6 pt-8 pb-36 overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-teal-400/20 rounded-full -ml-24 -mb-24 blur-2xl"></div>
-        <div className="absolute top-20 left-1/2 w-32 h-32 bg-amber-400/20 rounded-full blur-3xl animate-pulse"></div>
-        
-        <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-6">
-            <button
-              onClick={onBack}
-              className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl hover:bg-white/30 transition-all active:scale-95"
-            >
-              <ArrowLeft className="size-5 text-white" />
+    <div style={{ minHeight: '100vh', background: '#080d08', color: '#fff', paddingBottom: 48 }}>
+      <style>{`
+        @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+        @keyframes glowBlob { 0%,100%{opacity:0.3;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.15)} }
+        @keyframes liveDot { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.5);opacity:0.6} }
+      `}</style>
+
+      {/* ── STICKY HEADER ── */}
+      <div className="sticky top-0 z-20" style={{ background: 'rgba(8,13,8,0.96)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ padding: '16px 16px 14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button onClick={onBack} className="active:scale-95 transition-transform"
+              style={{ padding: '10px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+              <ArrowLeft style={{ width: 20, height: 20, color: '#fff' }} />
             </button>
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-white mb-1">Explore Tanzania</h1>
-              <p className="text-green-100 text-sm flex items-center gap-2">
-                <Sparkles className="size-4" />
-                Real-time bookings • Live prices
-              </p>
+            <div style={{ flex: 1 }}>
+              <h1 style={{ fontSize: '20px', fontWeight: 900, color: '#fff' }}>Gundua Tanzania</h1>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Real-time bookings · Live prices</p>
             </div>
-            <button className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl hover:bg-white/30 transition-all">
-              <Search className="size-5 text-white" />
+            <button className="active:scale-95 transition-transform"
+              style={{ padding: '10px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer' }}>
+              <Search style={{ width: 20, height: 20, color: '#fff' }} />
             </button>
           </div>
+        </div>
+      </div>
 
-          {/* Loyalty Points with Live Status */}
-          <div className="bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl p-4 mb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="bg-amber-400 p-2.5 rounded-xl relative">
-                  <Star className="size-5 text-amber-900" />
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
-                </div>
-                <div>
-                  <p className="text-white text-sm font-medium">GO Rewards Points</p>
-                  <p className="text-green-100 text-xs">Earn 5% on every booking • Redeem anytime</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold text-white">{user.loyaltyPoints || 0}</p>
-                <p className="text-green-100 text-xs">points</p>
-              </div>
+      {/* ── LOYALTY + LIVE TICKER ── */}
+      <div style={{ padding: '16px 16px 0' }}>
+        {/* Loyalty strip */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 18, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ position: 'relative', width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg,#b45309,#d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Star style={{ width: 20, height: 20, color: '#fff', fill: '#fff' }} />
+              <div style={{ position: 'absolute', top: -3, right: -3, width: 10, height: 10, borderRadius: '50%', background: '#4ade80', border: '2px solid #080d08', animation: 'liveDot 2s ease-in-out infinite' }} />
+            </div>
+            <div>
+              <p style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>GO Rewards Points</p>
+              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Pata 5% kila safari · Tumia wakati wowote</p>
             </div>
           </div>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontSize: '26px', fontWeight: 900, color: '#fbbf24', letterSpacing: '-1px', lineHeight: 1 }}>{user.loyaltyPoints ?? 0}</p>
+            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>pointi</p>
+          </div>
+        </div>
 
-          {/* Live Deals Ticker */}
-          <div className="bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 rounded-2xl p-3 shadow-xl relative overflow-hidden group cursor-pointer hover:scale-105 transition-transform">
-            <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-            <div className="relative flex items-center gap-2">
-              <Zap className="size-5 text-white flex-shrink-0 animate-bounce" />
-              <div className="flex-1 overflow-hidden">
-                <p className="text-white font-bold text-sm">
-                  🔥 Live Deals: Zanzibar Ferry 30% OFF • Precision Air from TZS 155K • SGR 25% OFF • Hotels from TZS 80K
-                </p>
-              </div>
-              <ChevronRight className="size-5 text-white flex-shrink-0" />
+        {/* Live deals ticker */}
+        <div style={{ borderRadius: 14, overflow: 'hidden', padding: '10px 0', background: 'linear-gradient(90deg,#b45309,#c2410c,#9a3412)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ padding: '0 12px', flexShrink: 0 }}>
+            <Zap style={{ width: 16, height: 16, color: '#fff' }} />
+          </div>
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', width: 'max-content', animation: 'ticker 22s linear infinite' }}>
+              <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff', whiteSpace: 'nowrap', paddingRight: 40 }}>{tickerText}</span>
+              <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff', whiteSpace: 'nowrap', paddingRight: 40 }}>{tickerText}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Popular Destinations with Live Pricing */}
-      <div className="px-6 -mt-24 mb-6">
-        <div className="flex items-center justify-between mb-4">
+      {/* ── DESTINATIONS CAROUSEL ── */}
+      <div style={{ padding: '20px 0 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', marginBottom: 14 }}>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <TrendingUp className="size-5 text-red-500" />
-              Top Destinations
+            <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <TrendingUp style={{ width: 18, height: 18, color: '#f87171' }} />
+              Maeneo Maarufu
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">Live pricing • Updated now</p>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Bei za sasa · Imesasishwa sasa hivi</p>
           </div>
-          <button className="text-sm text-green-600 font-semibold flex items-center gap-1 hover:gap-2 transition-all">
-            View All
-            <ChevronRight className="size-4" />
+          <button style={{ fontSize: '12px', fontWeight: 700, color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+            Ona Zote <ChevronRight style={{ width: 14, height: 14 }} />
           </button>
         </div>
-        
-        <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 hide-scrollbar">
+
+        <div style={{ display: 'flex', gap: 14, overflowX: 'auto', padding: '0 16px 6px', scrollbarWidth: 'none' }}>
           {quickBookDestinations.map((dest, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                if (idx === 0) { setSelectedBookingService('flights'); setShowUnifiedBooking(true); }
-                else if (idx === 1) { setSelectedBookingService('parks'); setShowUnifiedBooking(true); }
-                else { setSelectedBookingService('hotels'); setShowUnifiedBooking(true); }
-              }}
-              className="flex-shrink-0 w-72 relative rounded-3xl overflow-hidden shadow-2xl group hover:scale-105 transition-all duration-500"
-            >
-              <div className="relative h-56">
-                <ImageWithFallback
-                  src={dest.image}
-                  alt={dest.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                />
-                <div className={`absolute inset-0 bg-gradient-to-t ${dest.gradient} opacity-70 group-hover:opacity-80 transition-opacity`}></div>
-                
-                {dest.popular && (
-                  <div className="absolute top-3 left-3 bg-red-500 px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xl animate-pulse">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
-                    <span className="text-xs font-bold text-white">LIVE DEAL</span>
+            <button key={idx} onClick={() => goBook(dest.service)}
+              className="active:scale-[0.98] transition-transform"
+              style={{ flexShrink: 0, width: 240, borderRadius: 22, overflow: 'hidden', position: 'relative', border: 'none', padding: 0, cursor: 'pointer', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+              <div style={{ position: 'relative', height: 200 }}>
+                <ImageWithFallback src={dest.image} alt={dest.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.1) 100%)' }} />
+
+                {dest.badge && (
+                  <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 20, background: '#dc2626' }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff', animation: 'liveDot 1.5s ease-in-out infinite' }} />
+                    <span style={{ fontSize: '10px', fontWeight: 900, color: '#fff' }}>{dest.badge}</span>
                   </div>
                 )}
-                
-                <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-xs font-bold text-gray-900">Available Now</span>
-                  </div>
+
+                <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 20, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80' }} />
+                  <span style={{ fontSize: '10px', fontWeight: 700, color: '#fff' }}>Inapatikana</span>
                 </div>
-                
-                <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 to-transparent">
-                  <div className="flex items-start justify-between mb-3">
+
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 14px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
                     <div>
-                      <h3 className="text-white font-bold text-xl mb-1">{dest.name}</h3>
-                      <p className="text-white/90 text-sm flex items-center gap-1">
-                        <MapPin className="size-3" />
-                        {dest.subtitle}
+                      <h3 style={{ fontSize: '17px', fontWeight: 900, color: '#fff', marginBottom: 3 }}>{dest.name}</h3>
+                      <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <MapPin style={{ width: 10, height: 10 }} />{dest.subtitle}
                       </p>
                     </div>
-                    <Heart className="size-6 text-white hover:fill-white transition-all cursor-pointer" />
+                    <Heart style={{ width: 20, height: 20, color: 'rgba(255,255,255,0.8)', flexShrink: 0 }} />
                   </div>
-                  <div className="flex items-end justify-between">
-                    <div className="text-white">
-                      <p className="text-xs opacity-80 mb-0.5">Starting from</p>
-                      <div className="flex items-baseline gap-2">
-                        <p className="text-2xl font-bold">{formatCurrency(dest.from)}</p>
-                        {dest.popular && <span className="text-xs bg-yellow-400 text-gray-900 px-2 py-0.5 rounded-full font-bold">-30%</span>}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', marginBottom: 2 }}>Kuanzia</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <p style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>{formatCurrency(dest.from)}</p>
+                        {dest.discount && <span style={{ fontSize: '10px', fontWeight: 900, background: '#fbbf24', color: '#1c1400', padding: '2px 6px', borderRadius: 8 }}>{dest.discount}</span>}
                       </div>
-                      <p className="text-xs opacity-70 mt-0.5">Per person</p>
                     </div>
-                    <div className="bg-white hover:bg-green-500 text-gray-900 hover:text-white px-4 py-2.5 rounded-xl font-bold shadow-xl transition-all group-hover:scale-110 flex items-center gap-2">
-                      <span className="text-sm">Book</span>
-                      <ArrowRight className="size-4" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 12, background: '#16a34a' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff' }}>Weka</span>
+                      <ArrowRight style={{ width: 13, height: 13, color: '#fff' }} />
                     </div>
                   </div>
                 </div>
@@ -218,339 +197,185 @@ export function TravelPageRedesigned({ user, accessToken, onBack }: TravelPageRe
         </div>
       </div>
 
-      {/* Booking Options with Real Partners */}
-      <div className="px-6 space-y-3">
-        <div className="flex items-center justify-between mb-4">
+      {/* ── BOOK YOUR JOURNEY ── */}
+      <div style={{ padding: '20px 16px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              🚀 Book Your Journey
-            </h2>
-            <p className="text-xs text-gray-500 mt-0.5">Direct partners • Instant confirmation</p>
+            <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>🚀 Anza Safari Yako</h2>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Washirika wa moja kwa moja · Uthibitisho wa papo hapo</p>
           </div>
-          <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-xs font-bold text-green-700">All Systems Online</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 20, background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)' }}>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#4ade80', animation: 'liveDot 2s ease-in-out infinite' }} />
+            <span style={{ fontSize: '11px', fontWeight: 800, color: '#4ade80' }}>Mifumo Yote Online</span>
           </div>
         </div>
-        
-        {/* Flights with Live Pricing */}
-        <button
-          onClick={() => {
-            setSelectedBookingService('flights');
-            setShowUnifiedBooking(true);
-          }}
-          className="w-full bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border-2 border-blue-100 hover:border-blue-400 group relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-100 to-blue-50 rounded-full -mr-20 -mt-20 opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-          
-          {/* Flash Deal Badge */}
-          <div className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-orange-500 px-3 py-1.5 rounded-full shadow-lg">
-            <p className="text-xs font-bold text-white flex items-center gap-1">
-              <Zap className="size-3" />
-              Save 25%
-            </p>
-          </div>
-          
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-2xl shadow-xl group-hover:scale-110 group-hover:rotate-6 transition-all">
-                  <Plane className="size-8 text-white" />
-                </div>
-                <div className="text-left">
-                  <p className="text-xl font-bold text-gray-900 mb-1 flex items-center gap-2">
-                    Domestic Flights
-                    <Shield className="size-4 text-green-600" />
-                  </p>
-                  <p className="text-sm text-gray-600 mb-2">Fast & convenient air travel</p>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full font-semibold">40+ Routes</span>
-                    <span className="text-xs bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-semibold">Same Day</span>
-                    <span className="text-xs bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full font-semibold">From TZS 155K</span>
-                  </div>
-                </div>
-              </div>
-              <ChevronRight className="size-7 text-blue-600 group-hover:translate-x-2 transition-transform" />
-            </div>
-            
-            {/* Partner Airlines */}
-            <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
-              <p className="text-xs text-gray-500 font-medium">Partners:</p>
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="bg-blue-50 px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-700">Precision Air</div>
-                <div className="bg-blue-50 px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-700">Air Tanzania</div>
-                <div className="bg-gray-100 px-2.5 py-1 rounded-lg text-xs font-semibold text-gray-700">+3 more</div>
-              </div>
-            </div>
-          </div>
-        </button>
 
-        {/* Ferry - Featured with 30% OFF */}
-        <button
-          onClick={() => {
-            setSelectedBookingService('flights');
-            setShowUnifiedBooking(true);
-          }}
-          className="w-full bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 rounded-3xl p-6 shadow-2xl hover:shadow-3xl transition-all group relative overflow-hidden border-2 border-cyan-300"
-        >
-          <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24 blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-          
-          {/* Hot Deal Banner */}
-          <div className="absolute top-3 right-3 bg-yellow-400 px-4 py-2 rounded-full shadow-2xl animate-bounce">
-            <p className="text-xs font-black text-gray-900 flex items-center gap-1.5">
-              <Sparkles className="size-4" />
-              HOT DEAL -30%
-            </p>
-          </div>
-          
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-white/25 backdrop-blur-md p-4 rounded-2xl shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all border border-white/40">
-                  <Ship className="size-8 text-white" />
-                </div>
-                <div className="text-left">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-xl font-black text-white">Ferry to Zanzibar</p>
-                    <div className="flex items-center gap-0.5">
-                      <Star className="size-4 fill-yellow-300 text-yellow-300" />
-                      <span className="text-sm font-bold text-yellow-300">4.8</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+          {/* FLIGHTS */}
+          {[
+            {
+              key: 'flights', service: 'flights' as BookingService,
+              Icon: Plane, label: 'Ndege za Ndani', sub: 'Safari ya haraka na ya uhakika',
+              chips: ['Njia 40+', 'Siku Moja', 'TZS 155K+'],
+              badge: { text: 'Okoa 25%', bg: 'linear-gradient(135deg,#dc2626,#f97316)' },
+              partners: ['Precision Air', 'Air Tanzania', '+3'],
+              partnerLabel: 'Washirika:',
+              svc: SVC.flights,
+            },
+            {
+              key: 'ferry', service: 'flights' as BookingService,
+              Icon: Ship, label: 'Ferry ya Zanzibar', sub: 'Safari ya bahari · Masaa 2–4',
+              chips: ['Kila Siku', 'TZS 24,500', '12 Nafasi'],
+              badge: { text: '🔥 HOT -30%', bg: 'linear-gradient(135deg,#d97706,#f59e0b)' },
+              partners: ['Azam Marine', 'Instant Confirm'],
+              partnerLabel: 'Powered by:',
+              svc: SVC.ferry,
+              rating: 4.8,
+            },
+            {
+              key: 'buses', service: 'buses' as BookingService,
+              Icon: Bus, label: 'Mabasi ya Starehe', sub: 'Safari ya ndani ya nchi',
+              chips: ['VIP Inapatikana', 'WiFi & AC', 'TZS 25K+'],
+              badge: null,
+              partners: ['Kilimanjaro Express', 'Dar Express', '+5'],
+              partnerLabel: 'Waendeshaji:',
+              svc: SVC.buses,
+            },
+            {
+              key: 'sgr', service: 'sgr' as BookingService,
+              Icon: Train, label: 'SGR Express Train', sub: 'Uzoefu wa kisasa wa reli',
+              chips: ['Dar → Morogoro', 'Kila Siku', 'TZS 15K+'],
+              badge: { text: 'Serikali Imethibitisha', bg: 'linear-gradient(135deg,#4f46e5,#7c3aed)' },
+              partners: ['Tanzania Railways (TRC)', 'Online'],
+              partnerLabel: 'Rasmi:',
+              svc: SVC.sgr,
+            },
+            {
+              key: 'hotels', service: 'hotels' as BookingService,
+              Icon: Hotel, label: 'Hoteli & Lodges', sub: 'Starehe ya bei yoyote',
+              chips: ['Hoteli 500+', 'Bei Bora', 'TZS 80K+'],
+              badge: null,
+              partners: ['Booking.com', 'Jumia Travel', '+Local'],
+              partnerLabel: 'Powered by:',
+              svc: SVC.hotels,
+            },
+            {
+              key: 'parks', service: 'parks' as BookingService,
+              Icon: Mountain, label: 'Mbuga za Taifa', sub: 'Safari & matukio ya asili',
+              chips: ['Mbuga 16', 'Wildlife Tours', 'TZS 280K+'],
+              badge: { text: '🌿 UNESCO', bg: 'linear-gradient(135deg,#047857,#059669)' },
+              partners: ['TANAPA', 'Vibali Rasmi'],
+              partnerLabel: 'Imeidhinishwa na:',
+              svc: SVC.parks,
+              rating: null,
+            },
+          ].map(svcCard => {
+            const { Icon, svc } = svcCard;
+            return (
+              <button key={svcCard.key} onClick={() => goBook(svcCard.service)}
+                className="active:scale-[0.98] transition-transform text-left"
+                style={{ width: '100%', borderRadius: 22, padding: '20px', background: svc.gradient, border: `1px solid ${svc.accent}22`, position: 'relative', overflow: 'hidden', boxShadow: `0 4px 24px ${svc.glow}`, cursor: 'pointer' }}>
+                {/* Ambient corner glow */}
+                <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: `radial-gradient(circle, ${svc.accent}20 0%, transparent 70%)` }} />
+
+                {/* Deal badge */}
+                {svcCard.badge && (
+                  <div style={{ position: 'absolute', top: 16, right: 16, padding: '5px 12px', borderRadius: 20, background: svcCard.badge.bg }}>
+                    <p style={{ fontSize: '11px', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      {svcCard.key === 'sgr' && <Shield style={{ width: 11, height: 11 }} />}
+                      {svcCard.badge.text}
+                    </p>
+                  </div>
+                )}
+
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  {/* Header row */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                      <div style={{ width: 56, height: 56, borderRadius: 17, background: `${svc.accent}18`, border: `1px solid ${svc.accent}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Icon style={{ width: 28, height: 28, color: svc.accent }} />
+                      </div>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                          <p style={{ fontSize: '17px', fontWeight: 900, color: '#fff' }}>{svcCard.label}</p>
+                          {svcCard.key === 'flights' && <Shield style={{ width: 14, height: 14, color: '#4ade80' }} />}
+                          {svcCard.rating && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                              <Star style={{ width: 13, height: 13, color: '#fbbf24', fill: '#fbbf24' }} />
+                              <span style={{ fontSize: '12px', fontWeight: 800, color: '#fbbf24' }}>{svcCard.rating}</span>
+                            </div>
+                          )}
+                        </div>
+                        <p style={{ fontSize: '12px', color: `${svc.accent}cc` }}>{svcCard.sub}</p>
+                      </div>
                     </div>
+                    <ChevronRight style={{ width: 20, height: 20, color: `${svc.accent}80`, flexShrink: 0, marginTop: 4 }} />
                   </div>
-                  <p className="text-sm text-cyan-100 mb-3 font-medium">Fast & scenic ocean journey • 2-4 hours</p>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs bg-white/30 backdrop-blur-sm text-white px-3 py-1.5 rounded-full font-bold border border-white/40">Multiple Daily</span>
-                    <span className="text-xs bg-white/30 backdrop-blur-sm text-white px-3 py-1.5 rounded-full font-bold border border-white/40">
-                      <span className="line-through opacity-70">{formatCurrency(35000)}</span> {formatCurrency(24500)}
-                    </span>
-                    <span className="text-xs bg-green-400 text-green-900 px-3 py-1.5 rounded-full font-black">12 Seats Left</span>
-                  </div>
-                </div>
-              </div>
-              <ChevronRight className="size-7 text-white group-hover:translate-x-2 transition-transform" />
-            </div>
-            
-            {/* Partner Info */}
-            <div className="flex items-center justify-between pt-3 border-t border-white/20">
-              <div className="flex items-center gap-2">
-                <p className="text-xs text-white/80 font-medium">Powered by:</p>
-                <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-lg border border-white/30">
-                  <p className="text-xs font-bold text-white">Azam Marine</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-lg border border-white/30">
-                <Check className="size-3 text-green-300" />
-                <span className="text-xs font-bold text-white">Instant Confirm</span>
-              </div>
-            </div>
-          </div>
-        </button>
 
-        {/* Buses */}
-        <button
-          onClick={() => {
-            setSelectedBookingService('buses');
-            setShowUnifiedBooking(true);
-          }}
-          className="w-full bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border-2 border-green-100 hover:border-green-400 group relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-green-100 to-green-50 rounded-full -mr-20 -mt-20 opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-2xl shadow-xl group-hover:scale-110 group-hover:rotate-6 transition-all">
-                  <Bus className="size-8 text-white" />
-                </div>
-                <div className="text-left">
-                  <p className="text-xl font-bold text-gray-900 mb-1">Luxury Buses</p>
-                  <p className="text-sm text-gray-600 mb-2">Comfortable intercity travel</p>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-semibold">VIP Available</span>
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full font-semibold">WiFi & AC</span>
-                    <span className="text-xs bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full font-semibold">From TZS 25K</span>
+                  {/* Chips */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+                    {svcCard.chips.map(chip => (
+                      <span key={chip} style={{ fontSize: '11px', fontWeight: 700, padding: '5px 10px', borderRadius: 20, background: `${svc.accent}18`, border: `1px solid ${svc.accent}30`, color: svc.accent }}>
+                        {chip}
+                      </span>
+                    ))}
                   </div>
-                </div>
-              </div>
-              <ChevronRight className="size-7 text-green-600 group-hover:translate-x-2 transition-transform" />
-            </div>
-            
-            <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
-              <p className="text-xs text-gray-500 font-medium">Operators:</p>
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="bg-green-50 px-2.5 py-1 rounded-lg text-xs font-semibold text-green-700">Kilimanjaro Express</div>
-                <div className="bg-green-50 px-2.5 py-1 rounded-lg text-xs font-semibold text-green-700">Dar Express</div>
-                <div className="bg-gray-100 px-2.5 py-1 rounded-lg text-xs font-semibold text-gray-700">+5</div>
-              </div>
-            </div>
-          </div>
-        </button>
 
-        {/* SGR Train */}
-        <button
-          onClick={() => {
-            setSelectedBookingService('sgr');
-            setShowUnifiedBooking(true);
-          }}
-          className="w-full bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border-2 border-red-100 hover:border-red-400 group relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-red-100 to-red-50 rounded-full -mr-20 -mt-20 opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-          
-          <div className="absolute top-4 right-4 bg-gradient-to-r from-indigo-500 to-purple-600 px-3 py-1.5 rounded-full shadow-lg border-2 border-white">
-            <p className="text-xs font-bold text-white flex items-center gap-1">
-              <Shield className="size-3" />
-              Gov Verified
-            </p>
-          </div>
-          
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-red-500 to-red-600 p-4 rounded-2xl shadow-xl group-hover:scale-110 group-hover:rotate-6 transition-all">
-                  <Train className="size-8 text-white" />
-                </div>
-                <div className="text-left">
-                  <p className="text-xl font-bold text-gray-900 mb-1">SGR Express Train</p>
-                  <p className="text-sm text-gray-600 mb-2">Modern railway experience</p>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs bg-red-100 text-red-700 px-2.5 py-1 rounded-full font-semibold">Dar → Morogoro</span>
-                    <span className="text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full font-semibold">Daily Service</span>
-                    <span className="text-xs bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full font-semibold">From TZS 15K</span>
+                  {/* Partners row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 12, borderTop: `1px solid ${svc.accent}18` }}>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', flexShrink: 0 }}>{svcCard.partnerLabel}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      {svcCard.partners.map((p, i) => (
+                        <div key={i} style={{ padding: '3px 10px', borderRadius: 8, background: `${svc.accent}15`, border: `1px solid ${svc.accent}25` }}>
+                          <span style={{ fontSize: '11px', fontWeight: 700, color: svc.accent }}>{p}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {svcCard.key === 'sgr' && (
+                      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#4ade80', animation: 'liveDot 2s ease-in-out infinite' }} />
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#4ade80' }}>Online</span>
+                      </div>
+                    )}
+                    {svcCard.key === 'parks' && (
+                      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 8, background: 'rgba(96,165,250,0.12)' }}>
+                        <Shield style={{ width: 10, height: 10, color: '#60a5fa' }} />
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#60a5fa' }}>Rasmi</span>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
-              <ChevronRight className="size-7 text-red-600 group-hover:translate-x-2 transition-transform" />
-            </div>
-            
-            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-              <div className="flex items-center gap-2">
-                <p className="text-xs text-gray-500 font-medium">Official:</p>
-                <div className="bg-gradient-to-r from-indigo-100 to-purple-100 px-3 py-1 rounded-lg border border-indigo-200">
-                  <p className="text-xs font-bold text-indigo-700">Tanzania Railways (TRC)</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 bg-green-50 px-3 py-1 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-xs font-bold text-green-700">Online</span>
-              </div>
-            </div>
-          </div>
-        </button>
-
-        {/* Hotels */}
-        <button
-          onClick={() => {
-            setSelectedBookingService('hotels');
-            setShowUnifiedBooking(true);
-          }}
-          className="w-full bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border-2 border-orange-100 hover:border-orange-400 group relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-orange-100 to-orange-50 rounded-full -mr-20 -mt-20 opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-4 rounded-2xl shadow-xl group-hover:scale-110 group-hover:rotate-6 transition-all">
-                  <Hotel className="size-8 text-white" />
-                </div>
-                <div className="text-left">
-                  <p className="text-xl font-bold text-gray-900 mb-1">Hotels & Lodges</p>
-                  <p className="text-sm text-gray-600 mb-2">Luxury to budget stays</p>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full font-semibold">500+ Properties</span>
-                    <span className="text-xs bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-semibold">Best Price</span>
-                    <span className="text-xs bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full font-semibold">From TZS 80K</span>
-                  </div>
-                </div>
-              </div>
-              <ChevronRight className="size-7 text-orange-600 group-hover:translate-x-2 transition-transform" />
-            </div>
-            
-            <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
-              <p className="text-xs text-gray-500 font-medium">Powered by:</p>
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="bg-blue-50 px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-700">Booking.com</div>
-                <div className="bg-green-50 px-2.5 py-1 rounded-lg text-xs font-semibold text-green-700">Jumia Travel</div>
-                <div className="bg-gray-100 px-2.5 py-1 rounded-lg text-xs font-semibold text-gray-700">+Local</div>
-              </div>
-            </div>
-          </div>
-        </button>
-
-        {/* National Parks */}
-        <button
-          onClick={() => {
-            setSelectedBookingService('parks');
-            setShowUnifiedBooking(true);
-          }}
-          className="w-full bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all border-2 border-emerald-100 hover:border-emerald-400 group relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-full -mr-20 -mt-20 opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-          
-          <div className="absolute top-4 right-4 bg-gradient-to-r from-green-500 to-emerald-600 px-3 py-1.5 rounded-full shadow-lg border-2 border-white">
-            <p className="text-xs font-bold text-white flex items-center gap-1">
-              <Sparkles className="size-3" />
-              UNESCO Sites
-            </p>
-          </div>
-          
-          <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 rounded-2xl shadow-xl group-hover:scale-110 group-hover:rotate-6 transition-all">
-                  <Mountain className="size-8 text-white" />
-                </div>
-                <div className="text-left">
-                  <p className="text-xl font-bold text-gray-900 mb-1">National Parks</p>
-                  <p className="text-sm text-gray-600 mb-2">Safari & adventure packages</p>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-semibold">16 Parks</span>
-                    <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-semibold">Wildlife Tours</span>
-                    <span className="text-xs bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full font-semibold">From TZS 280K</span>
-                  </div>
-                </div>
-              </div>
-              <ChevronRight className="size-7 text-emerald-600 group-hover:translate-x-2 transition-transform" />
-            </div>
-            
-            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-              <div className="flex items-center gap-2">
-                <p className="text-xs text-gray-500 font-medium">Authorized by:</p>
-                <div className="bg-gradient-to-r from-green-100 to-emerald-100 px-3 py-1 rounded-lg border border-green-200">
-                  <p className="text-xs font-bold text-green-700">TANAPA</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 bg-blue-50 px-3 py-1 rounded-lg">
-                <Shield className="size-3 text-blue-600" />
-                <span className="text-xs font-bold text-blue-700">Official Permits</span>
-              </div>
-            </div>
-          </div>
-        </button>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* AI Travel Tips */}
-      <div className="px-6 mt-6">
-        <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-24 -mt-24 blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-yellow-400/20 rounded-full -ml-16 -mb-16 blur-2xl"></div>
-          <div className="relative flex items-start gap-4">
-            <div className="bg-white/25 backdrop-blur-md p-3.5 rounded-2xl border border-white/40">
-              <Sparkles className="size-7 text-white animate-pulse" />
+      {/* ── AI TRAVEL ASSISTANT ── */}
+      <div style={{ padding: '20px 16px 0' }}>
+        <div style={{ borderRadius: 24, padding: '24px', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg,#1e1b4b 0%,#4c1d95 40%,#7e22ce 70%,#be185d 100%)', border: '1px solid rgba(196,181,253,0.2)', boxShadow: '0 8px 40px rgba(126,34,206,0.3)' }}>
+          <div style={{ position: 'absolute', top: -30, right: -30, width: 140, height: 140, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)', animation: 'glowBlob 5s ease-in-out infinite' }} />
+          <div style={{ position: 'absolute', bottom: -20, left: -20, width: 100, height: 100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(251,191,36,0.12) 0%, transparent 70%)' }} />
+
+          <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+            <div style={{ width: 52, height: 52, borderRadius: 16, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Sparkles style={{ width: 26, height: 26, color: '#fff' }} />
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <p className="text-white font-bold text-lg">AI Travel Assistant</p>
-                <div className="bg-white/30 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/40">
-                  <span className="text-xs font-bold text-white">NEW</span>
-                </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                <p style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>AI Travel Assistant</p>
+                <span style={{ fontSize: '10px', fontWeight: 900, padding: '3px 8px', borderRadius: 10, background: 'rgba(255,255,255,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)' }}>KIPYA</span>
               </div>
-              <p className="text-purple-100 text-sm mb-4 leading-relaxed">Get personalized recommendations, compare prices, find hidden deals</p>
-              <div className="flex items-center gap-3">
-                <button className="bg-white text-purple-600 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-purple-50 transition-all shadow-xl hover:scale-105">
-                  Ask AI Now
+              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, marginBottom: 16 }}>Pata mapendekezo ya kibinafsi, linganisha bei, gundua ofa za siri</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <button className="active:scale-95 transition-transform"
+                  style={{ padding: '10px 22px', borderRadius: 14, background: '#fff', color: '#7e22ce', fontWeight: 900, fontSize: '13px', border: 'none', cursor: 'pointer' }}>
+                  Uliza AI Sasa
                 </button>
-                <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/30">
-                  <Users className="size-4 text-white" />
-                  <span className="text-xs font-bold text-white">2.4K using now</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px', borderRadius: 14, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                  <Users style={{ width: 14, height: 14, color: '#fff' }} />
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>2.4K wanatumia</span>
                 </div>
               </div>
             </div>
@@ -558,34 +383,26 @@ export function TravelPageRedesigned({ user, accessToken, onBack }: TravelPageRe
         </div>
       </div>
 
-      {/* Trust Indicators */}
-      <div className="px-6 mt-6 pb-4">
-        <div className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-          <Shield className="size-4 text-green-600" />
-          Why book with goPay
+      {/* ── TRUST STRIP ── */}
+      <div style={{ padding: '20px 16px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <Shield style={{ width: 16, height: 16, color: '#4ade80' }} />
+          <p style={{ fontSize: '13px', fontWeight: 800, color: 'rgba(255,255,255,0.7)' }}>Kwa nini weka na goPay?</p>
         </div>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-gradient-to-br from-white to-green-50 rounded-2xl p-4 text-center shadow-lg border-2 border-green-100 hover:scale-105 transition-all">
-            <div className="bg-green-100 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <Shield className="size-6 text-green-600" />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+          {[
+            { Icon: Shield,  accent: '#4ade80', label: 'Malipo Salama',      sub: 'SSL iliyofichwa' },
+            { Icon: Zap,     accent: '#60a5fa', label: 'Uthibitisho Papo',   sub: 'Wakati halisi'   },
+            { Icon: Heart,   accent: '#c4b5fd', label: 'Bei Bora Zaidi',     sub: 'Dhamana ya bei'  },
+          ].map(({ Icon, accent, label, sub }) => (
+            <div key={label} style={{ borderRadius: 16, padding: '14px 10px', textAlign: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 13, background: `${accent}14`, border: `1px solid ${accent}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
+                <Icon style={{ width: 22, height: 22, color: accent }} />
+              </div>
+              <p style={{ fontSize: '11px', fontWeight: 800, color: '#fff', marginBottom: 3 }}>{label}</p>
+              <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>{sub}</p>
             </div>
-            <div className="text-xs text-gray-900 font-bold mb-1">Secure Payment</div>
-            <div className="text-xs text-gray-500">SSL encrypted</div>
-          </div>
-          <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl p-4 text-center shadow-lg border-2 border-blue-100 hover:scale-105 transition-all">
-            <div className="bg-blue-100 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <Zap className="size-6 text-blue-600" />
-            </div>
-            <div className="text-xs text-gray-900 font-bold mb-1">Instant Confirm</div>
-            <div className="text-xs text-gray-500">Real-time booking</div>
-          </div>
-          <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl p-4 text-center shadow-lg border-2 border-purple-100 hover:scale-105 transition-all">
-            <div className="bg-purple-100 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <Heart className="size-6 text-purple-600" />
-            </div>
-            <div className="text-xs text-gray-900 font-bold mb-1">Best Prices</div>
-            <div className="text-xs text-gray-500">Price guarantee</div>
-          </div>
+          ))}
         </div>
       </div>
     </div>
