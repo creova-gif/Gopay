@@ -45,6 +45,7 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
   const [balance, setBalance] = useState<number | null>(null);
   const [optimisticBalance, setOptimisticBalance] = useState<number | null>(null);
   const [transactionRef, setTransactionRef] = useState('');
+  const [mobileNetwork, setMobileNetwork] = useState<'mpesa' | 'tigo' | 'airtel' | 'halopesa'>('mpesa');
   const { track } = useAnalytics(accessToken);
 
   useEffect(() => {
@@ -93,23 +94,20 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
     if (balance !== null) setOptimisticBalance(balance - total);
 
     try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/transfer/send`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-            method: transferMethod,
-            recipient,
-            amount: numericAmount,
-            message: note,
-            pin: enteredPin,
-          }),
-        }
-      );
+      const isExternal = transferMethod === 'mobile';
+      const url = isExternal
+        ? `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/payment/send-external`
+        : `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/transfer/send`;
+
+      const body = isExternal
+        ? JSON.stringify({ network: mobileNetwork, amount: numericAmount, phone: recipient })
+        : JSON.stringify({ method: transferMethod, recipient, amount: numericAmount, message: note, pin: enteredPin });
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body,
+      });
 
       if (response.ok) {
         const result = await response.json();
@@ -198,6 +196,24 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
                 <p style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: '8px', letterSpacing: '0.3px' }}>
                   MPOKEAJI
                 </p>
+                {transferMethod === 'mobile' && (
+                  <div className="flex gap-2 flex-wrap mb-3">
+                    {(['mpesa', 'tigo', 'airtel', 'halopesa'] as const).map(n => (
+                      <button
+                        key={n}
+                        onClick={() => setMobileNetwork(n)}
+                        className="px-3 h-8 rounded-full text-xs font-semibold transition-all"
+                        style={{
+                          background: mobileNetwork === n ? '#16a34a' : 'rgba(255,255,255,0.08)',
+                          color: '#fff',
+                          border: `1px solid ${mobileNetwork === n ? '#16a34a' : 'rgba(255,255,255,0.12)'}`,
+                        }}
+                      >
+                        {n === 'mpesa' ? 'M-Pesa' : n === 'tigo' ? 'Tigo' : n === 'airtel' ? 'Airtel' : 'Halo'}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <input
                   type="tel"
                   placeholder="+255 XXX XXX XXX au jina"
