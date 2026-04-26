@@ -14,7 +14,7 @@ interface TravelPageRedesignedProps {
   onBack: () => void;
 }
 
-type BookingService = 'flights' | 'buses' | 'sgr' | 'hotels' | 'parks';
+type BookingService = 'flights' | 'ferry' | 'buses' | 'sgr' | 'hotels' | 'parks' | 'ai';
 
 const SVC = {
   flights: { accent: '#60a5fa', glow: 'rgba(96,165,250,0.25)',  gradient: 'linear-gradient(160deg,#0f172a 0%,#1e3a8a 55%,#1d4ed8 100%)' },
@@ -60,6 +60,7 @@ export function TravelPageRedesigned({ user, accessToken, onBack }: TravelPageRe
     return (
       <UnifiedBookingSystem
         user={user}
+        accessToken={accessToken}
         onBack={() => { setShowUnifiedBooking(false); setSelectedBookingService(null); }}
         initialService={selectedBookingService}
       />
@@ -224,7 +225,7 @@ export function TravelPageRedesigned({ user, accessToken, onBack }: TravelPageRe
               svc: SVC.flights,
             },
             {
-              key: 'ferry', service: 'flights' as BookingService,
+              key: 'ferry', service: 'ferry' as BookingService,
               Icon: Ship, label: 'Ferry ya Zanzibar', sub: 'Safari ya bahari · Masaa 2–4',
               chips: ['Kila Siku', 'TZS 24,500', '12 Nafasi'],
               badge: { text: '🔥 HOT -30%', bg: 'linear-gradient(135deg,#d97706,#f59e0b)' },
@@ -369,7 +370,7 @@ export function TravelPageRedesigned({ user, accessToken, onBack }: TravelPageRe
               </div>
               <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, marginBottom: 16 }}>Pata mapendekezo ya kibinafsi, linganisha bei, gundua ofa za siri</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <button className="active:scale-95 transition-transform"
+                <button onClick={() => goBook('ai')} className="active:scale-95 transition-transform"
                   style={{ padding: '10px 22px', borderRadius: 14, background: '#fff', color: '#7e22ce', fontWeight: 900, fontSize: '13px', border: 'none', cursor: 'pointer' }}>
                   Uliza AI Sasa
                 </button>

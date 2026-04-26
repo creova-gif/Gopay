@@ -50,7 +50,15 @@ All page components live in `src/components/`. Key pages include:
 - `Dashboard.tsx` — main home screen with bottom navigation tabs
 - `WalletPage.tsx`, `PaymentsPage.tsx`, `BillPaymentsPage.tsx`
 - `SendMoneyPage.tsx`, `QRScanner.tsx`
-- `TravelPageRedesigned.tsx`, `FerryBookingPage.tsx`
+- `TravelPageRedesigned.tsx` — travel hub (7 service cards → UnifiedBookingSystemUltimate router)
+- `UnifiedBookingSystemUltimate.tsx` — booking router dispatching to 7 service-specific flows
+- `FlightSearch.tsx` — flight search + results list → `FlightBookingPage.tsx` (seat map, extras, payment)
+- `FerryBookingPage.tsx` — full ferry flow (route → schedule → payment → QR e-ticket)
+- `BusBookingPage.tsx` — bus flow (search → operators → seat map → payment → digital ticket)
+- `SGRBookingPage.tsx` — SGR train flow (route → schedule → class/seat → payment → QR ticket)
+- `HotelSearchPage.tsx` — hotel search + list → `HotelBookingPage.tsx` (rooms, payment, confirmation)
+- `NationalParksBookingPage.tsx` — park browse → detail → packages → visitor details → digital permit
+- `AITravelAssistant.tsx` — AI chat interface with contextual booking actions, Swahili responses
 - `GOrewardsUltimate.tsx`, `InsightsPage.tsx`, `BudgetTracker.tsx`
 - `SecuritySettings.tsx`, `SettingsPage.tsx`, `NotificationCenter.tsx`
 - `MerchantPage.tsx`, `MerchantDashboard.tsx`, `MerchantOnboarding.tsx`
