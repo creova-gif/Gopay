@@ -181,7 +181,7 @@ All pages use the app-wide dark theme:
 | GOrewards | `GOrewardsUltimate.tsx` | Full world-class redesign: SVG tier-progress ring, holographic membership card with per-tier gradient glow, horizontal-scroll AI story cards, live event banner with pulse, horizontal tier roadmap stepper, Swahili labels throughout all 7 tabs |
 | Financial Insights | `InsightsPage.tsx` | Full dark redesign, bar/line chart toggle, Swahili labels, custom chart tooltip, AI tip |
 | Multi-Currency Wallet | `MultiCurrencyWallet.tsx` | World-class redesign: live rates ticker strip, horizontal-scroll premium gradient currency cards with SVG sparklines, globe hero with animated glow blobs, dark convert flow with gradient FROM/TO panels |
-| Micro Loans | `MicroLoansPage.tsx` | Dark theme, credit score ring, loan categories, Swahili-first |
+| Micro Loans | `MicroLoansPage.tsx` | Full world-class redesign: 140px SVG credit score ring with glow + grade badge, gold loan-limit card, dark premium category cards per accent color (navy/amber/purple/forest), animated active loan progress bar with glow, feature list with tinted glass rows, staggered success animation |
 
 ### Swahili-First UI Labels
 
