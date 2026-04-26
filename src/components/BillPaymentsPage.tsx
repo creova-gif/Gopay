@@ -884,233 +884,259 @@ export function BillPaymentsPage({ user, accessToken, onBack, onNavigate }: Bill
   };
 
   // HOME VIEW - Main Bill Payments Screen
+  // Category accent palette for dark theme
+  const CAT_META: Record<string, { accent: string; bg: string; border: string; gradient: string }> = {
+    electricity: { accent: '#fbbf24', bg: 'rgba(251,191,36,0.08)',  border: 'rgba(251,191,36,0.18)', gradient: 'linear-gradient(135deg,#422006 0%,#92400e 60%,#b45309 100%)' },
+    water:       { accent: '#60a5fa', bg: 'rgba(96,165,250,0.08)',  border: 'rgba(96,165,250,0.18)', gradient: 'linear-gradient(135deg,#0f172a 0%,#1e3a8a 60%,#1d4ed8 100%)' },
+    phone:       { accent: '#4ade80', bg: 'rgba(74,222,128,0.08)',  border: 'rgba(74,222,128,0.18)', gradient: 'linear-gradient(135deg,#052e16 0%,#14532d 60%,#166534 100%)' },
+    tv:          { accent: '#c4b5fd', bg: 'rgba(196,181,253,0.08)', border: 'rgba(196,181,253,0.18)',gradient: 'linear-gradient(135deg,#1a0533 0%,#4c1d95 60%,#6d28d9 100%)' },
+    government:  { accent: '#fb923c', bg: 'rgba(251,146,60,0.08)',  border: 'rgba(251,146,60,0.18)', gradient: 'linear-gradient(135deg,#1c0a00 0%,#7c2d12 60%,#c2410c 100%)' },
+    education:   { accent: '#818cf8', bg: 'rgba(129,140,248,0.08)', border: 'rgba(129,140,248,0.18)',gradient: 'linear-gradient(135deg,#1e1b4b 0%,#3730a3 60%,#4338ca 100%)' },
+  };
+
   if (activeView === 'home') {
+    const filteredProviders = searchQuery.trim()
+      ? allProviders.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      : [];
+
     return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white border-b sticky top-0 z-20">
-          <div className="px-4 py-4">
-            <div className="flex items-center gap-3 mb-4">
-              <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full">
-                <ArrowLeft className="size-6 text-gray-900" />
+      <div style={{ minHeight: '100vh', background: '#080d08', color: '#fff', paddingBottom: 80 }}>
+        {/* ── STICKY HEADER ── */}
+        <div className="sticky top-0 z-20" style={{ background: 'rgba(8,13,8,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ padding: '16px 16px 12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+              <button onClick={onBack} className="active:scale-95 transition-transform"
+                style={{ padding: '10px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer' }}>
+                <ArrowLeft style={{ width: 20, height: 20, color: '#fff' }} />
               </button>
-              <h1 className="text-xl font-bold text-gray-900 flex-1">Lipa Bili</h1>
+              <div style={{ flex: 1 }}>
+                <h1 style={{ fontSize: '20px', fontWeight: 900, color: '#fff' }}>Lipa Bili</h1>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Huduma za malipo Tanzania</p>
+              </div>
               {onNavigate && (
-                <button
-                  onClick={() => onNavigate('recurringpayments')}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all active:scale-95"
-                  style={{ background: 'rgba(22,163,74,0.1)', color: '#16a34a', border: '1px solid rgba(22,163,74,0.2)' }}
-                >
-                  <RefreshCw className="size-3.5" />
-                  Mara kwa Mara
+                <button onClick={() => onNavigate('recurringpayments')} className="active:scale-95 transition-transform"
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 20, background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)', cursor: 'pointer' }}>
+                  <RefreshCw style={{ width: 13, height: 13, color: '#4ade80' }} />
+                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#4ade80' }}>Mara kwa Mara</span>
                 </button>
               )}
             </div>
-
             {/* Search */}
-            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-gray-400 group-focus-within:text-green-600 transition-colors duration-300" />
-              <input
-                type="text"
-                placeholder="Search for electricity, water, internet..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-14 pl-14 pr-12 bg-white border-2 border-gray-200 rounded-2xl text-base placeholder:text-gray-400 focus:outline-none focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-300 shadow-sm hover:shadow-md hover:border-gray-300"
-              />
+            <div style={{ position: 'relative' }}>
+              <Search style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 18, height: 18, color: 'rgba(255,255,255,0.35)' }} />
+              <input type="text" placeholder="Tafuta huduma: umeme, maji, simu..."
+                value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ width: '100%', height: 48, paddingLeft: 44, paddingRight: searchQuery ? 44 : 16, borderRadius: 14, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
               {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 bg-gray-200 hover:bg-gray-300 rounded-full transition-all duration-200 active:scale-95"
-                >
-                  <X className="size-4 text-gray-600" />
+                <button onClick={() => setSearchQuery('')}
+                  style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', padding: '4px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', cursor: 'pointer' }}>
+                  <X style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.6)' }} />
                 </button>
               )}
             </div>
           </div>
         </div>
 
-        <div className="pb-6">
-          {/* Saved Billers */}
-          {savedBillers.length > 0 && (
-            <div className="px-4 py-6">
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <h2 className="font-bold text-gray-900 text-lg">Saved Billers</h2>
-                  <p className="text-xs text-gray-500 mt-0.5">Quick pay your favorites</p>
-                </div>
-                <button className="text-sm text-green-600 font-semibold hover:text-green-700 transition-colors">Manage</button>
-              </div>
-              <div className="grid grid-cols-1 gap-3">
-                {savedBillers.map((biller, index) => (
-                  <button
-                    key={biller.id}
-                    onClick={() => payFavorite(biller)}
-                    className="group relative bg-gradient-to-br from-white to-gray-50 rounded-3xl p-5 shadow-md border-2 border-gray-100 hover:border-green-300 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300 overflow-hidden"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-green-500/5 to-green-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    
-                    <div className="relative z-10 flex items-center gap-4">
-                      <div className="relative">
-                        <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                          <biller.icon className="size-7 text-white" />
-                        </div>
-                        <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-1 shadow-lg">
-                          <Star className="size-3 fill-white text-white" />
-                        </div>
+        {/* ── SEARCH RESULTS ── */}
+        {searchQuery.trim() && (
+          <div style={{ padding: '16px 16px 0' }}>
+            {filteredProviders.length === 0
+              ? <p style={{ textAlign: 'center', padding: '24px 0', fontSize: '14px', color: 'rgba(255,255,255,0.4)' }}>Hakuna matokeo kwa "{searchQuery}"</p>
+              : filteredProviders.map(provider => {
+                  const m = CAT_META[provider.category] ?? CAT_META.electricity;
+                  const Icon = provider.icon;
+                  return (
+                    <button key={provider.id} onClick={() => { setSelectedProvider(provider); setFormData(initializeFormData(provider)); setAmount(''); setActiveView('provider'); }}
+                      className="active:scale-[0.98] transition-transform"
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '14px', borderRadius: 16, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', marginBottom: 8, cursor: 'pointer' }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 13, background: m.bg, border: `1px solid ${m.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Icon style={{ width: 22, height: 22, color: m.accent }} />
                       </div>
-                      
-                      <div className="flex-1 text-left">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-gray-900 text-base">{biller.provider}</h3>
-                        </div>
-                        <p className="text-sm text-gray-600 font-medium mb-1">{biller.nickname}</p>
-                        <div className="flex items-center gap-3">
-                          <p className="text-xs text-gray-500 font-mono">{biller.accountNumber.slice(-4).padStart(biller.accountNumber.length, '•')}</p>
-                          <span className="text-xs text-gray-400">•</span>
-                          <p className="text-xs text-green-600 font-semibold">{formatCurrency(biller.lastAmount)}</p>
-                        </div>
+                      <div style={{ flex: 1, textAlign: 'left' }}>
+                        <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{provider.name}</p>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', textTransform: 'capitalize' }}>{provider.category}</p>
                       </div>
-                      
-                      <ChevronRight className="size-6 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all duration-300" />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+                      <ChevronRight style={{ width: 16, height: 16, color: 'rgba(255,255,255,0.25)' }} />
+                    </button>
+                  );
+                })
+            }
+          </div>
+        )}
 
-          {/* Recent Payments */}
-          {recentPayments.length > 0 && (
-            <div className="px-4 py-6 bg-gradient-to-br from-gray-50 to-white">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2">
-                  <div className="bg-blue-100 p-2 rounded-xl">
-                    <Clock className="size-5 text-blue-600" />
-                  </div>
+        {!searchQuery.trim() && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+
+            {/* ── SAVED BILLERS ── */}
+            {savedBillers.length > 0 && (
+              <div style={{ padding: '20px 16px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                   <div>
-                    <h2 className="font-bold text-gray-900 text-lg">Recent Payments</h2>
-                    <p className="text-xs text-gray-500">Tap to repeat payment</p>
+                    <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Bili Zilizohifadhiwa</h2>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Lipa haraka • Saved Billers</p>
                   </div>
+                  <button style={{ fontSize: '12px', fontWeight: 700, color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer' }}>Simamia</button>
                 </div>
-                <button className="text-sm text-green-600 font-semibold hover:text-green-700 transition-colors">See all</button>
-              </div>
-              <div className="space-y-2">
-                {recentPayments.map((payment, index) => (
-                  <button
-                    key={payment.id}
-                    onClick={() => repeatPayment(payment)}
-                    className="group w-full flex items-center gap-4 p-4 bg-white hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 rounded-2xl border-2 border-gray-100 hover:border-green-300 transition-all duration-300 shadow-sm hover:shadow-md"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <div className="relative">
-                      <div className="w-12 h-12 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <payment.icon className="size-6 text-gray-600" />
-                      </div>
-                      <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-0.5">
-                        <Check className="size-3 text-white" />
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 text-left">
-                      <h3 className="font-semibold text-gray-900 mb-0.5">{payment.provider}</h3>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <span>{new Date(payment.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                        <span>•</span>
-                        <span className="font-mono">{payment.accountNumber.slice(-4).padStart(10, '•')}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="text-right">
-                      <p className="font-bold text-gray-900 mb-0.5">{formatCurrency(payment.amount)}</p>
-                      <div className="flex items-center gap-1 text-xs text-green-600 font-medium">
-                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                        <span>Paid</span>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Categories */}
-          <div className="px-4 py-6">
-            <div className="mb-5">
-              <h2 className="font-bold text-gray-900 text-lg mb-1">All Categories</h2>
-              <p className="text-sm text-gray-500">Choose a service type</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {categories.map((category, index) => {
-                const IconComponent = category.icon;
-                return (
-                  <button
-                    key={category.id}
-                    onClick={() => {
-                      setSelectedCategory(category.id as BillCategory);
-                      setActiveView('category');
-                    }}
-                    className="group relative bg-white rounded-3xl p-6 shadow-lg border-2 border-gray-100 hover:border-green-300 hover:shadow-2xl transition-all duration-500 overflow-hidden active:scale-95 min-h-[160px]"
-                    style={{ animationDelay: `${index * 75}ms` }}
-                  >
-                    <div className={`absolute inset-0 ${category.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
-                    
-                    <div className="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-white/20 to-white/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-                    <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-xl"></div>
-                    
-                    <div className="relative z-10 flex flex-col h-full justify-between">
-                      <div>
-                        <div className={`${category.color} w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-300`}>
-                          <IconComponent className="size-7 text-white" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {savedBillers.map(biller => {
+                    const Icon = biller.icon;
+                    const catId = biller.category as string;
+                    const m = CAT_META[catId] ?? CAT_META.electricity;
+                    return (
+                      <button key={biller.id} onClick={() => payFavorite(biller)}
+                        className="active:scale-[0.98] transition-transform"
+                        style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px', borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
+                        {/* Accent glow */}
+                        <div style={{ position: 'absolute', top: -10, right: -10, width: 60, height: 60, borderRadius: '50%', background: `radial-gradient(circle, ${m.accent}12 0%, transparent 70%)` }} />
+                        <div style={{ width: 52, height: 52, borderRadius: 16, background: m.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
+                          <Icon style={{ width: 26, height: 26, color: '#fff' }} />
+                          <div style={{ position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: '50%', background: '#fbbf24', border: '2px solid #080d08', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Star style={{ width: 8, height: 8, color: '#fff', fill: '#fff' }} />
+                          </div>
                         </div>
-                        <h3 className="font-bold text-base text-gray-900 group-hover:text-white mb-1 transition-colors duration-300">{category.name}</h3>
-                        <p className="text-sm text-gray-600 group-hover:text-white/90 font-medium transition-colors duration-300">{category.count} providers</p>
-                      </div>
-                      
-                      <div className="flex items-center justify-between mt-4">
-                        <div className="flex gap-1">
-                          <div className="w-1 h-1 bg-gray-300 group-hover:bg-white rounded-full transition-colors duration-300"></div>
-                          <div className="w-6 h-1 bg-gray-900 group-hover:bg-white rounded-full transition-colors duration-300"></div>
-                          <div className="w-1 h-1 bg-gray-300 group-hover:bg-white rounded-full transition-colors duration-300"></div>
+                        <div style={{ flex: 1, textAlign: 'left' }}>
+                          <p style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginBottom: 2 }}>{biller.provider}</p>
+                          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: 3 }}>{biller.nickname}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontFamily: 'monospace' }}>••••{biller.accountNumber.slice(-4)}</span>
+                            <span style={{ fontSize: '11px', color: m.accent, fontWeight: 700 }}>{formatCurrency(biller.lastAmount)}</span>
+                          </div>
                         </div>
-                        <ChevronRight className="size-5 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all duration-300" />
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+                        <ChevronRight style={{ width: 18, height: 18, color: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-          {/* Popular Providers */}
-          <div className="px-4 py-6 bg-gradient-to-br from-white to-gray-50">
-            <div className="mb-5">
-              <h2 className="font-bold text-gray-900 text-lg mb-1">Popular Providers</h2>
-              <p className="text-sm text-gray-500">Most used services</p>
-            </div>
-            <div className="grid grid-cols-4 gap-3">
-              {popularProviders.map((provider, index) => (
-                <button
-                  key={provider.id}
-                  onClick={() => {
-                    setSelectedProvider(provider);
-                    setFormData(initializeFormData(provider));
-                    setAmount('');
-                    setActiveView('provider');
-                  }}
-                  className="group flex flex-col items-center gap-2"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="relative w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center hover:from-green-500 hover:to-emerald-600 transition-all duration-300 shadow-md hover:shadow-xl hover:shadow-green-500/30 group-hover:scale-110 group-hover:-rotate-6">
-                    <provider.icon className="size-7 text-gray-600 group-hover:text-white transition-colors duration-300" />
-                    <div className="absolute inset-0 rounded-2xl border-2 border-green-500 opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300"></div>
+            {/* ── RECENT PAYMENTS ── */}
+            {recentPayments.length > 0 && (
+              <div style={{ padding: '20px 16px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Clock style={{ width: 18, height: 18, color: '#60a5fa' }} />
+                    </div>
+                    <div>
+                      <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Malipo ya Hivi Karibuni</h2>
+                      <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Gonga kurudia malipo</p>
+                    </div>
                   </div>
-                  <span className="text-xs text-gray-900 font-semibold text-center line-clamp-2 group-hover:text-green-600 transition-colors">{provider.name}</span>
-                </button>
-              ))}
+                  <button style={{ fontSize: '12px', fontWeight: 700, color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer' }}>Yote</button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {recentPayments.map(payment => {
+                    const Icon = payment.icon;
+                    const m = payment.iconColor.includes('yellow') ? CAT_META.electricity
+                            : payment.iconColor.includes('blue') ? CAT_META.water
+                            : payment.iconColor.includes('purple') ? CAT_META.tv
+                            : payment.iconColor.includes('red') ? CAT_META.government
+                            : payment.iconColor.includes('indigo') ? CAT_META.education
+                            : CAT_META.phone;
+                    const statusColor = payment.status === 'success' ? '#4ade80' : payment.status === 'pending' ? '#fbbf24' : '#f87171';
+                    const statusLabel = payment.status === 'success' ? 'Imelipwa' : payment.status === 'pending' ? 'Inasubiri' : 'Imeshindwa';
+                    return (
+                      <button key={payment.id} onClick={() => repeatPayment(payment)}
+                        className="active:scale-[0.98] transition-transform"
+                        style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 18, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }}>
+                        <div style={{ position: 'relative', flexShrink: 0 }}>
+                          <div style={{ width: 46, height: 46, borderRadius: 14, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Icon style={{ width: 22, height: 22, color: 'rgba(255,255,255,0.7)' }} />
+                          </div>
+                          <div style={{ position: 'absolute', bottom: -2, right: -2, width: 14, height: 14, borderRadius: '50%', background: statusColor, border: '2px solid #080d08', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Check style={{ width: 7, height: 7, color: '#fff' }} />
+                          </div>
+                        </div>
+                        <div style={{ flex: 1, textAlign: 'left' }}>
+                          <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff', marginBottom: 3 }}>{payment.provider}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{new Date(payment.date).toLocaleDateString('sw-TZ', { month: 'short', day: 'numeric' })}</span>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>·</span>
+                            <span style={{ fontSize: '11px', fontFamily: 'monospace', color: 'rgba(255,255,255,0.35)' }}>••••{payment.accountNumber.slice(-4)}</span>
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <p style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginBottom: 3 }}>{formatCurrency(payment.amount)}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
+                            <div style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor }} />
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: statusColor }}>{statusLabel}</span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ── CATEGORIES ── */}
+            <div style={{ padding: '20px 16px 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div>
+                  <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Aina za Huduma</h2>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Chagua aina ya huduma unayohitaji</p>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                {categories.map(cat => {
+                  const Icon = cat.icon;
+                  const m = CAT_META[cat.id] ?? CAT_META.electricity;
+                  return (
+                    <button key={cat.id}
+                      onClick={() => { setSelectedCategory(cat.id as BillCategory); setActiveView('category'); }}
+                      className="active:scale-[0.97] transition-transform text-left"
+                      style={{ borderRadius: 22, padding: '20px 16px', background: m.gradient, border: `1px solid ${m.accent}25`, position: 'relative', overflow: 'hidden', boxShadow: `0 4px 20px ${m.accent}18`, cursor: 'pointer' }}>
+                      {/* Corner glow */}
+                      <div style={{ position: 'absolute', top: -12, right: -12, width: 60, height: 60, borderRadius: '50%', background: `radial-gradient(circle, ${m.accent}20 0%, transparent 70%)` }} />
+                      <div style={{ position: 'relative', zIndex: 1 }}>
+                        <div style={{ width: 48, height: 48, borderRadius: 14, background: `${m.accent}20`, border: `1px solid ${m.accent}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+                          <Icon style={{ width: 24, height: 24, color: m.accent }} />
+                        </div>
+                        <p style={{ fontSize: '15px', fontWeight: 900, color: '#fff', marginBottom: 3 }}>{cat.name}</p>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: 14 }}>{cat.count} watoa huduma</p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', gap: 3 }}>
+                            <div style={{ width: 4, height: 4, borderRadius: '50%', background: `${m.accent}50` }} />
+                            <div style={{ width: 18, height: 4, borderRadius: 2, background: m.accent }} />
+                            <div style={{ width: 4, height: 4, borderRadius: '50%', background: `${m.accent}50` }} />
+                          </div>
+                          <ChevronRight style={{ width: 16, height: 16, color: `${m.accent}80` }} />
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+
+            {/* ── POPULAR PROVIDERS ── */}
+            <div style={{ padding: '20px 16px 0' }}>
+              <div style={{ marginBottom: 12 }}>
+                <h2 style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Watoa Huduma Maarufu</h2>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Huduma zinazotumiwa zaidi</p>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
+                {popularProviders.map(provider => {
+                  const Icon = provider.icon;
+                  const m = CAT_META[provider.category] ?? CAT_META.electricity;
+                  return (
+                    <button key={provider.id}
+                      onClick={() => { setSelectedProvider(provider); setFormData(initializeFormData(provider)); setAmount(''); setActiveView('provider'); }}
+                      className="active:scale-95 transition-transform"
+                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>
+                      <div style={{ width: 60, height: 60, borderRadius: 18, background: m.bg, border: `1px solid ${m.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon style={{ width: 26, height: 26, color: m.accent }} />
+                      </div>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 1.3 }}>{provider.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
           </div>
-        </div>
+        )}
       </div>
     );
   }
