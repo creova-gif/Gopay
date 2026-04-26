@@ -66,11 +66,14 @@ export function BusBookingPage({ user, accessToken, onBack }: Props) {
         body: JSON.stringify({ operator: selectedOp.name, from, to, date, seats: selectedSeats, passengers, total: selectedOp.price * passengers, pin }),
       });
       const data = await res.json();
-      setTicketRef(data.reference || `BUS${Date.now()}`);
+      if (!res.ok) {
+        toast.error(data.error || 'Imeshindwa kufanya booking. Jaribu tena.');
+        return;
+      }
+      setTicketRef(data.reference);
       setStep('confirmation');
     } catch {
-      setTicketRef(`BUS${Date.now()}`);
-      setStep('confirmation');
+      toast.error('Hitilafu ya mtandao. Angalia muunganisho wako na ujaribu tena.');
     } finally { setProcessing(false); }
   };
 

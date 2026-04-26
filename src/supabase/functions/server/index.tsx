@@ -24,6 +24,7 @@ import flightsApp from './flights.tsx';
 import hotelsApp from './hotels.tsx';
 import carsApp from './cars.tsx';
 import complianceApp from './compliance.tsx';
+import travelApp from './travel.tsx';
 import paymentAggregatorApp from './payment-aggregator.tsx';
 
 const app = new Hono();
@@ -54,6 +55,31 @@ app.route('/make-server-69a10ee8/performance', performanceApp);
 // Mount integrations routes
 import integrationsApp from './integrations.tsx';
 app.route('/make-server-69a10ee8/integrations', integrationsApp);
+
+// Mount all feature sub-apps
+app.route('/make-server-69a10ee8/bills',         billsApp);
+app.route('/make-server-69a10ee8/shopping',      shoppingApp);
+app.route('/make-server-69a10ee8/merchant',      merchantApp);
+app.route('/make-server-69a10ee8/admin',         adminApp);
+app.route('/make-server-69a10ee8/security',      securityApp);
+app.route('/make-server-69a10ee8/movies',        moviesApp);
+app.route('/make-server-69a10ee8/membership',    membershipApp);
+app.route('/make-server-69a10ee8/restaurants',   restaurantsApp);
+app.route('/make-server-69a10ee8/rides',         ridesApp);
+app.route('/make-server-69a10ee8/profile',       profileApp);
+app.route('/make-server-69a10ee8/rentals',       rentalsApp);
+app.route('/make-server-69a10ee8/drivers',       driversApp);
+app.route('/make-server-69a10ee8/user',          userApp);
+app.route('/make-server-69a10ee8/notifications', notificationsApp);
+app.route('/make-server-69a10ee8/analytics',     analyticsApp);
+app.route('/make-server-69a10ee8/budgets',       budgetsApp);
+app.route('/make-server-69a10ee8/gosafari',      gosafariApp);
+app.route('/make-server-69a10ee8/flights',       flightsApp);
+app.route('/make-server-69a10ee8/hotels',        hotelsApp);
+app.route('/make-server-69a10ee8/cars',          carsApp);
+// compliance mounts at root prefix so /kyc/submit and /kyc/status resolve correctly
+app.route('/make-server-69a10ee8',               complianceApp);
+app.route('/make-server-69a10ee8/travel',        travelApp);
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -338,6 +364,18 @@ app.post('/make-server-69a10ee8/wallet/send-money', async (c) => {
     console.error('Error sending money:', error);
     return c.json({ error: error.message }, 500);
   }
+});
+
+// Alias: /transfer/send → same handler as /wallet/send-money (SendMoneyPage uses this path)
+app.post('/make-server-69a10ee8/transfer/send', async (c) => {
+  return app.fetch(
+    new Request(c.req.url.replace('/transfer/send', '/wallet/send-money'), {
+      method: c.req.method,
+      headers: c.req.raw.headers,
+      body: c.req.raw.body,
+    }),
+    c.env,
+  );
 });
 
 // Recent Transactions

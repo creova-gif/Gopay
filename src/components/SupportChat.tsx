@@ -137,8 +137,8 @@ export function SupportChat({ forceOpen, proactiveMessage }: SupportChatProps = 
                 <div>
                   <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Msaada wa goPay</p>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full" style={{ background: '#4ade80' }} />
-                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Tunapatikana</p>
+                    <span className="w-2 h-2 rounded-full" style={{ background: '#fbbf24' }} />
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Majibu ya haraka · Bot</p>
                   </div>
                 </div>
               </div>
@@ -202,6 +202,26 @@ export function SupportChat({ forceOpen, proactiveMessage }: SupportChatProps = 
                   {q}
                 </button>
               ))}
+            </div>
+
+            {/* Human escalation */}
+            <div className="px-4 pb-1 flex gap-2">
+              <a
+                href="https://wa.me/255800123456"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 text-center py-2 rounded-xl text-xs font-semibold transition-all active:scale-95"
+                style={{ background: 'rgba(37,211,102,0.12)', color: '#25d366', border: '1px solid rgba(37,211,102,0.2)' }}
+              >
+                WhatsApp
+              </a>
+              <a
+                href="tel:+255800123456"
+                className="flex-1 text-center py-2 rounded-xl text-xs font-semibold transition-all active:scale-95"
+                style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}
+              >
+                0800 123 456
+              </a>
             </div>
 
             {/* Input */}

@@ -173,20 +173,16 @@ export function FerryBookingPage({ user, accessToken, onBack }: FerryBookingPage
       const data = await response.json();
 
       if (response.ok) {
-        setTicketReference(data.reference || `FERRY${Date.now()}`);
-        setQrCode(data.qrCode || `ferry-ticket-${Date.now()}`);
+        setTicketReference(data.reference);
+        setQrCode(data.qrCode || `ferry-${data.reference}`);
         setStep('confirmation');
         setPin('');
       } else {
-        toast.error(data.error || 'Booking failed');
+        toast.error(data.error || 'Imeshindwa kufanya booking. Jaribu tena.');
       }
     } catch (error) {
       console.error('Error booking ferry:', error);
-      // Demo mode
-      setTicketReference(`FERRY${Date.now()}`);
-      setQrCode(`ferry-ticket-${Date.now()}`);
-      setStep('confirmation');
-      setPin('');
+      toast.error('Hitilafu ya mtandao. Angalia muunganisho wako na ujaribu tena.');
     } finally {
       setProcessing(false);
     }

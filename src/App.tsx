@@ -95,6 +95,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('auth');
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [isDemoMode, setIsDemoMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [supportOpen, setSupportOpen] = useState(false);
   const profileFetchInFlight = useRef(false);
@@ -155,24 +156,28 @@ export default function App() {
         const userData = await response.json();
         setUser(userData);
       } else {
-        // Anonymous / demo user — build minimal profile from auth record
+        // Profile endpoint failed — fall back to the Supabase auth record only.
+        // Do NOT silently create a "Demo User" identity for a real user.
         const { data: { user: authUser } } = await supabase.auth.getUser();
-        setUser({
-          id: authUser?.id ?? 'demo',
-          email: authUser?.email ?? 'demo@gopay.tz',
-          name: 'Demo User',
-          phone: '+255 700 000 000',
-          nida: '',
-        });
+        if (authUser) {
+          setUser({
+            id: authUser.id,
+            email: authUser.email ?? '',
+            name: authUser.user_metadata?.full_name ?? authUser.email ?? 'User',
+            phone: authUser.user_metadata?.phone ?? '',
+            nida: '',
+          });
+        } else {
+          // Auth record unavailable — sign the user out rather than show fake identity
+          await supabase.auth.signOut();
+          setCurrentPage('auth');
+        }
       }
     } catch {
-      setUser({
-        id: 'demo',
-        email: 'demo@gopay.tz',
-        name: 'Demo User',
-        phone: '+255 700 000 000',
-        nida: '',
-      });
+      // Network error — keep existing user state if available; otherwise redirect to auth
+      if (!user) {
+        setCurrentPage('auth');
+      }
     } finally {
       clearTimeout(timeout);
       profileFetchInFlight.current = false;
@@ -201,10 +206,18 @@ export default function App() {
   };
 
   const handleAuthSuccess = async (token: string) => {
+    const demo = token === 'demo-token-active';
+    setIsDemoMode(demo);
     setAccessToken(token);
-    await fetchUserProfile(token);
+
+    if (demo) {
+      setUser({ id: 'demo', email: 'demo@gopay.tz', name: 'Demo User', phone: '+255 700 000 000', nida: '' });
+    } else {
+      await fetchUserProfile(token);
+      registerPushNotifications(token);
+    }
+
     setCurrentPage('dashboard');
-    registerPushNotifications(token);
   };
 
   const handleLogout = async () => {
@@ -266,7 +279,7 @@ export default function App() {
           <Dashboard user={user} accessToken={accessToken} onNavigate={navigate} onLogout={handleLogout} />
         )}
         {currentPage === 'wallet' && (
-          <WalletPage user={user} accessToken={accessToken} onBack={goHome} />
+          <WalletPage user={user} accessToken={accessToken} onBack={goHome} isDemoMode={isDemoMode} />
         )}
         {currentPage === 'payments' && (
           <PaymentsPage user={user} accessToken={accessToken} onBack={goHome} />

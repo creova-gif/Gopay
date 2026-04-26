@@ -107,11 +107,14 @@ export function NationalParksBookingPage({ user, accessToken, onBack }: Props) {
         body: JSON.stringify({ park: selectedPark.id, package: selectedPkg.id, date: visitDate, visitors, visitorName, visitorPhone, nationality, total: selectedPkg.price * visitors, pin }),
       });
       const data = await res.json();
-      setPermitRef(data.reference || `TANAPA${Date.now()}`);
+      if (!res.ok) {
+        toast.error(data.error || 'Imeshindwa kufanya booking. Jaribu tena.');
+        return;
+      }
+      setPermitRef(data.reference);
       setStep('confirmation');
     } catch {
-      setPermitRef(`TANAPA${Date.now()}`);
-      setStep('confirmation');
+      toast.error('Hitilafu ya mtandao. Angalia muunganisho wako na ujaribu tena.');
     } finally { setProcessing(false); }
   };
 

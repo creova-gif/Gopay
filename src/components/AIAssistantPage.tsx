@@ -202,8 +202,13 @@ export function AIAssistantPage({ onBack, accessToken }: AIAssistantPageProps) {
       {/* Input */}
       <div className="sticky bottom-0 px-4 pb-6 pt-3" style={{ background: 'rgba(8,13,8,0.96)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="flex gap-2 items-center">
-          <button className="p-3 rounded-full active:scale-95" style={{ background: 'rgba(255,255,255,0.06)' }}>
-            <Mic className="size-5" style={{ color: 'rgba(255,255,255,0.5)' }} />
+          <button
+            className="p-3 rounded-full active:scale-95"
+            style={{ background: 'rgba(255,255,255,0.06)' }}
+            aria-label="Voice input (coming soon)"
+            onClick={() => { setInputText(''); alert('Sauti bado haipatikani. Tafadhali andika swali lako.'); }}
+          >
+            <Mic className="size-5" style={{ color: 'rgba(255,255,255,0.3)' }} />
           </button>
           <input
             type="text"

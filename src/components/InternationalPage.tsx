@@ -145,7 +145,10 @@ export function InternationalPage({ user, accessToken, onBack }: InternationalPa
             <span className="text-xs text-blue-100">To overseas</span>
           </button>
 
-          <button className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 rounded-2xl text-white transition-all">
+          <button
+            className="flex flex-col items-center gap-2 p-4 bg-gradient-to-br from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 rounded-2xl text-white transition-all"
+            onClick={() => { const el = document.getElementById('intl-account-number'); el?.scrollIntoView({ behavior: 'smooth' }); }}
+          >
             <Download className="size-8" />
             <span className="text-sm">Receive Money</span>
             <span className="text-xs text-green-100">From overseas</span>
@@ -156,12 +159,15 @@ export function InternationalPage({ user, accessToken, onBack }: InternationalPa
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-base">Your eWallet account number</h3>
-            <button className="text-blue-600 text-sm flex items-center gap-1">
+            <button
+              className="text-blue-600 text-sm flex items-center gap-1"
+              onClick={() => { const el = document.getElementById('intl-account-number'); el?.scrollIntoView({ behavior: 'smooth' }); }}
+            >
               <Info className="size-4" />
               How to receive
             </button>
           </div>
-          <div className="bg-white rounded-2xl p-4 border border-gray-100">
+          <div id="intl-account-number" className="bg-white rounded-2xl p-4 border border-gray-100">
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-1">Share this to receive money</p>

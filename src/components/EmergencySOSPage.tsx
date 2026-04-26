@@ -47,12 +47,12 @@ export function EmergencySOSPage({ onBack }: EmergencySOSPageProps) {
     setLocationSharing(true);
     setCountdown(5);
 
-    // Simulate countdown
     const interval = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
           clearInterval(interval);
-          // Alert would be sent here
+          // Redirect to the police emergency line — actual backend SOS is not yet implemented.
+          window.location.href = 'tel:112';
           return 0;
         }
         return prev - 1;
@@ -124,9 +124,9 @@ export function EmergencySOSPage({ onBack }: EmergencySOSPageProps) {
             <div className="text-center">
               <AlertTriangle className="size-20 mx-auto mb-4" />
               <h2 className="text-3xl font-bold mb-4">SOS ACTIVATED</h2>
-              <p className="text-2xl font-bold mb-2">{countdown > 0 ? countdown : 'ALERT SENT'}</p>
+              <p className="text-2xl font-bold mb-2">{countdown > 0 ? countdown : 'CALLING 112'}</p>
               <p className="text-sm opacity-90 mb-6">
-                {countdown > 0 ? 'Sending alert in...' : 'Emergency contacts notified'}
+                {countdown > 0 ? 'Calling emergency services in...' : 'Dialling Police (112)...'}
               </p>
 
               {countdown > 0 && (

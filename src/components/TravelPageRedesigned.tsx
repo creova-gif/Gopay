@@ -90,6 +90,7 @@ export function TravelPageRedesigned({ user, accessToken, onBack }: TravelPageRe
               <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Real-time bookings · Live prices</p>
             </div>
             <button className="active:scale-95 transition-transform"
+              onClick={() => goBook('bus')}
               style={{ padding: '10px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer' }}>
               <Search style={{ width: 20, height: 20, color: '#fff' }} />
             </button>
@@ -141,7 +142,7 @@ export function TravelPageRedesigned({ user, accessToken, onBack }: TravelPageRe
             </h2>
             <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Bei za sasa · Imesasishwa sasa hivi</p>
           </div>
-          <button style={{ fontSize: '12px', fontWeight: 700, color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button onClick={() => goBook('bus')} style={{ fontSize: '12px', fontWeight: 700, color: '#4ade80', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
             Ona Zote <ChevronRight style={{ width: 14, height: 14 }} />
           </button>
         </div>
