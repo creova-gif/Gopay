@@ -7,7 +7,8 @@ import {
   ArrowLeft, Send, CreditCard, Check, Shield, Users,
   Star, Copy, Share2, RotateCcw
 } from 'lucide-react';
-import { projectId } from '../utils/supabase/info';
+import { createClient } from '@supabase/supabase-js';
+import { projectId, publicAnonKey } from '../utils/supabase/info';
 import { PinPad } from './ui/PinPad';
 
 interface SendMoneyPageProps {
@@ -57,6 +58,31 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => { setBalance(data.balance ?? null); setOptimisticBalance(data.balance ?? null); })
       .catch(() => {});
+
+    const supabase = createClient(
+      `https://${projectId}.supabase.co`,
+      publicAnonKey,
+      { global: { headers: { Authorization: `Bearer ${accessToken}` } } },
+    );
+
+    const channel = supabase
+      .channel('send-transactions')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'transactions' },
+        (payload) => {
+          const tx = payload.new as { status: string; type: string };
+          if (tx.status === 'completed' && tx.type === 'p2p_send') {
+            toast.success('Uhamisho umekamilika!');
+          }
+          if (tx.status === 'failed' && tx.type === 'p2p_send') {
+            toast.error('Uhamisho umeshindwa. Salio limerudishwa.');
+          }
+        },
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [accessToken]);
 
   const numericAmount = parseFloat(amount) || 0;

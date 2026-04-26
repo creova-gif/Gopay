@@ -7,7 +7,8 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { User } from '../App';
 import { ArrowLeft, Plus, Send, Smartphone, Building, CreditCard, ChevronRight, QrCode, Download, UserPlus, Wifi, ArrowDownToLine } from 'lucide-react';
-import { projectId } from '../utils/supabase/info';
+import { createClient } from '@supabase/supabase-js';
+import { projectId, publicAnonKey } from '../utils/supabase/info';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { InlinePinPad } from './ui/PinPad';
@@ -70,6 +71,35 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
   useEffect(() => {
     fetchWalletData();
     fetchLinkedAccounts();
+
+    if (!accessToken) return;
+
+    const supabase = createClient(
+      `https://${projectId}.supabase.co`,
+      publicAnonKey,
+      { global: { headers: { Authorization: `Bearer ${accessToken}` } } },
+    );
+
+    const channel = supabase
+      .channel('wallet-transactions')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'transactions' },
+        (payload) => {
+          const tx = payload.new as { status: string; type: string };
+          if (tx.status === 'completed' && tx.type === 'topup') {
+            fetchWalletData();
+            toast.success('Fedha zimeongezwa kwenye akaunti yako!');
+          }
+          if (tx.status === 'failed' && (tx.type === 'withdrawal' || tx.type === 'p2p_send')) {
+            fetchWalletData();
+            toast.error('Uhamisho umeshindwa. Salio limerudishwa.');
+          }
+        },
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const fetchWalletData = async () => {
