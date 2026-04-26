@@ -59,12 +59,21 @@ export function TopUpModal({ open, onClose, accessToken, onSuccess }: TopUpModal
     }
   };
 
-  const handleDone = () => {
-    onSuccess();
-    onClose();
+  const resetState = () => {
     setNetwork(null);
     setAmount('');
     setPendingRef(null);
+  };
+
+  const handleDone = () => {
+    onSuccess();
+    resetState();
+    onClose();
+  };
+
+  const handleClose = () => {
+    resetState();
+    onClose();
   };
 
   return (
@@ -76,7 +85,7 @@ export function TopUpModal({ open, onClose, accessToken, onSuccess }: TopUpModal
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+          <div className="absolute inset-0 bg-black/60" onClick={handleClose} />
           <motion.div
             className="relative w-full max-w-md rounded-t-3xl p-6 pb-10 space-y-5"
             style={{ background: '#0f1a0f', border: '1px solid rgba(255,255,255,0.1)' }}
@@ -103,7 +112,7 @@ export function TopUpModal({ open, onClose, accessToken, onSuccess }: TopUpModal
               <>
                 <div className="flex items-center justify-between">
                   <h2 style={{ color: '#fff', fontWeight: 700, fontSize: '18px' }}>Weka Fedha</h2>
-                  <button onClick={onClose} aria-label="Ghairi">
+                  <button onClick={handleClose} aria-label="Ghairi">
                     <X className="size-5 text-white opacity-60" />
                   </button>
                 </div>

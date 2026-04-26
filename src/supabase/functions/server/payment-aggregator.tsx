@@ -681,6 +681,14 @@ async function processClickPesa(payment: PaymentRequest): Promise<PaymentRespons
 
 paymentAggregatorApp.post('/process-payment', async (c) => {
   try {
+    const authHeader = c.req.header('Authorization') ?? '';
+    const { data: { user }, error: authError } = await createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } },
+    ).auth.getUser();
+    if (authError || !user) return c.json({ error: 'Unauthorized' }, 401);
+
     const payment: PaymentRequest = await c.req.json();
 
     // Validate payment
@@ -996,6 +1004,13 @@ paymentAggregatorApp.post('/topup', async (c) => {
       userId: user.id, type: 'topup', network, amount,
       currency: 'TZS', phone, reference, description: 'Wallet top-up',
     });
+
+    if (result.success && result.demo) {
+      const existing = (await kv.get(`wallet:${user.id}`) as { balance: number } | null) ?? { balance: 0 };
+      await kv.set(`wallet:${user.id}`, { ...existing, balance: existing.balance + amount });
+      await getDb().from('transactions').update({ status: 'completed' }).eq('provider_ref', result.providerRef);
+    }
+
     return c.json(result, result.success ? 200 : 400);
   } catch (e: unknown) {
     console.error('topup error:', e);
@@ -1017,18 +1032,15 @@ paymentAggregatorApp.post('/withdraw', async (c) => {
     const { network, amount, phone } = await c.req.json();
     if (!network || !amount || !phone) return c.json({ error: 'Missing fields' }, 400);
 
-    const wallet = (await kv.get(`wallet:${user.id}`)) as { balance: number } | null;
-    const balance = wallet?.balance ?? 0;
+    const newBalance = await kv.atomicDebit(`wallet:${user.id}`, amount);
+    if (newBalance === null) return c.json({ error: 'Salio halitosha' }, 400);
 
     const reference = `GO-WD-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const result = await processWithdrawal(getDb(), {
       userId: user.id, type: 'withdrawal', network, amount,
       currency: 'TZS', phone, reference, description: 'Wallet withdrawal',
-    }, balance);
+    }, newBalance + amount);
 
-    if (result.success) {
-      await kv.set(`wallet:${user.id}`, { ...wallet, balance: balance - amount });
-    }
     return c.json(result, result.success ? 200 : 400);
   } catch (e: unknown) {
     console.error('withdraw error:', e);
@@ -1050,18 +1062,15 @@ paymentAggregatorApp.post('/send-external', async (c) => {
     const { network, amount, phone } = await c.req.json();
     if (!network || !amount || !phone) return c.json({ error: 'Missing fields' }, 400);
 
-    const wallet = (await kv.get(`wallet:${user.id}`)) as { balance: number } | null;
-    const balance = wallet?.balance ?? 0;
+    const newBalance = await kv.atomicDebit(`wallet:${user.id}`, amount);
+    if (newBalance === null) return c.json({ error: 'Salio halitosha' }, 400);
 
     const reference = `GO-EXT-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const result = await processExternalSend(getDb(), {
       userId: user.id, type: 'p2p_send', network, amount,
       currency: 'TZS', phone, reference, description: 'External transfer',
-    }, balance);
+    }, newBalance + amount);
 
-    if (result.success) {
-      await kv.set(`wallet:${user.id}`, { ...wallet, balance: balance - amount });
-    }
     return c.json(result, result.success ? 200 : 400);
   } catch (e: unknown) {
     console.error('send-external error:', e);
@@ -1078,6 +1087,7 @@ paymentAggregatorApp.post('/webhook/:provider', async (c) => {
   if (provider === 'selcom') {
     const sig = c.req.header('Digest') ?? '';
     const secret = Deno.env.get('SELCOM_WEBHOOK_SECRET') ?? '';
+    if (!secret) return c.json({ error: 'Webhook not configured' }, 401);
     const res = await handleSelcomWebhook(rawBody, sig, secret, db, kv);
     return c.json(res.body, res.status as 200 | 400 | 401 | 500);
   }

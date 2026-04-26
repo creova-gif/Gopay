@@ -76,6 +76,16 @@ export const mdel = async (keys: string[]): Promise<void> => {
   }
 };
 
+// Atomically deducts `amount` from the numeric `balance` field of the JSON value
+// stored at `key`. Returns the new balance on success, or null if the stored
+// balance was less than `amount` (insufficient funds).
+export const atomicDebit = async (key: string, amount: number): Promise<number | null> => {
+  const supabase = client();
+  const { data, error } = await supabase.rpc('atomic_debit_wallet', { p_key: key, p_amount: amount });
+  if (error) throw new Error(error.message);
+  return data as number | null;
+};
+
 // Search for key-value pairs by prefix.
 export const getByPrefix = async (prefix: string): Promise<any[]> => {
   const supabase = client()

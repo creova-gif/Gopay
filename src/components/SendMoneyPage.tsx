@@ -79,6 +79,7 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
           const tx = payload.new as { status: string; type: string };
           if (tx.status === 'completed' && tx.type === 'p2p_send') {
             toast.success('Uhamisho umekamilika!');
+            fetchBalance();
           }
           if (tx.status === 'failed' && tx.type === 'p2p_send') {
             toast.error('Uhamisho umeshindwa. Salio limerudishwa.');
