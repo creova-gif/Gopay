@@ -49,7 +49,7 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
   const [mobileNetwork, setMobileNetwork] = useState<'mpesa' | 'tigo' | 'airtel' | 'halopesa'>('mpesa');
   const { track } = useAnalytics(accessToken);
 
-  useEffect(() => {
+  const fetchBalance = () => {
     if (!accessToken) return;
     fetch(
       `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/wallet/balance`,
@@ -58,6 +58,11 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(data => { setBalance(data.balance ?? null); setOptimisticBalance(data.balance ?? null); })
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    if (!accessToken) return;
+    fetchBalance();
 
     const supabase = createClient(
       `https://${projectId}.supabase.co`,
@@ -77,7 +82,7 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
           }
           if (tx.status === 'failed' && tx.type === 'p2p_send') {
             toast.error('Uhamisho umeshindwa. Salio limerudishwa.');
-            setBalance(b => b !== null ? b + (parseFloat(amount) || 0) : b);
+            fetchBalance();
           }
         },
       )

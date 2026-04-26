@@ -69,10 +69,10 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
   const [qrAmount, setQrAmount] = useState('');
 
   useEffect(() => {
+    if (!accessToken) return;
+
     fetchWalletData();
     fetchLinkedAccounts();
-
-    if (!accessToken) return;
 
     const supabase = createClient(
       `https://${projectId}.supabase.co`,
@@ -91,6 +91,9 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
             fetchWalletData();
             toast.success('Fedha zimeongezwa kwenye akaunti yako!');
           }
+          if (tx.status === 'completed' && tx.type === 'p2p_send') {
+            fetchWalletData();
+          }
           if (tx.status === 'failed' && (tx.type === 'withdrawal' || tx.type === 'p2p_send')) {
             fetchWalletData();
             toast.error('Uhamisho umeshindwa. Salio limerudishwa.');
@@ -100,7 +103,7 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, []);
+  }, [accessToken]);
 
   const fetchWalletData = async () => {
     if (isDemoMode) {
