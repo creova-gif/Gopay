@@ -2363,98 +2363,121 @@ export function Dashboard({ user, accessToken, onNavigate, onLogout }: Dashboard
         </div>
       )}
 
-      {currentTab === 'profile' && (
-        <div className="px-5 pt-8 pb-6">
-          <h1 className="text-3xl mb-6">Profile</h1>
+      {currentTab === 'profile' && (() => {
+        const initials = user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+        const points = user.loyaltyPoints ?? 4250;
+        const menuRow = (
+          icon: JSX.Element,
+          label: string,
+          sub: string | null,
+          accent: string,
+          onClick: () => void
+        ) => (
+          <button onClick={onClick}
+            className="active:scale-[0.98] transition-transform"
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '16px', borderRadius: 18, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer', marginBottom: 8 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 13, background: `${accent}18`, border: `1px solid ${accent}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              {icon}
+            </div>
+            <div style={{ flex: 1, textAlign: 'left' }}>
+              <p style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: sub ? 2 : 0 }}>{label}</p>
+              {sub && <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>{sub}</p>}
+            </div>
+            <ChevronRight style={{ width: 18, height: 18, color: 'rgba(255,255,255,0.25)', flexShrink: 0 }} />
+          </button>
+        );
+        return (
+          <div style={{ paddingBottom: 40 }}>
+            {/* ── HERO IDENTITY CARD ── */}
+            <div style={{ margin: '20px 16px 0', borderRadius: 28, overflow: 'hidden', position: 'relative', background: 'linear-gradient(160deg,#0a1f0a 0%,#0d2a18 50%,#0f3820 100%)', border: '1px solid rgba(74,222,128,0.12)', boxShadow: '0 8px 40px rgba(22,163,74,0.12)' }}>
+              {/* Ambient glows */}
+              <div style={{ position: 'absolute', top: -30, right: -30, width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(74,222,128,0.12) 0%, transparent 70%)' }} />
+              <div style={{ position: 'absolute', bottom: -20, left: -20, width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle, rgba(251,191,36,0.08) 0%, transparent 70%)' }} />
 
-          {/* Profile Header */}
-          <div className="rounded-3xl p-6 mb-6 relative overflow-hidden" style={{
-            background: 'linear-gradient(135deg, rgba(22,163,74,0.12) 0%, rgba(22,163,74,0.06) 100%)',
-            border: '1px solid rgba(22,163,74,0.2)'
-          }}>
-            <div className="absolute top-0 right-0 w-40 h-40 opacity-20 rounded-full blur-3xl" style={{
-              background: 'radial-gradient(circle, rgba(22,163,74,0.3) 0%, transparent 70%)'
-            }} />
-            <div className="relative z-10 flex items-center gap-4">
-              <div className="p-4 rounded-full" style={{
-                background: 'rgba(22,163,74,0.2)',
-                border: '1px solid rgba(22,163,74,0.3)'
-              }}>
-                <UserIcon className="size-12" style={{ color: '#16a34a' }} />
-              </div>
-              <div>
-                <p className="text-2xl mb-1" style={{ color: '#fff' }}>{user.name}</p>
-                <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>{user.email}</p>
-                <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>{user.phone}</p>
+              <div style={{ position: 'relative', zIndex: 1, padding: '28px 24px 24px' }}>
+                {/* Avatar + info */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 20 }}>
+                  {/* Avatar ring */}
+                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                    <div style={{ width: 76, height: 76, borderRadius: '50%', background: 'linear-gradient(135deg,#16a34a,#4ade80)', padding: 2.5 }}>
+                      <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: '#0d2a18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: '26px', fontWeight: 900, color: '#4ade80', letterSpacing: '-1px' }}>{initials}</span>
+                      </div>
+                    </div>
+                    {/* Verified dot */}
+                    <div style={{ position: 'absolute', bottom: 2, right: 2, width: 20, height: 20, borderRadius: '50%', background: '#16a34a', border: '2px solid #0d2a18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Check style={{ width: 10, height: 10, color: '#fff' }} />
+                    </div>
+                  </div>
+
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '22px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', marginBottom: 3 }}>{user.name}</p>
+                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', marginBottom: 2 }}>{user.email}</p>
+                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>{user.phone}</p>
+                  </div>
+                </div>
+
+                {/* Tier badge + verified */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 20, background: 'linear-gradient(135deg,#422006,#92400e)', border: '1px solid rgba(251,191,36,0.35)' }}>
+                    <Award style={{ width: 14, height: 14, color: '#fbbf24' }} />
+                    <span style={{ fontSize: '12px', fontWeight: 800, color: '#fde68a' }}>Gold Member</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 20, background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.2)' }}>
+                    <Check style={{ width: 11, height: 11, color: '#4ade80' }} />
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#4ade80' }}>Imethibitishwa</span>
+                  </div>
+                </div>
+
+                {/* Stats strip */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                  {[
+                    { label: 'GO Pointi', value: points.toLocaleString(), color: '#fbbf24' },
+                    { label: 'Miamala',   value: '47',                    color: '#60a5fa' },
+                    { label: 'Akiba',     value: 'TZS 0',                 color: '#4ade80' },
+                  ].map(({ label, value, color }) => (
+                    <div key={label} style={{ borderRadius: 14, padding: '12px 10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center' }}>
+                      <p style={{ fontSize: '15px', fontWeight: 900, color, letterSpacing: '-0.5px', lineHeight: 1 }}>{value}</p>
+                      <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{label}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+
+            {/* ── AKAUNTI ── */}
+            <div style={{ padding: '24px 16px 0' }}>
+              <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.3)', letterSpacing: '1px', marginBottom: 10 }}>AKAUNTI</p>
+              {menuRow(<UserIcon style={{ width: 20, height: 20, color: '#4ade80' }} />,  'Hariri Wasifu',      'Jina, picha, maelezo',     '#4ade80', () => onNavigate('profile'))}
+              {menuRow(<Award    style={{ width: 20, height: 20, color: '#fbbf24' }} />,  'Uanachama',          'Gold Member · GOrewards',  '#fbbf24', () => onNavigate('membership'))}
+              {menuRow(<Bell     style={{ width: 20, height: 20, color: '#60a5fa' }} />,  'Arifa',              'Bainisha majalizo yako',   '#60a5fa', () => onNavigate('notifications'))}
+            </div>
+
+            {/* ── USALAMA ── */}
+            <div style={{ padding: '16px 16px 0' }}>
+              <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.3)', letterSpacing: '1px', marginBottom: 10 }}>USALAMA</p>
+              {menuRow(<Shield   style={{ width: 20, height: 20, color: '#c4b5fd' }} />,  'Usalama & Faragha',  'PIN, biometrics, 2FA',     '#c4b5fd', () => onNavigate('security'))}
+            </div>
+
+            {/* ── SIGN OUT ── */}
+            <div style={{ padding: '20px 16px 0' }}>
+              <button onClick={onLogout}
+                className="active:scale-[0.98] transition-transform"
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '16px', borderRadius: 18, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', cursor: 'pointer' }}>
+                <div style={{ width: 44, height: 44, borderRadius: 13, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <LogOut style={{ width: 20, height: 20, color: '#f87171' }} />
+                </div>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: '#f87171', flex: 1, textAlign: 'left' }}>Toka · Sign Out</p>
+              </button>
+            </div>
+
+            {/* App version note */}
+            <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.2)', marginTop: 28 }}>
+              goPay v1.0 · Imeidhinishwa na Benki ya Tanzania
+            </p>
           </div>
-
-          {/* Profile Menu */}
-          <div className="space-y-3">
-            <button
-              onClick={() => onNavigate('profile')}
-              className="w-full bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all active:scale-95 flex items-center justify-between"
-            >
-              <div className="flex items-center gap-4">
-                <div className="bg-gray-100 p-3 rounded-xl">
-                  <UserIcon className="size-5 text-gray-700" />
-                </div>
-                <p className="text-base">Edit Profile</p>
-              </div>
-              <ChevronRight className="size-5 text-gray-400" />
-            </button>
-
-            <button
-              onClick={() => onNavigate('security')}
-              className="w-full bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all active:scale-95 flex items-center justify-between"
-            >
-              <div className="flex items-center gap-4">
-                <div className="bg-gray-100 p-3 rounded-xl">
-                  <Shield className="size-5 text-gray-700" />
-                </div>
-                <p className="text-base">Security & Privacy</p>
-              </div>
-              <ChevronRight className="size-5 text-gray-400" />
-            </button>
-
-            <button
-              onClick={() => onNavigate('membership')}
-              className="w-full bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all active:scale-95 flex items-center justify-between"
-            >
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-amber-400 to-orange-500 p-3 rounded-xl">
-                  <Award className="size-5 text-white" />
-                </div>
-                <div className="text-left">
-                  <p className="text-base">Membership</p>
-                  <p className="text-xs text-gray-500">Gold Member</p>
-                </div>
-              </div>
-              <ChevronRight className="size-5 text-gray-400" />
-            </button>
-
-            <button
-              onClick={onLogout}
-              className="w-full p-5 rounded-2xl transition-all active:scale-95 flex items-center justify-between"
-              style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.06)'
-              }}
-            >
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-xl" style={{
-                  background: 'rgba(22,163,74,0.15)',
-                  border: '1px solid rgba(22,163,74,0.2)'
-                }}>
-                  <LogOut className="size-5" style={{ color: '#16a34a' }} />
-                </div>
-                <p className="text-base" style={{ color: '#fff' }}>Logout</p>
-              </div>
-            </button>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Bottom Navigation */}
       {/* ── WORLD-CLASS FLOATING ISLAND BOTTOM NAV ── */}
