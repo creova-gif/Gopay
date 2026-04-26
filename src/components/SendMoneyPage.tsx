@@ -77,6 +77,7 @@ export function SendMoneyPage({ user, accessToken, onBack }: SendMoneyPageProps)
           }
           if (tx.status === 'failed' && tx.type === 'p2p_send') {
             toast.error('Uhamisho umeshindwa. Salio limerudishwa.');
+            setBalance(b => b !== null ? b + (parseFloat(amount) || 0) : b);
           }
         },
       )
