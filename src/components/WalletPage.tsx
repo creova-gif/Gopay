@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { TopUpModal } from './TopUpModal';
+import { WithdrawModal } from './WithdrawModal';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { User } from '../App';
-import { ArrowLeft, Plus, Send, Smartphone, Building, CreditCard, ChevronRight, QrCode, Download, UserPlus, Wifi } from 'lucide-react';
+import { ArrowLeft, Plus, Send, Smartphone, Building, CreditCard, ChevronRight, QrCode, Download, UserPlus, Wifi, ArrowDownToLine } from 'lucide-react';
 import { projectId } from '../utils/supabase/info';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -33,6 +34,7 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
   const [showAddFunds, setShowAddFunds] = useState(false);
   const [showTopUpModal, setShowTopUpModal] = useState(false);
   const [showSendMoney, setShowSendMoney] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showRequestMoney, setShowRequestMoney] = useState(false);
   const [showLinkAccount, setShowLinkAccount] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
@@ -386,6 +388,17 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
                   <QrCode className="size-4 text-white" />
                 </div>
                 <span className="text-xs text-center">My QR</span>
+              </button>
+            </div>
+            <div className="mt-2">
+              <button
+                onClick={() => setShowWithdrawModal(true)}
+                className="w-full flex flex-col items-center gap-1 p-3 bg-red-50 hover:bg-red-100 rounded-2xl transition-all"
+              >
+                <div className="bg-red-600 p-2 rounded-xl">
+                  <ArrowDownToLine className="size-4 text-white" />
+                </div>
+                <span className="text-xs text-center">Withdraw</span>
               </button>
             </div>
           </div>
@@ -942,6 +955,15 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
         onClose={() => setShowTopUpModal(false)}
         accessToken={accessToken}
         userId={user.id}
+        onSuccess={fetchWalletData}
+      />
+
+      <WithdrawModal
+        open={showWithdrawModal}
+        onClose={() => setShowWithdrawModal(false)}
+        accessToken={accessToken}
+        userId={user.id}
+        balance={balance}
         onSuccess={fetchWalletData}
       />
     </div>
