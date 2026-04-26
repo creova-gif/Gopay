@@ -31,7 +31,6 @@ import { GroupMoneyPools } from './components/GroupMoneyPools';
 import { QuickPayFeatures } from './components/QuickPayFeatures';
 import { ServicesHub } from './components/ServicesHub';
 import { InstallPrompt } from './components/InstallPrompt';
-import { PerformanceMonitor } from './components/PerformanceMonitor';
 // New pages
 import { InternationalPage } from './components/InternationalPage';
 import { ShopPage } from './components/ShopPage';
@@ -441,7 +440,6 @@ export default function App() {
         )}
         <SupportChat forceOpen={supportOpen} />
         <InstallPrompt />
-        <PerformanceMonitor />
       </div>
     </ErrorBoundary>
   );
