@@ -1,735 +1,442 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Wallet, 
-  Smartphone, 
-  Shield, 
-  Zap, 
-  Award, 
-  Globe, 
-  ChevronRight,
-  ChevronLeft,
-  Check,
-  ArrowRight,
-  Sparkles,
-  Lock,
-  TrendingUp,
-  Users,
-  QrCode,
-  CreditCard,
-  Plane,
-  ShoppingBag,
-  Gift,
-  Star,
-  Phone,
-  Mail,
-  User,
-  MapPin,
-  Fingerprint,
-  Eye,
-  EyeOff
+import {
+  Wallet, Smartphone, Shield, Zap, Award,
+  ChevronLeft, Check, ArrowRight, Sparkles, Lock,
+  TrendingUp, Users, QrCode, CreditCard, Plane,
+  Gift, Star, Phone, User, MapPin, Fingerprint,
 } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import goPayIconLogo from 'figma:asset/d92565bd030dba68ccff66e379d172066e4f2d27.png';
-import goPayFullLogo from 'figma:asset/d92565bd030dba68ccff66e379d172066e4f2d27.png';
+import { InlinePinPad } from './ui/PinPad';
+import goPayLogo from 'figma:asset/d92565bd030dba68ccff66e379d172066e4f2d27.png';
 
 interface OnboardingFlowProps {
   onComplete: (userData: any) => void;
   onSkipToDemo: () => void;
+  userEmail?: string;
+  userId?: string;
 }
 
-export function OnboardingFlow({ onComplete, onSkipToDemo }: OnboardingFlowProps) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [direction, setDirection] = useState(1);
-  const [userData, setUserData] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    location: 'Dar es Salaam',
-    pin: '',
-    confirmPin: '',
-    agreeTerms: false,
-  });
-  const [showPin, setShowPin] = useState(false);
-  const [showConfirmPin, setShowConfirmPin] = useState(false);
+const BG = '#080d08';
+const CARD = 'rgba(255,255,255,0.05)';
+const BORDER = '1px solid rgba(255,255,255,0.08)';
+const GREEN = '#4ade80';
+const GREEN_DARK = '#16a34a';
 
-  // Welcome Screens
-  const welcomeScreens = [
-    {
-      id: 'welcome',
-      gradient: 'from-emerald-500 via-green-600 to-teal-700',
-      icon: Sparkles,
-      title: 'Welcome to',
-      subtitle: 'goPay Tanzania',
-      description: 'Your all-in-one super app for payments, travel, shopping, and more',
-      emoji: '🇹🇿',
-      features: [
-        { icon: Wallet, text: 'Digital Wallet', color: 'text-emerald-400' },
-        { icon: QrCode, text: 'QR Payments', color: 'text-blue-400' },
-        { icon: Plane, text: 'Travel Booking', color: 'text-purple-400' },
-        { icon: ShoppingBag, text: 'Shop & Pay', color: 'text-pink-400' },
-      ]
-    },
-    {
-      id: 'payments',
-      gradient: 'from-blue-500 via-indigo-600 to-purple-700',
-      icon: Zap,
-      title: 'Pay Everything',
-      subtitle: 'One Tap Away',
-      description: 'Bills, airtime, government services, and more',
-      emoji: '⚡',
-      features: [
-        { icon: Zap, text: 'Instant bill payments', color: 'text-yellow-400' },
-        { icon: Smartphone, text: 'Mobile money top-up', color: 'text-green-400' },
-        { icon: Shield, text: 'Government services', color: 'text-blue-400' },
-        { icon: CreditCard, text: 'Merchant payments', color: 'text-purple-400' },
-      ]
-    },
-    {
-      id: 'rewards',
-      gradient: 'from-purple-500 via-pink-600 to-red-700',
-      icon: Award,
-      title: 'Earn Rewards',
-      subtitle: 'Every Transaction',
-      description: '15% cashback rewards on every payment',
-      emoji: '🎁',
-      features: [
-        { icon: Award, text: '4-tier membership', color: 'text-yellow-400' },
-        { icon: Gift, text: '15% cashback', color: 'text-pink-400' },
-        { icon: Star, text: 'Exclusive rewards', color: 'text-purple-400' },
-        { icon: TrendingUp, text: 'Points that grow', color: 'text-green-400' },
-      ]
-    },
-    {
-      id: 'security',
-      gradient: 'from-gray-700 via-gray-800 to-black',
-      icon: Shield,
-      title: 'Bank-Grade',
-      subtitle: 'Security',
-      description: 'BoT compliant with 2FA and biometric protection',
-      emoji: '🔒',
-      features: [
-        { icon: Shield, text: 'BoT certified', color: 'text-green-400' },
-        { icon: Lock, text: 'End-to-end encryption', color: 'text-blue-400' },
-        { icon: Fingerprint, text: 'Biometric auth', color: 'text-purple-400' },
-        { icon: Users, text: 'Trusted by 100K+', color: 'text-emerald-400' },
-      ]
-    },
-  ];
+const features = [
+  {
+    step: 1,
+    emoji: '⚡',
+    color: '#4ade80',
+    glow: 'rgba(74,222,128,0.25)',
+    title: 'Malipo Haraka',
+    subtitle: 'Lipa kila kitu kwa sekunde moja',
+    bullets: [
+      { icon: Zap,           text: 'Bili za umeme & maji',        color: '#fbbf24' },
+      { icon: Smartphone,    text: 'Airtime & data bundles',       color: '#34d399' },
+      { icon: Shield,        text: 'Huduma za serikali',           color: '#60a5fa' },
+      { icon: QrCode,        text: 'Malipo ya QR code',            color: '#a78bfa' },
+    ],
+  },
+  {
+    step: 2,
+    emoji: '🎁',
+    color: '#fb923c',
+    glow: 'rgba(251,146,60,0.25)',
+    title: 'Pokea Zawadi',
+    subtitle: '15% cashback kwa kila malipo unayofanya',
+    bullets: [
+      { icon: Award,        text: 'Viwango 4 vya GOrewards',      color: '#fbbf24' },
+      { icon: Gift,         text: '15% cashback kila wakati',     color: '#fb923c' },
+      { icon: Star,         text: 'Zawadi za kipekee',            color: '#f472b6' },
+      { icon: TrendingUp,   text: 'Pointi zinazokua',             color: '#34d399' },
+    ],
+  },
+  {
+    step: 3,
+    emoji: '🔒',
+    color: '#60a5fa',
+    glow: 'rgba(96,165,250,0.25)',
+    title: 'Salama Kabisa',
+    subtitle: 'Usalama wa kiwango cha benki kwenye mkono wako',
+    bullets: [
+      { icon: Shield,      text: 'BoT certified & ISO 27001',    color: '#34d399' },
+      { icon: Lock,        text: 'Usimbaji fiche wa hali ya juu', color: '#60a5fa' },
+      { icon: Fingerprint, text: 'Uthibitisho wa kibayometriki',  color: '#a78bfa' },
+      { icon: Users,       text: 'Imaminika na watanzania 100K+', color: '#fb923c' },
+    ],
+  },
+];
 
-  const handleNext = () => {
-    setDirection(1);
-    if (currentStep < welcomeScreens.length + 2) {
-      setCurrentStep(currentStep + 1);
+const TOTAL = 6; // 0=splash, 1-3=features, 4=profile, 5=pin
+
+export function OnboardingFlow({ onComplete, onSkipToDemo, userEmail = '', userId = '' }: OnboardingFlowProps) {
+  const [step, setStep] = useState(0);
+  const [dir, setDir] = useState(1);
+  const [userData, setUserData] = useState({ name: '', phone: '', email: userEmail, location: 'Dar es Salaam' });
+  const [pinPhase, setPinPhase] = useState<'create' | 'confirm'>('create');
+  const [tempPin, setTempPin] = useState('');
+  const [confirmVal, setConfirmVal] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [done, setDone] = useState(false);
+  const [confettiItems] = useState(() =>
+    Array.from({ length: 40 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      hue: Math.floor(Math.random() * 360),
+      delay: Math.random() * 0.6,
+      dur: 2.2 + Math.random() * 1.5,
+      size: 6 + Math.random() * 8,
+    }))
+  );
+
+  // Auto-advance splash
+  useEffect(() => {
+    if (step === 0) {
+      const t = setTimeout(() => goNext(), 2800);
+      return () => clearTimeout(t);
+    }
+  }, [step]);
+
+  const goNext = () => { setDir(1); setStep(s => s + 1); };
+  const goPrev = () => { setDir(-1); setStep(s => Math.max(s - 1, 0)); };
+
+  const handlePinInput = (val: string) => {
+    setPinError('');
+    if (pinPhase === 'create') {
+      setTempPin(val);
+      if (val.length === 4) setTimeout(() => setPinPhase('confirm'), 260);
+    } else {
+      setConfirmVal(val);
+      if (val.length === 4) {
+        if (val !== tempPin) {
+          setPinError('PIN hazifanani. Jaribu tena.');
+          setTimeout(() => { setTempPin(''); setConfirmVal(''); setPinPhase('create'); }, 900);
+        } else {
+          finishOnboarding(tempPin);
+        }
+      }
     }
   };
 
-  const handlePrevious = () => {
-    setDirection(-1);
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+  const finishOnboarding = (pin: string) => {
+    if (!userData.name.trim() || !userData.phone.trim()) {
+      toast.error('Tafadhali jaza jina na nambari ya simu');
+      setStep(4); return;
     }
+    if (userId) localStorage.setItem(`gopay_onboarded_${userId}`, '1');
+    setDone(true);
+    setTimeout(() => onComplete({ ...userData, pin }), 2800);
   };
 
-  const handleComplete = () => {
-    if (userData.pin !== userData.confirmPin) {
-      toast.error('PINs do not match!');
-      return;
-    }
-    if (userData.pin.length !== 4) {
-      toast.error('PIN must be 4 digits');
-      return;
-    }
-    if (!userData.name || !userData.phone) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-    onComplete(userData);
+  const canAdvanceProfile = userData.name.trim().length >= 2 && userData.phone.trim().length >= 9;
+
+  const variants = {
+    enter: (d: number) => ({ x: d > 0 ? '100%' : '-100%', opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (d: number) => ({ x: d > 0 ? '-100%' : '100%', opacity: 0 }),
   };
 
-  const slideVariants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 1000 : -1000,
-      opacity: 0,
-      scale: 0.8,
-    }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1,
-      scale: 1,
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? 1000 : -1000,
-      opacity: 0,
-      scale: 0.8,
-    }),
-  };
-
-  const isWelcomeScreen = currentStep < welcomeScreens.length;
-  const isPersonalInfoScreen = currentStep === welcomeScreens.length;
-  const isSecurityScreen = currentStep === welcomeScreens.length + 1;
+  // ── Success screen ──────────────────────────────────────────────────────────
+  if (done) {
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: BG, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        {confettiItems.map(p => (
+          <motion.div key={p.id}
+            style={{ position: 'absolute', left: `${p.x}%`, top: '-5%', width: p.size, height: p.size, borderRadius: '50%', background: `hsl(${p.hue},70%,60%)` }}
+            animate={{ y: '110vh', rotate: 720, opacity: [1, 1, 0] }}
+            transition={{ duration: p.dur, delay: p.delay, ease: 'easeIn' }}
+          />
+        ))}
+        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}
+          style={{ width: 96, height: 96, borderRadius: 28, background: 'linear-gradient(135deg,#16a34a,#15803d)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28, boxShadow: '0 0 60px rgba(22,163,74,0.5)' }}>
+          <Check style={{ width: 48, height: 48, color: '#fff' }} />
+        </motion.div>
+        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+          style={{ fontSize: 32, fontWeight: 900, color: '#fff', marginBottom: 10, textAlign: 'center' }}>
+          Karibu goPay! 🇹🇿
+        </motion.p>
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+          style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', textAlign: 'center' }}>
+          Akaunti yako imefunguliwa. Twende pamoja!
+        </motion.p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-950 overflow-hidden relative">
-      {/* Animated Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Large primary orbs */}
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-emerald-400/30 via-green-500/20 to-teal-600/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-green-600/25 via-emerald-500/15 to-teal-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        
-        {/* Center floating orb */}
-        <motion.div 
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[32rem] h-[32rem] bg-gradient-to-br from-teal-500/15 via-emerald-400/10 to-green-600/5 rounded-full blur-3xl"
-          animate={{ 
-            scale: [1, 1.1, 1],
-            rotate: [0, 90, 0],
-            opacity: [0.3, 0.5, 0.3]
-          }}
-          transition={{ 
-            duration: 8, 
-            repeat: Infinity,
-            ease: "easeInOut" 
-          }}
-        />
-        
-        {/* Accent orbs - smaller, more dynamic */}
-        <motion.div 
-          className="absolute top-20 left-1/4 w-40 h-40 bg-gradient-to-br from-yellow-400/20 via-amber-500/10 to-orange-400/5 rounded-full blur-2xl"
-          animate={{ 
-            y: [-20, 20, -20],
-            x: [-10, 10, -10],
-            scale: [1, 1.2, 1]
-          }}
-          transition={{ 
-            duration: 6, 
-            repeat: Infinity,
-            ease: "easeInOut" 
-          }}
-        />
-        
-        <motion.div 
-          className="absolute bottom-32 right-1/4 w-48 h-48 bg-gradient-to-tl from-cyan-400/15 via-teal-500/10 to-emerald-400/5 rounded-full blur-2xl"
-          animate={{ 
-            y: [20, -20, 20],
-            x: [10, -10, 10],
-            scale: [1.1, 0.9, 1.1]
-          }}
-          transition={{ 
-            duration: 7, 
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.5 
-          }}
-        />
-        
-        {/* Small floating particles */}
-        <motion.div 
-          className="absolute top-1/3 right-1/3 w-24 h-24 bg-emerald-300/20 rounded-full blur-xl"
-          animate={{ 
-            y: [-30, 30, -30],
-            opacity: [0.2, 0.4, 0.2]
-          }}
-          transition={{ 
-            duration: 5, 
-            repeat: Infinity,
-            ease: "easeInOut" 
-          }}
-        />
-        
-        <motion.div 
-          className="absolute bottom-1/3 left-1/3 w-32 h-32 bg-teal-400/15 rounded-full blur-xl"
-          animate={{ 
-            y: [30, -30, 30],
-            x: [-15, 15, -15],
-            opacity: [0.3, 0.5, 0.3]
-          }}
-          transition={{ 
-            duration: 6, 
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1 
-          }}
-        />
-        
-        {/* Tanzania gold accent (from flag) */}
-        <motion.div 
-          className="absolute top-1/4 left-1/2 w-20 h-20 bg-gradient-to-br from-yellow-400/25 via-amber-400/15 to-orange-300/10 rounded-full blur-xl"
-          animate={{ 
-            scale: [1, 1.3, 1],
-            opacity: [0.3, 0.6, 0.3],
-            rotate: [0, 180, 360]
-          }}
-          transition={{ 
-            duration: 10, 
-            repeat: Infinity,
-            ease: "easeInOut" 
-          }}
-        />
+    <div style={{ position: 'fixed', inset: 0, background: BG, overflow: 'hidden' }}>
+      <style>{`
+        @keyframes ob-orb { 0%,100%{transform:scale(1) rotate(0deg);opacity:.25} 50%{transform:scale(1.15) rotate(180deg);opacity:.45} }
+        @keyframes ob-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)} }
+        @keyframes ob-pulse { 0%,100%{opacity:.3} 50%{opacity:.6} }
+        .ob-orb { animation: ob-orb 9s ease-in-out infinite; }
+        .ob-float { animation: ob-float 4s ease-in-out infinite; }
+        .ob-input::placeholder { color: rgba(255,255,255,0.28); }
+        .ob-input:focus { border-color: rgba(74,222,128,0.6) !important; background: rgba(74,222,128,0.06) !important; outline: none; }
+        .ob-sel { background: #080d08; color: #fff; }
+        .ob-sel option { background: #0f1a0f; }
+      `}</style>
+
+      {/* Ambient blobs */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+        <div className="ob-orb" style={{ position: 'absolute', top: '-15%', right: '-10%', width: 320, height: 320, borderRadius: '50%', background: 'radial-gradient(circle,rgba(22,163,74,0.35),transparent 70%)' }} />
+        <div className="ob-orb" style={{ position: 'absolute', bottom: '-15%', left: '-10%', width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle,rgba(22,163,74,0.2),transparent 70%)', animationDelay: '4s' }} />
       </div>
 
-      {/* Progress Dots */}
-      <div className="absolute top-8 left-0 right-0 z-20">
-        <div className="flex items-center justify-center gap-2">
-          {[...Array(welcomeScreens.length + 2)].map((_, i) => (
-            <motion.div
-              key={i}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                i === currentStep 
-                  ? 'w-8 bg-gradient-to-r from-emerald-400 to-blue-500' 
-                  : i < currentStep 
-                    ? 'w-2 bg-emerald-500/50' 
-                    : 'w-2 bg-white/20'
-              }`}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: i * 0.1 }}
-            />
+      {/* Progress dots — hidden on splash */}
+      {step > 0 && step <= 5 && (
+        <div style={{ position: 'absolute', top: 20, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 6, zIndex: 30 }}>
+          {Array.from({ length: TOTAL }).map((_, i) => (
+            <div key={i} style={{ height: 4, borderRadius: 2, transition: 'all 0.3s',
+              width: i + 1 === step ? 24 : 8,
+              background: i + 1 <= step ? GREEN : 'rgba(255,255,255,0.18)' }} />
           ))}
         </div>
-      </div>
+      )}
 
-      {/* Skip Button */}
-      <button
-        onClick={onSkipToDemo}
-        className="absolute top-8 right-6 z-20 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold text-sm transition-all shadow-lg"
-      >
-        Skip to Demo
-      </button>
+      {/* Skip */}
+      {step > 0 && step < 4 && (
+        <button onClick={onSkipToDemo}
+          style={{ position: 'absolute', top: 16, right: 16, zIndex: 40, padding: '7px 16px', borderRadius: 20, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+          Ruka
+        </button>
+      )}
 
-      <AnimatePresence initial={false} custom={direction} mode="wait">
-        {/* Welcome Screens */}
-        {isWelcomeScreen && (
-          <motion.div
-            key={currentStep}
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{
-              x: { type: 'spring', stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 },
-            }}
-            className="absolute inset-0 flex items-center justify-center p-6"
-          >
-            <div className="max-w-md w-full">
-              {/* Option 2: Full goPay Logo Above Card */}
-              <motion.div
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="mb-6 flex justify-center"
-              >
-                <img 
-                  src={goPayFullLogo} 
-                  alt="goPay Tanzania" 
-                  className="w-32 h-32 object-contain"
-                />
+      <AnimatePresence custom={dir} mode="wait">
+
+        {/* ── STEP 0: Splash ── */}
+        {step === 0 && (
+          <motion.div key="splash" custom={dir} variants={variants} initial="enter" animate="center" exit="exit"
+            transition={{ duration: 0.45, ease: [0.4,0,0.2,1] }}
+            style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+            <motion.div className="ob-float" style={{ marginBottom: 32, position: 'relative' }}>
+              <div style={{ position: 'absolute', inset: -20, borderRadius: '50%', background: 'radial-gradient(circle,rgba(22,163,74,0.4),transparent 70%)' }} />
+              <img src={goPayLogo} alt="goPay" style={{ width: 100, height: 100, objectFit: 'contain', position: 'relative' }} />
+            </motion.div>
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+              style={{ fontSize: 42, fontWeight: 900, color: '#fff', marginBottom: 10, textAlign: 'center', letterSpacing: '-1px' }}>
+              goPay
+            </motion.h1>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+              style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', textAlign: 'center', maxWidth: 260 }}>
+              Pochi yako ya dijitali ya Tanzania 🇹🇿
+            </motion.p>
+            <motion.div initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.7, duration: 2.1 }}
+              style={{ position: 'absolute', bottom: 60, left: '50%', transform: 'translateX(-50%)', width: 120, height: 3, borderRadius: 2, background: `linear-gradient(90deg,transparent,${GREEN},transparent)`, transformOrigin: 'left' }} />
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
+              style={{ position: 'absolute', bottom: 30, fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>
+              Inapakia…
+            </motion.p>
+          </motion.div>
+        )}
+
+        {/* ── STEPS 1-3: Feature slides ── */}
+        {step >= 1 && step <= 3 && (() => {
+          const f = features[step - 1];
+          return (
+            <motion.div key={`feature-${step}`} custom={dir} variants={variants} initial="enter" animate="center" exit="exit"
+              transition={{ duration: 0.38, ease: [0.4,0,0.2,1] }}
+              style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 24px 24px' }}>
+              <div style={{ width: '100%', maxWidth: 400 }}>
+                {/* Hero emoji badge */}
+                <motion.div initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 260, delay: 0.1 }}
+                  style={{ width: 90, height: 90, borderRadius: 26, background: `${f.color}18`, border: `1.5px solid ${f.color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44, marginBottom: 26, boxShadow: `0 0 40px ${f.glow}` }}>
+                  {f.emoji}
+                </motion.div>
+
+                <motion.h2 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+                  style={{ fontSize: 30, fontWeight: 900, color: '#fff', marginBottom: 8 }}>
+                  {f.title}
+                </motion.h2>
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+                  style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 28, lineHeight: 1.5 }}>
+                  {f.subtitle}
+                </motion.p>
+
+                {/* Bullet cards */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
+                  {f.bullets.map((b, i) => {
+                    const Icon = b.icon;
+                    return (
+                      <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.25 + i * 0.08 }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', borderRadius: 14, background: CARD, border: BORDER }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 10, background: `${b.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Icon style={{ width: 18, height: 18, color: b.color }} />
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{b.text}</span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* CTA */}
+                <motion.button initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}
+                  onClick={goNext}
+                  style={{ width: '100%', height: 54, borderRadius: 18, background: 'linear-gradient(135deg,#16a34a,#15803d)', border: 'none', color: '#fff', fontWeight: 900, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 6px 24px rgba(22,163,74,0.35)' }}>
+                  {step < 3 ? 'Endelea' : 'Anza Sasa!'}
+                  <ArrowRight style={{ width: 18, height: 18 }} />
+                </motion.button>
+
+                {step > 1 && (
+                  <button onClick={goPrev}
+                    style={{ width: '100%', marginTop: 12, padding: '10px 0', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    <ChevronLeft style={{ width: 16, height: 16 }} /> Rudi
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          );
+        })()}
+
+        {/* ── STEP 4: Profile ── */}
+        {step === 4 && (
+          <motion.div key="profile" custom={dir} variants={variants} initial="enter" animate="center" exit="exit"
+            transition={{ duration: 0.38, ease: [0.4,0,0.2,1] }}
+            style={{ position: 'absolute', inset: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '72px 20px 32px' }}>
+            <div style={{ width: '100%', maxWidth: 400 }}>
+              {/* Header */}
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 28 }}>
+                <div style={{ width: 64, height: 64, borderRadius: 20, background: 'rgba(74,222,128,0.12)', border: '1.5px solid rgba(74,222,128,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
+                  <User style={{ width: 30, height: 30, color: GREEN }} />
+                </div>
+                <h2 style={{ fontSize: 26, fontWeight: 900, color: '#fff', marginBottom: 6 }}>Unda Wasifu Wako</h2>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.5 }}>
+                  Unafanya hivi <strong style={{ color: GREEN }}>mara moja tu</strong> — taarifa zako zinabaki salama.
+                </p>
               </motion.div>
 
-              {/* Main Content */}
-              <div className={`relative bg-gradient-to-br ${welcomeScreens[currentStep].gradient} rounded-[3rem] p-8 shadow-2xl`}>
-                {/* Glassmorphism Overlay */}
-                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm rounded-[3rem] border border-white/20"></div>
-                
-                <div className="relative z-10 text-white text-center">
-                  {/* Title */}
-                  <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <h1 className="text-2xl font-bold mb-2 text-white/90">
-                      {welcomeScreens[currentStep].title}
-                    </h1>
-                    <h2 className="text-4xl font-black mb-4 text-[rgb(242,246,255)]">
-                      {welcomeScreens[currentStep].subtitle}
-                    </h2>
-                    <p className="text-lg text-white/80 mb-8">
-                      {welcomeScreens[currentStep].description}
-                    </p>
-                  </motion.div>
-
-                  {/* Features Grid */}
-                  <div className="grid grid-cols-2 gap-4 mb-8">
-                    {welcomeScreens[currentStep].features.map((feature, i) => {
-                      const Icon = feature.icon;
-                      return (
-                        <motion.div
-                          key={i}
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ delay: 0.4 + i * 0.1 }}
-                          className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20"
-                        >
-                          <Icon className={`w-8 h-8 ${feature.color} mb-2 mx-auto`} />
-                          <p className="text-sm font-medium">{feature.text}</p>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Next Button */}
-                  <motion.button
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.8 }}
-                    onClick={handleNext}
-                    className="w-full bg-white text-gray-900 font-bold py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-gray-100 transition-all shadow-xl"
-                  >
-                    {currentStep < welcomeScreens.length - 1 ? 'Continue' : "Let's Get Started"}
-                    <ArrowRight className="w-5 h-5" />
-                  </motion.button>
-                </div>
-              </div>
-
-              {/* Back Button */}
-              {currentStep > 0 && (
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  onClick={handlePrevious}
-                  className="mt-4 w-full py-3 text-white/70 hover:text-white font-medium flex items-center justify-center gap-2 transition-all"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                  Back
-                </motion.button>
-              )}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Personal Info Screen */}
-        {isPersonalInfoScreen && (
-          <motion.div
-            key="personal-info"
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{
-              x: { type: 'spring', stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 },
-            }}
-            className="absolute inset-0 flex items-center justify-center p-6"
-          >
-            <div className="max-w-md w-full">
-              <div className="relative bg-gradient-to-br from-emerald-900/40 via-gray-900/60 to-teal-900/40 rounded-[3rem] p-8 shadow-2xl border border-emerald-500/20 backdrop-blur-xl overflow-hidden">
-                {/* Decorative Elements */}
-                <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-teal-500/10 rounded-full blur-3xl"></div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-green-500/5 rounded-full blur-3xl"></div>
-
-                {/* Header */}
-                <div className="text-center mb-8 relative z-10">
-                  <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: 'spring', delay: 0.2, duration: 0.8 }}
-                    className="relative w-24 h-24 mx-auto mb-4"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-green-600 to-teal-600 rounded-3xl blur-lg opacity-50 animate-pulse"></div>
-                    <div className="relative w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-3xl flex items-center justify-center shadow-xl border-2 border-emerald-300/30">
-                      <User className="w-12 h-12 text-white" />
-                      <div className="absolute -top-1 -right-1 w-7 h-7 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-gray-900 shadow-lg">
-                        <span className="text-sm">🇹🇿</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                  <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <h2 className="text-3xl font-bold text-white mb-2 bg-gradient-to-r from-emerald-200 via-white to-teal-200 bg-clip-text text-transparent">
-                      Create Your Profile
-                    </h2>
-                    <p className="text-gray-300">Join thousands of Tanzanians using goPay</p>
-                  </motion.div>
-                </div>
-
-                {/* Form */}
-                <div className="space-y-4 relative z-10">
-                  <motion.div
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <Label htmlFor="name" className="text-emerald-100 mb-2 block text-sm font-semibold">Full Name *</Label>
-                    <div className="relative group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-400 z-10" />
-                      <Input
-                        id="name"
-                        placeholder="John Mwangi"
-                        value={userData.name}
-                        onChange={(e) => setUserData({ ...userData, name: e.target.value })}
-                        className="relative pl-12 h-14 bg-white/5 border-emerald-500/20 text-white placeholder:text-gray-500 rounded-2xl hover:bg-white/10 hover:border-emerald-500/40 focus:bg-white/10 focus:border-emerald-500 transition-all backdrop-blur-sm"
-                      />
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <Label htmlFor="phone" className="text-emerald-100 mb-2 block text-sm font-semibold">Phone Number *</Label>
-                    <div className="relative group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-400 z-10" />
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="+255 712 345 678"
-                        value={userData.phone}
-                        onChange={(e) => setUserData({ ...userData, phone: e.target.value })}
-                        className="relative pl-12 h-14 bg-white/5 border-green-500/20 text-white placeholder:text-gray-500 rounded-2xl hover:bg-white/10 hover:border-green-500/40 focus:bg-white/10 focus:border-green-500 transition-all backdrop-blur-sm"
-                      />
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <Label htmlFor="email" className="text-emerald-100 mb-2 block text-sm font-semibold">Email (Optional)</Label>
-                    <div className="relative group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-cyan-500/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-teal-400 z-10" />
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="john@example.com"
-                        value={userData.email}
-                        onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-                        className="relative pl-12 h-14 bg-white/5 border-teal-500/20 text-white placeholder:text-gray-500 rounded-2xl hover:bg-white/10 hover:border-teal-500/40 focus:bg-white/10 focus:border-teal-500 transition-all backdrop-blur-sm"
-                      />
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.6 }}
-                  >
-                    <Label htmlFor="location" className="text-emerald-100 mb-2 block text-sm font-semibold">Location</Label>
-                    <div className="relative group">
-                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-teal-500/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-cyan-400 z-10" />
-                      <select
-                        id="location"
-                        value={userData.location}
-                        onChange={(e) => setUserData({ ...userData, location: e.target.value })}
-                        className="relative w-full pl-12 pr-4 h-14 bg-white/5 border border-cyan-500/20 text-white rounded-2xl appearance-none cursor-pointer hover:bg-white/10 hover:border-cyan-500/40 focus:bg-white/10 focus:border-cyan-500 transition-all backdrop-blur-sm z-10"
-                      >
-                        <option value="Dar es Salaam" className="bg-gray-900">🏙️ Dar es Salaam</option>
-                        <option value="Arusha" className="bg-gray-900">🏔️ Arusha</option>
-                        <option value="Mwanza" className="bg-gray-900">🌊 Mwanza</option>
-                        <option value="Dodoma" className="bg-gray-900">🏛️ Dodoma</option>
-                        <option value="Mbeya" className="bg-gray-900">⛰️ Mbeya</option>
-                        <option value="Zanzibar" className="bg-gray-900">🏝️ Zanzibar</option>
-                      </select>
-                      <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-cyan-400 rotate-90 pointer-events-none z-10" />
-                    </div>
-                  </motion.div>
-
-                  {/* Trust Badge */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.7 }}
-                    className="flex items-center justify-center gap-2 py-3 px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl backdrop-blur-sm"
-                  >
-                    <Shield className="w-4 h-4 text-emerald-400" />
-                    <span className="text-xs text-emerald-200">Your data is encrypted & secure</span>
-                  </motion.div>
-
-                  <motion.button
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.8 }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleNext}
-                    className="relative w-full bg-gradient-to-r from-emerald-500 via-green-600 to-teal-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/25 overflow-hidden group mt-6"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                    <span className="relative">Continue</span>
-                    <ArrowRight className="w-5 h-5 relative group-hover:translate-x-1 transition-transform" />
-                  </motion.button>
-                </div>
-              </div>
-
-              <button
-                onClick={handlePrevious}
-                className="mt-4 w-full py-3 text-white/70 hover:text-white font-medium flex items-center justify-center gap-2 transition-all"
-              >
-                <ChevronLeft className="w-5 h-5" />
-                Back
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Security Screen */}
-        {isSecurityScreen && (
-          <motion.div
-            key="security"
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{
-              x: { type: 'spring', stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 },
-            }}
-            className="absolute inset-0 flex items-center justify-center p-6"
-          >
-            <div className="max-w-md w-full">
-              <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-[3rem] p-8 shadow-2xl border border-white/10">
-                {/* Header */}
-                <div className="text-center mb-8">
-                  <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ type: 'spring', delay: 0.2 }}
-                    className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl flex items-center justify-center"
-                  >
-                    <Lock className="w-10 h-10 text-white" />
-                  </motion.div>
-                  <h2 className="text-3xl font-bold text-white mb-2">Secure Your Account</h2>
-                  <p className="text-gray-300">Create a 4-digit PIN to protect your wallet</p>
-                </div>
-
-                {/* Security Features */}
-                <div className="bg-white/5 rounded-2xl p-4 mb-6 border border-white/10">
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                      <Check className="w-4 h-4 text-green-400" />
-                    </div>
-                    <div className="text-sm text-gray-200">
-                      <span className="font-semibold text-white">Bank-grade encryption</span> protects your data
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                      <Check className="w-4 h-4 text-green-400" />
-                    </div>
-                    <div className="text-sm text-gray-200">
-                      <span className="font-semibold text-white">Biometric authentication</span> available
-                    </div>
-                  </div>
-                </div>
-
-                {/* PIN Input */}
-                <div className="space-y-5">
-                  <motion.div
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <Label htmlFor="pin" className="text-white mb-2 block">Create PIN *</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <Input
-                        id="pin"
-                        type={showPin ? "text" : "password"}
-                        inputMode="numeric"
-                        maxLength={4}
-                        placeholder="••••"
-                        value={userData.pin}
-                        onChange={(e) => setUserData({ ...userData, pin: e.target.value.replace(/\D/g, '') })}
-                        className="pl-12 pr-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-gray-500 rounded-2xl text-center text-2xl tracking-widest"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPin(!showPin)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                      >
-                        {showPin ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <Label htmlFor="confirm-pin" className="text-white mb-2 block">Confirm PIN *</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <Input
-                        id="confirm-pin"
-                        type={showConfirmPin ? "text" : "password"}
-                        inputMode="numeric"
-                        maxLength={4}
-                        placeholder="••••"
-                        value={userData.confirmPin}
-                        onChange={(e) => setUserData({ ...userData, confirmPin: e.target.value.replace(/\D/g, '') })}
-                        className="pl-12 pr-12 h-14 bg-white/5 border-white/10 text-white placeholder:text-gray-500 rounded-2xl text-center text-2xl tracking-widest"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPin(!showConfirmPin)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                      >
-                        {showConfirmPin ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                      </button>
-                    </div>
-                    {userData.confirmPin && userData.pin !== userData.confirmPin && (
-                      <p className="text-red-400 text-sm mt-2">PINs do not match</p>
-                    )}
-                    {userData.confirmPin && userData.pin === userData.confirmPin && (
-                      <p className="text-green-400 text-sm mt-2 flex items-center gap-1">
-                        <Check className="w-4 h-4" /> PINs match!
-                      </p>
-                    )}
-                  </motion.div>
-
-                  <motion.button
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.5 }}
-                    onClick={handleComplete}
-                    disabled={userData.pin !== userData.confirmPin || userData.pin.length !== 4}
-                    className="w-full bg-gradient-to-r from-emerald-500 to-blue-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-xl mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Sparkles className="w-5 h-5" />
-                    Complete Setup
-                  </motion.button>
-                </div>
-
-                {/* Trust Badge */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                  className="mt-6 text-center"
-                >
-                  <div className="flex items-center justify-center gap-2 text-gray-400 text-xs">
-                    <Shield className="w-4 h-4 text-green-400" />
-                    <span>BoT Certified • ISO 27001 Compliant</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {/* Name */}
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 8 }}>JINA KAMILI *</p>
+                  <div style={{ position: 'relative' }}>
+                    <User style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', width: 18, height: 18, color: 'rgba(255,255,255,0.35)' }} />
+                    <input className="ob-input" type="text" placeholder="Jina lako kamili" value={userData.name}
+                      onChange={e => setUserData(u => ({ ...u, name: e.target.value }))}
+                      style={{ width: '100%', height: 52, paddingLeft: 48, paddingRight: 16, borderRadius: 14, background: CARD, border: BORDER, color: '#fff', fontSize: 15, boxSizing: 'border-box' as const, transition: 'all 0.2s' }} />
                   </div>
                 </motion.div>
+
+                {/* Phone */}
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 8 }}>NAMBARI YA SIMU *</p>
+                  <div style={{ position: 'relative' }}>
+                    <Phone style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', width: 18, height: 18, color: 'rgba(255,255,255,0.35)' }} />
+                    <input className="ob-input" type="tel" placeholder="+255 712 345 678" value={userData.phone}
+                      onChange={e => setUserData(u => ({ ...u, phone: e.target.value }))}
+                      style={{ width: '100%', height: 52, paddingLeft: 48, paddingRight: 16, borderRadius: 14, background: CARD, border: BORDER, color: '#fff', fontSize: 15, boxSizing: 'border-box' as const, transition: 'all 0.2s' }} />
+                  </div>
+                </motion.div>
+
+                {/* Location */}
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 8 }}>MKOA WAKO</p>
+                  <div style={{ position: 'relative' }}>
+                    <MapPin style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', width: 18, height: 18, color: 'rgba(255,255,255,0.35)', zIndex: 1 }} />
+                    <select className="ob-input ob-sel" value={userData.location}
+                      onChange={e => setUserData(u => ({ ...u, location: e.target.value }))}
+                      style={{ width: '100%', height: 52, paddingLeft: 48, paddingRight: 16, borderRadius: 14, background: CARD, border: BORDER, color: '#fff', fontSize: 15, boxSizing: 'border-box' as const, appearance: 'none' as const }}>
+                      <option value="Dar es Salaam">🏙️ Dar es Salaam</option>
+                      <option value="Arusha">🏔️ Arusha</option>
+                      <option value="Mwanza">🌊 Mwanza</option>
+                      <option value="Dodoma">🏛️ Dodoma</option>
+                      <option value="Mbeya">⛰️ Mbeya</option>
+                      <option value="Zanzibar">🏝️ Zanzibar</option>
+                      <option value="Tanga">🌴 Tanga</option>
+                      <option value="Morogoro">🌿 Morogoro</option>
+                    </select>
+                  </div>
+                </motion.div>
+
+                {/* Trust row */}
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.28 }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 12, background: 'rgba(74,222,128,0.07)', border: '1px solid rgba(74,222,128,0.18)' }}>
+                  <Shield style={{ width: 15, height: 15, color: GREEN, flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>Taarifa zako zinasimbwa na kulindwa — BoT compliant</span>
+                </motion.div>
+
+                {/* CTA */}
+                <motion.button initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+                  onClick={goNext} disabled={!canAdvanceProfile}
+                  style={{ width: '100%', height: 54, borderRadius: 18, border: 'none', fontWeight: 900, fontSize: 15, cursor: canAdvanceProfile ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s',
+                    background: canAdvanceProfile ? 'linear-gradient(135deg,#16a34a,#15803d)' : 'rgba(22,163,74,0.25)',
+                    color: canAdvanceProfile ? '#fff' : 'rgba(255,255,255,0.35)',
+                    boxShadow: canAdvanceProfile ? '0 6px 24px rgba(22,163,74,0.35)' : 'none' }}>
+                  Endelea
+                  <ArrowRight style={{ width: 18, height: 18 }} />
+                </motion.button>
+
+                <button onClick={goPrev}
+                  style={{ width: '100%', padding: '10px 0', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                  <ChevronLeft style={{ width: 16, height: 16 }} /> Rudi
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── STEP 5: PIN ── */}
+        {step === 5 && (
+          <motion.div key="pin" custom={dir} variants={variants} initial="enter" animate="center" exit="exit"
+            transition={{ duration: 0.38, ease: [0.4,0,0.2,1] }}
+            style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 24px 32px' }}>
+            <div style={{ width: '100%', maxWidth: 380 }}>
+              {/* Icon */}
+              <motion.div initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 220 }}
+                style={{ width: 72, height: 72, borderRadius: 22, background: 'linear-gradient(135deg,rgba(96,165,250,0.2),rgba(167,139,250,0.2))', border: '1.5px solid rgba(96,165,250,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, boxShadow: '0 0 40px rgba(96,165,250,0.2)' }}>
+                <Lock style={{ width: 34, height: 34, color: '#60a5fa' }} />
+              </motion.div>
+
+              <motion.h2 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                style={{ fontSize: 26, fontWeight: 900, color: '#fff', marginBottom: 6 }}>
+                {pinPhase === 'create' ? 'Weka PIN Yako' : 'Thibitisha PIN'}
+              </motion.h2>
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
+                style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 32, lineHeight: 1.5 }}>
+                {pinPhase === 'create'
+                  ? 'Chagua PIN ya tarakimu 4 kulinda pochi yako'
+                  : `Weka tena PIN yako kuthibitisha`}
+              </motion.p>
+
+              <AnimatePresence mode="wait">
+                <motion.div key={pinPhase} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                  <InlinePinPad
+                    value={pinPhase === 'create' ? tempPin : confirmVal}
+                    onChange={handlePinInput}
+                    length={4}
+                    error={pinError || undefined}
+                  />
+                </motion.div>
+              </AnimatePresence>
+
+              {pinError && (
+                <motion.p initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                  style={{ fontSize: 13, color: '#f87171', textAlign: 'center', marginTop: 16 }}>
+                  {pinError}
+                </motion.p>
+              )}
+
+              {/* Phase indicator */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 24 }}>
+                {['create', 'confirm'].map((ph, i) => (
+                  <div key={ph} style={{ width: 32, height: 3, borderRadius: 2, transition: 'all 0.3s',
+                    background: (pinPhase === 'confirm' && i === 0) || (pinPhase === 'confirm' && i === 1) ? GREEN :
+                      pinPhase === 'create' && i === 0 ? GREEN : 'rgba(255,255,255,0.18)' }} />
+                ))}
               </div>
 
-              <button
-                onClick={handlePrevious}
-                className="mt-4 w-full py-3 text-white/70 hover:text-white font-medium flex items-center justify-center gap-2 transition-all"
-              >
-                <ChevronLeft className="w-5 h-5" />
-                Back
+              <button onClick={goPrev}
+                style={{ width: '100%', marginTop: 20, padding: '10px 0', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <ChevronLeft style={{ width: 16, height: 16 }} /> Rudi
               </button>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16 }}>
+                <Fingerprint style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.3)' }} />
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>BoT Certified • ISO 27001 Compliant</span>
+              </div>
             </div>
           </motion.div>
         )}

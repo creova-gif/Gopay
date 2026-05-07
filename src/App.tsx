@@ -129,7 +129,18 @@ export default function App() {
       if (session?.access_token) {
         setAccessToken(session.access_token);
         await fetchUserProfile(session.access_token);
-        setCurrentPage('dashboard');
+        // If the stored profile has no name, the user never finished onboarding.
+        // Guard with localStorage so returning users are never blocked again.
+        const uid = session.user?.id ?? '';
+        const alreadyOnboarded = uid ? localStorage.getItem(`gopay_onboarded_${uid}`) : null;
+        setUser(prev => {
+          if (!alreadyOnboarded && prev && !prev.name) {
+            setShowOnboarding(true);
+            return prev;
+          }
+          setCurrentPage('dashboard');
+          return prev;
+        });
       }
     } catch (error) {
       console.error('Error checking session:', error);
@@ -219,7 +230,15 @@ export default function App() {
       await fetchUserProfile(token);
       registerPushNotifications(token);
       if (isNewUser) {
-        setShowOnboarding(true);
+        // Check if this user already completed onboarding in a previous session
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        const uid = authUser?.id ?? '';
+        const alreadyOnboarded = uid ? localStorage.getItem(`gopay_onboarded_${uid}`) : null;
+        if (alreadyOnboarded) {
+          setCurrentPage('dashboard');
+        } else {
+          setShowOnboarding(true);
+        }
       } else {
         setCurrentPage('dashboard');
       }
@@ -298,7 +317,10 @@ export default function App() {
       <ErrorBoundary>
         <Toaster position="top-center" richColors />
         <OnboardingFlow
-          onComplete={() => {
+          userEmail={user?.email ?? ''}
+          userId={user?.id ?? ''}
+          onComplete={(userData) => {
+            setUser(prev => prev ? { ...prev, name: userData.name, phone: userData.phone } : prev);
             setShowOnboarding(false);
             setCurrentPage('dashboard');
           }}
