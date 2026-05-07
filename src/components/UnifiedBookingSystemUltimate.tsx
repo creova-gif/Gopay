@@ -7,8 +7,9 @@ import { SGRBookingPage } from './SGRBookingPage';
 import { HotelSearchPage } from './HotelSearchPage';
 import { NationalParksBookingPage } from './NationalParksBookingPage';
 import { AITravelAssistant } from './AITravelAssistant';
+import { CarRentalPage } from './CarRentalPage';
 
-export type BookingService = 'flights' | 'ferry' | 'buses' | 'sgr' | 'hotels' | 'parks' | 'ai';
+export type BookingService = 'flights' | 'ferry' | 'buses' | 'sgr' | 'hotels' | 'parks' | 'ai' | 'cars';
 
 interface Props {
   user: User;
@@ -21,7 +22,7 @@ export function UnifiedBookingSystemUltimate({ user, accessToken, onBack, initia
   const [activeService, setActiveService] = useState<BookingService>(initialService);
 
   const navigateTo = (service: string) => {
-    const valid: BookingService[] = ['flights', 'ferry', 'buses', 'sgr', 'hotels', 'parks', 'ai'];
+    const valid: BookingService[] = ['flights', 'ferry', 'buses', 'sgr', 'hotels', 'parks', 'ai', 'cars'];
     if (valid.includes(service as BookingService)) {
       setActiveService(service as BookingService);
     }
@@ -45,6 +46,9 @@ export function UnifiedBookingSystemUltimate({ user, accessToken, onBack, initia
 
     case 'parks':
       return <NationalParksBookingPage user={user} accessToken={accessToken} onBack={onBack} />;
+
+    case 'cars':
+      return <CarRentalPage user={user} accessToken={accessToken} onBack={onBack} />;
 
     case 'ai':
       return <AITravelAssistant user={user} accessToken={accessToken} onBack={onBack} onNavigate={navigateTo} />;

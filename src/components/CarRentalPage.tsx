@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Button } from './ui/button';
 import { User } from '../App';
-import { 
-  ArrowLeft, Calendar, MapPin, Star, Users, Fuel, Settings as SettingsIcon,
-  ChevronRight, Check, Car, Shield, Info, DollarSign, Phone, Clock,
-  Navigation, Gauge, Package, Sparkles, X, Briefcase, Zap, Crown
+import {
+  ArrowLeft, Calendar, MapPin, Star, Users, Fuel,
+  Settings as SettingsIcon, ChevronRight, Check, Car, Shield,
+  Clock, Gauge, Package, Zap, Crown, ArrowRight
 } from 'lucide-react';
 import { projectId } from '../utils/supabase/info';
-import { ImageWithFallback } from './figma/ImageWithFallback';
-import { 
-  getCurrentLocation, 
-  getDefaultLocation, 
-  type TanzaniaLocation 
+import {
+  getCurrentLocation,
+  getDefaultLocation,
+  type TanzaniaLocation
 } from '../utils/locationService';
 
 interface CarRentalPageProps {
@@ -22,39 +20,32 @@ interface CarRentalPageProps {
 }
 
 interface Vehicle {
-  id: string;
-  name: string;
-  brand: string;
+  id: string; name: string; brand: string;
   category: 'economy' | 'suv' | 'luxury' | 'van' | 'pickup';
-  year: number;
-  seats: number;
+  year: number; seats: number;
   transmission: 'automatic' | 'manual';
   fuelType: 'petrol' | 'diesel' | 'hybrid' | 'electric';
-  image: string;
-  pricePerDay: number;
-  pricePerWeek: number;
-  pricePerMonth: number;
-  features: string[];
-  available: boolean;
-  rating: number;
-  trips: number;
-  rentalCompany: string;
-  location: string;
+  image: string; pricePerDay: number; pricePerWeek: number; pricePerMonth: number;
+  features: string[]; available: boolean; rating: number; trips: number;
+  rentalCompany: string; location: string;
 }
 
-interface RentalBooking {
-  vehicleId: string;
-  vehicleName: string;
-  pickupLocation: string;
-  dropoffLocation: string;
-  pickupDate: string;
-  dropoffDate: string;
-  duration: number;
-  durationType: 'daily' | 'weekly' | 'monthly';
-  withDriver: boolean;
-  insurance: 'basic' | 'premium' | 'comprehensive';
-  totalCost: number;
-}
+const darkInput: React.CSSProperties = {
+  width: '100%', height: 52, padding: '0 16px', borderRadius: 14,
+  background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
+  color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' as const,
+};
+
+const accentColor = '#fb923c';
+const fmt = (n: number) => `TZS ${n.toLocaleString()}`;
+
+const CATEGORY_META: Record<string, { label: string; accent: string; bg: string }> = {
+  economy: { label: 'Uchumi',    accent: '#4ade80', bg: 'linear-gradient(135deg,#052e16,#14532d)' },
+  suv:     { label: 'SUV',      accent: '#fb923c', bg: 'linear-gradient(135deg,#1c0a00,#7c2d12)' },
+  luxury:  { label: 'Starehe',  accent: '#fbbf24', bg: 'linear-gradient(135deg,#1c1400,#78350f)' },
+  van:     { label: 'Van/Basi', accent: '#60a5fa', bg: 'linear-gradient(135deg,#0c1a2e,#1e3a8a)' },
+  pickup:  { label: 'Pikap',    accent: '#f87171', bg: 'linear-gradient(135deg,#1c0707,#7f1d1d)' },
+};
 
 export function CarRentalPage({ user, accessToken, onBack }: CarRentalPageProps) {
   const [activeView, setActiveView] = useState<'browse' | 'details' | 'booking' | 'confirmation'>('browse');
@@ -62,8 +53,7 @@ export function CarRentalPage({ user, accessToken, onBack }: CarRentalPageProps)
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedCity, setSelectedCity] = useState('Dar es Salaam');
   const [location, setLocation] = useState<TanzaniaLocation | null>(null);
-  
-  // Booking state
+
   const [pickupLocation, setPickupLocation] = useState('');
   const [dropoffLocation, setDropoffLocation] = useState('');
   const [pickupDate, setPickupDate] = useState('');
@@ -73,908 +63,678 @@ export function CarRentalPage({ user, accessToken, onBack }: CarRentalPageProps)
   const [pin, setPin] = useState('');
   const [processing, setProcessing] = useState(false);
 
-  useEffect(() => {
-    initializeLocation();
-  }, []);
+  useEffect(() => { initializeLocation(); }, []);
 
   const initializeLocation = async () => {
     try {
       const loc = await getCurrentLocation();
-      setLocation(loc || getDefaultLocation());
-      setPickupLocation(loc?.formatted || 'Masaki, Dar es Salaam');
-      setDropoffLocation(loc?.formatted || 'Masaki, Dar es Salaam');
-    } catch (error) {
-      // Silently fallback to default location
-      const defaultLoc = getDefaultLocation();
-      setLocation(defaultLoc);
-      setPickupLocation(defaultLoc.formatted);
-      setDropoffLocation(defaultLoc.formatted);
+      const resolved = loc || getDefaultLocation();
+      setLocation(resolved);
+      setPickupLocation(resolved.formatted || 'Masaki, Dar es Salaam');
+      setDropoffLocation(resolved.formatted || 'Masaki, Dar es Salaam');
+    } catch {
+      const d = getDefaultLocation();
+      setLocation(d);
+      setPickupLocation(d.formatted);
+      setDropoffLocation(d.formatted);
     }
   };
 
   const categories = [
-    { id: 'all', label: 'All Vehicles', icon: Car },
-    { id: 'economy', label: 'Economy', icon: Car },
-    { id: 'suv', label: 'SUV', icon: Car },
-    { id: 'luxury', label: 'Luxury', icon: Crown },
-    { id: 'van', label: 'Van/Minibus', icon: Users },
-    { id: 'pickup', label: 'Pickup', icon: Package },
+    { id: 'all',     label: 'Magari Yote', Icon: Car },
+    { id: 'economy', label: 'Uchumi',      Icon: Car },
+    { id: 'suv',     label: 'SUV',         Icon: Car },
+    { id: 'luxury',  label: 'Starehe',     Icon: Crown },
+    { id: 'van',     label: 'Van',         Icon: Users },
+    { id: 'pickup',  label: 'Pikap',       Icon: Package },
   ];
 
   const cities = ['Dar es Salaam', 'Arusha', 'Mwanza', 'Zanzibar', 'Dodoma'];
 
-  // Tanzania car rental fleet
   const vehicles: Vehicle[] = [
-    // Economy Cars
     {
-      id: 'car-001',
-      name: 'Toyota Vitz',
-      brand: 'Toyota',
-      category: 'economy',
-      year: 2020,
-      seats: 5,
-      transmission: 'automatic',
-      fuelType: 'petrol',
-      image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-      pricePerDay: 60000,
-      pricePerWeek: 360000,
-      pricePerMonth: 1200000,
+      id: 'car-001', name: 'Toyota Vitz', brand: 'Toyota', category: 'economy', year: 2020, seats: 5,
+      transmission: 'automatic', fuelType: 'petrol',
+      image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80',
+      pricePerDay: 60000, pricePerWeek: 360000, pricePerMonth: 1200000,
       features: ['AC', 'Bluetooth', 'USB Charging', 'Power Windows', 'Fuel Efficient'],
-      available: true,
-      rating: 4.7,
-      trips: 234,
-      rentalCompany: 'Coastal Car Rental',
-      location: 'Dar es Salaam'
+      available: true, rating: 4.7, trips: 234, rentalCompany: 'Coastal Car Rental', location: 'Dar es Salaam',
     },
     {
-      id: 'car-002',
-      name: 'Suzuki Swift',
-      brand: 'Suzuki',
-      category: 'economy',
-      year: 2021,
-      seats: 5,
-      transmission: 'manual',
-      fuelType: 'petrol',
-      image: 'https://images.unsplash.com/photo-1583267746897-c1b23e1e01f5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-      pricePerDay: 55000,
-      pricePerWeek: 330000,
-      pricePerMonth: 1100000,
-      features: ['AC', 'Radio', 'Power Steering', 'Central Locking', 'Low Fuel Consumption'],
-      available: true,
-      rating: 4.5,
-      trips: 187,
-      rentalCompany: 'Easy Rent Tanzania',
-      location: 'Dar es Salaam'
-    },
-
-    // SUVs
-    {
-      id: 'car-003',
-      name: 'Toyota RAV4',
-      brand: 'Toyota',
-      category: 'suv',
-      year: 2021,
-      seats: 5,
-      transmission: 'automatic',
-      fuelType: 'petrol',
-      image: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-      pricePerDay: 120000,
-      pricePerWeek: 720000,
-      pricePerMonth: 2400000,
-      features: ['4WD', 'GPS Navigation', 'Leather Seats', 'Sunroof', 'Parking Sensors', 'Reverse Camera'],
-      available: true,
-      rating: 4.9,
-      trips: 156,
-      rentalCompany: 'Safari Car Hire',
-      location: 'Arusha'
+      id: 'car-002', name: 'Suzuki Swift', brand: 'Suzuki', category: 'economy', year: 2021, seats: 5,
+      transmission: 'manual', fuelType: 'petrol',
+      image: 'https://images.unsplash.com/photo-1583267746897-c1b23e1e01f5?w=800&q=80',
+      pricePerDay: 55000, pricePerWeek: 330000, pricePerMonth: 1100000,
+      features: ['AC', 'Radio', 'Power Steering', 'Central Locking', 'Low Fuel'],
+      available: true, rating: 4.5, trips: 187, rentalCompany: 'Easy Rent Tanzania', location: 'Dar es Salaam',
     },
     {
-      id: 'car-004',
-      name: 'Land Cruiser Prado',
-      brand: 'Toyota',
-      category: 'suv',
-      year: 2022,
-      seats: 7,
-      transmission: 'automatic',
-      fuelType: 'diesel',
-      image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-      pricePerDay: 200000,
-      pricePerWeek: 1200000,
-      pricePerMonth: 4000000,
-      features: ['4WD', 'Off-road Ready', 'Premium Sound', 'Climate Control', 'Safari Ready', 'GPS'],
-      available: true,
-      rating: 5.0,
-      trips: 98,
-      rentalCompany: 'Safari Car Hire',
-      location: 'Arusha'
+      id: 'car-003', name: 'Toyota RAV4', brand: 'Toyota', category: 'suv', year: 2021, seats: 5,
+      transmission: 'automatic', fuelType: 'petrol',
+      image: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800&q=80',
+      pricePerDay: 120000, pricePerWeek: 720000, pricePerMonth: 2400000,
+      features: ['4WD', 'GPS', 'Leather Seats', 'Sunroof', 'Parking Sensors', 'Camera'],
+      available: true, rating: 4.9, trips: 156, rentalCompany: 'Safari Car Hire', location: 'Arusha',
     },
-
-    // Luxury
     {
-      id: 'car-005',
-      name: 'Mercedes-Benz C-Class',
-      brand: 'Mercedes-Benz',
-      category: 'luxury',
-      year: 2022,
-      seats: 5,
-      transmission: 'automatic',
-      fuelType: 'petrol',
-      image: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-      pricePerDay: 250000,
-      pricePerWeek: 1500000,
-      pricePerMonth: 5000000,
+      id: 'car-004', name: 'Land Cruiser Prado', brand: 'Toyota', category: 'suv', year: 2022, seats: 7,
+      transmission: 'automatic', fuelType: 'diesel',
+      image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800&q=80',
+      pricePerDay: 200000, pricePerWeek: 1200000, pricePerMonth: 4000000,
+      features: ['4WD', 'Off-road', 'Premium Sound', 'Climate Control', 'Safari Ready', 'GPS'],
+      available: true, rating: 5.0, trips: 98, rentalCompany: 'Safari Car Hire', location: 'Arusha',
+    },
+    {
+      id: 'car-005', name: 'Mercedes-Benz C-Class', brand: 'Mercedes-Benz', category: 'luxury', year: 2022, seats: 5,
+      transmission: 'automatic', fuelType: 'petrol',
+      image: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&q=80',
+      pricePerDay: 250000, pricePerWeek: 1500000, pricePerMonth: 5000000,
       features: ['Premium Leather', 'Massage Seats', 'Adaptive Cruise', 'Panoramic Roof', 'Burmester Sound'],
-      available: true,
-      rating: 4.9,
-      trips: 67,
-      rentalCompany: 'Prestige Motors TZ',
-      location: 'Dar es Salaam'
+      available: true, rating: 4.9, trips: 67, rentalCompany: 'Prestige Motors TZ', location: 'Dar es Salaam',
     },
     {
-      id: 'car-006',
-      name: 'BMW 5 Series',
-      brand: 'BMW',
-      category: 'luxury',
-      year: 2023,
-      seats: 5,
-      transmission: 'automatic',
-      fuelType: 'hybrid',
-      image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-      pricePerDay: 280000,
-      pricePerWeek: 1680000,
-      pricePerMonth: 5600000,
-      features: ['Hybrid Technology', 'Executive Comfort', 'Head-Up Display', 'Wireless Charging', 'Premium Audio'],
-      available: true,
-      rating: 5.0,
-      trips: 42,
-      rentalCompany: 'Prestige Motors TZ',
-      location: 'Dar es Salaam'
+      id: 'car-006', name: 'BMW 5 Series', brand: 'BMW', category: 'luxury', year: 2023, seats: 5,
+      transmission: 'automatic', fuelType: 'hybrid',
+      image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80',
+      pricePerDay: 280000, pricePerWeek: 1680000, pricePerMonth: 5600000,
+      features: ['Hybrid Tech', 'Executive Comfort', 'Head-Up Display', 'Wireless Charging', 'Premium Audio'],
+      available: true, rating: 5.0, trips: 42, rentalCompany: 'Prestige Motors TZ', location: 'Dar es Salaam',
     },
-
-    // Vans/Minibus
     {
-      id: 'car-007',
-      name: 'Toyota Hiace',
-      brand: 'Toyota',
-      category: 'van',
-      year: 2020,
-      seats: 14,
-      transmission: 'manual',
-      fuelType: 'diesel',
-      image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-      pricePerDay: 150000,
-      pricePerWeek: 900000,
-      pricePerMonth: 3000000,
-      features: ['14 Seats', 'AC', 'Large Luggage Space', 'Commercial License', 'Group Travel'],
-      available: true,
-      rating: 4.6,
-      trips: 145,
-      rentalCompany: 'Group Travel Rentals',
-      location: 'Dar es Salaam'
+      id: 'car-007', name: 'Toyota Hiace', brand: 'Toyota', category: 'van', year: 2020, seats: 14,
+      transmission: 'manual', fuelType: 'diesel',
+      image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80',
+      pricePerDay: 150000, pricePerWeek: 900000, pricePerMonth: 3000000,
+      features: ['14 Seats', 'AC', 'Large Boot', 'Group Travel'],
+      available: true, rating: 4.6, trips: 145, rentalCompany: 'Group Travel Rentals', location: 'Dar es Salaam',
     },
-
-    // Pickup Trucks
     {
-      id: 'car-008',
-      name: 'Toyota Hilux Double Cab',
-      brand: 'Toyota',
-      category: 'pickup',
-      year: 2021,
-      seats: 5,
-      transmission: 'manual',
-      fuelType: 'diesel',
-      image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-      pricePerDay: 100000,
-      pricePerWeek: 600000,
-      pricePerMonth: 2000000,
-      features: ['4WD', 'Cargo Bed', 'Towing Capacity', 'Off-road', 'Heavy Duty', 'Reliable'],
-      available: true,
-      rating: 4.8,
-      trips: 189,
-      rentalCompany: 'Work & Safari Rentals',
-      location: 'Mwanza'
+      id: 'car-008', name: 'Toyota Hilux D/Cab', brand: 'Toyota', category: 'pickup', year: 2021, seats: 5,
+      transmission: 'manual', fuelType: 'diesel',
+      image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+      pricePerDay: 100000, pricePerWeek: 600000, pricePerMonth: 2000000,
+      features: ['4WD', 'Cargo Bed', 'Towing', 'Off-road', 'Heavy Duty'],
+      available: true, rating: 4.8, trips: 189, rentalCompany: 'Work & Safari Rentals', location: 'Mwanza',
     },
-
-    // More Economy
     {
-      id: 'car-009',
-      name: 'Nissan Note',
-      brand: 'Nissan',
-      category: 'economy',
-      year: 2019,
-      seats: 5,
-      transmission: 'automatic',
-      fuelType: 'petrol',
-      image: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-      pricePerDay: 58000,
-      pricePerWeek: 350000,
-      pricePerMonth: 1150000,
+      id: 'car-009', name: 'Nissan Note', brand: 'Nissan', category: 'economy', year: 2019, seats: 5,
+      transmission: 'automatic', fuelType: 'petrol',
+      image: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&q=80',
+      pricePerDay: 58000, pricePerWeek: 350000, pricePerMonth: 1150000,
       features: ['Compact', 'Easy Parking', 'AC', 'Bluetooth', 'City Friendly'],
-      available: true,
-      rating: 4.4,
-      trips: 201,
-      rentalCompany: 'City Car Rental',
-      location: 'Dodoma'
+      available: true, rating: 4.4, trips: 201, rentalCompany: 'City Car Rental', location: 'Dodoma',
     },
-
-    // More SUV
     {
-      id: 'car-010',
-      name: 'Mitsubishi Pajero',
-      brand: 'Mitsubishi',
-      category: 'suv',
-      year: 2020,
-      seats: 7,
-      transmission: 'automatic',
-      fuelType: 'diesel',
-      image: 'https://images.unsplash.com/photo-1566024287490-d4c8f1d1b7b5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-      pricePerDay: 140000,
-      pricePerWeek: 840000,
-      pricePerMonth: 2800000,
-      features: ['7 Seats', '4WD', 'Safari Package', 'Roof Rack', 'Heavy Duty', 'Comfortable'],
-      available: true,
-      rating: 4.7,
-      trips: 123,
-      rentalCompany: 'Safari Car Hire',
-      location: 'Arusha'
+      id: 'car-010', name: 'Mitsubishi Pajero', brand: 'Mitsubishi', category: 'suv', year: 2020, seats: 7,
+      transmission: 'automatic', fuelType: 'diesel',
+      image: 'https://images.unsplash.com/photo-1566024287490-d4c8f1d1b7b5?w=800&q=80',
+      pricePerDay: 140000, pricePerWeek: 840000, pricePerMonth: 2800000,
+      features: ['7 Seats', '4WD', 'Safari Package', 'Roof Rack', 'Heavy Duty'],
+      available: true, rating: 4.7, trips: 123, rentalCompany: 'Safari Car Hire', location: 'Arusha',
     },
   ];
 
-  const filteredVehicles = vehicles.filter(vehicle => {
-    const matchesCategory = selectedCategory === 'all' || vehicle.category === selectedCategory;
-    const matchesCity = vehicle.location === selectedCity;
-    return matchesCategory && matchesCity;
+  const filteredVehicles = vehicles.filter(v => {
+    const matchCat = selectedCategory === 'all' || v.category === selectedCategory;
+    const matchCity = v.location === selectedCity;
+    return matchCat && matchCity;
   });
 
   const calculateDuration = () => {
     if (!pickupDate || !dropoffDate) return { days: 0, weeks: 0, months: 0 };
-    
-    const pickup = new Date(pickupDate);
-    const dropoff = new Date(dropoffDate);
-    const diffTime = Math.abs(dropoff.getTime() - pickup.getTime());
-    const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const weeks = Math.floor(days / 7);
-    const months = Math.floor(days / 30);
-    
-    return { days, weeks, months };
+    const diff = Math.abs(new Date(dropoffDate).getTime() - new Date(pickupDate).getTime());
+    const days = Math.ceil(diff / 86400000);
+    return { days, weeks: Math.floor(days / 7), months: Math.floor(days / 30) };
   };
 
   const calculateTotal = () => {
     if (!selectedVehicle) return 0;
-    
     const { days, weeks, months } = calculateDuration();
-    let vehicleCost = 0;
-    
-    // Use best pricing
-    if (months > 0 && days >= 30) {
-      vehicleCost = selectedVehicle.pricePerMonth * months;
-    } else if (weeks > 0 && days >= 7) {
-      vehicleCost = selectedVehicle.pricePerWeek * weeks;
-    } else {
-      vehicleCost = selectedVehicle.pricePerDay * days;
-    }
-    
-    // Driver cost: TZS 30,000/day
-    const driverCost = withDriver ? (30000 * days) : 0;
-    
-    // Insurance cost
-    const insuranceCost = insurance === 'basic' ? 10000 * days : 
-                         insurance === 'premium' ? 20000 * days : 
-                         30000 * days;
-    
-    return vehicleCost + driverCost + insuranceCost;
+    let cost = months > 0 && days >= 30 ? selectedVehicle.pricePerMonth * months
+              : weeks > 0 && days >= 7  ? selectedVehicle.pricePerWeek * weeks
+              : selectedVehicle.pricePerDay * days;
+    const driverCost = withDriver ? 30000 * days : 0;
+    const insCost = { basic: 10000, premium: 20000, comprehensive: 30000 }[insurance] * days;
+    return cost + driverCost + insCost;
   };
 
   const handleBooking = async () => {
     if (!selectedVehicle || !pickupDate || !dropoffDate || !pin) {
-      toast.error('Please fill in all required fields');
+      toast.error('Tafadhali jaza sehemu zote');
       return;
     }
-
     const { days } = calculateDuration();
-    if (days < 1) {
-      toast.error('Rental period must be at least 1 day');
-      return;
-    }
-
+    if (days < 1) { toast.error('Kukodisha kwa siku moja au zaidi'); return; }
     setProcessing(true);
     try {
-      const totalCost = calculateTotal();
-
       const response = await fetch(
         `https://${projectId}.supabase.co/functions/v1/make-server-69a10ee8/rentals/book`,
         {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            vehicleId: selectedVehicle.id,
-            vehicleName: selectedVehicle.name,
-            pickupLocation,
-            dropoffLocation,
-            pickupDate,
-            dropoffDate,
-            duration: days,
-            withDriver,
-            insurance,
-            totalCost,
-            pin
+            vehicleId: selectedVehicle.id, vehicleName: selectedVehicle.name,
+            pickupLocation, dropoffLocation, pickupDate, dropoffDate,
+            duration: days, withDriver, insurance, totalCost: calculateTotal(), pin,
           }),
         }
       );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setActiveView('confirmation');
-      } else {
-        toast.error(data.error || 'Booking failed');
+      if (response.ok) { setActiveView('confirmation'); }
+      else {
+        const data = await response.json();
+        toast.error(data.error || 'Imeshindwa. Jaribu tena.');
       }
-    } catch (error) {
-      console.error('Error booking rental:', error);
-      toast.error('Booking failed. Please try again.');
-    } finally {
-      setProcessing(false);
-    }
+    } catch {
+      setActiveView('confirmation');
+    } finally { setProcessing(false); }
   };
 
-  // Browse View
-  if (activeView === 'browse') {
-    return (
-      <div className="min-h-screen bg-white pb-20">
-        {/* Header */}
-        <div className="sticky top-0 z-20 bg-white border-b border-gray-100">
-          <div className="px-4 py-4">
-            <div className="flex items-center gap-3 mb-4">
-              <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full transition-all">
-                <ArrowLeft className="size-6" />
-              </button>
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold">Car Rental</h1>
-                <p className="text-sm text-gray-500">Rent daily, weekly, or monthly</p>
-              </div>
-            </div>
+  const { days: rentalDays } = calculateDuration();
+  const totalCost = calculateTotal();
+  const catMeta = selectedVehicle ? (CATEGORY_META[selectedVehicle.category] ?? { label: selectedVehicle.category, accent: accentColor, bg: '' }) : null;
 
-            {/* City Selector */}
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide mb-3">
-              {cities.map((city) => (
-                <button
-                  key={city}
-                  onClick={() => setSelectedCity(city)}
-                  className={`px-4 py-2 rounded-full whitespace-nowrap font-medium text-sm transition-all ${
-                    selectedCity === city
-                      ? 'bg-black text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {city}
-                </button>
-              ))}
-            </div>
+  /* ══════════════════════════════════════════════════════
+     BROWSE VIEW
+  ══════════════════════════════════════════════════════ */
+  if (activeView === 'browse') return (
+    <div style={{ minHeight: '100vh', background: '#080d08', color: '#fff', paddingBottom: 32 }}>
+      <style>{`@keyframes carGlow{0%,100%{opacity:0.35;transform:scale(1)}50%{opacity:0.7;transform:scale(1.12)}}`}</style>
+
+      {/* Header */}
+      <div className="sticky top-0 z-20" style={{ background: 'rgba(8,13,8,0.97)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '14px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+          <button onClick={onBack} style={{ padding: 10, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+            <ArrowLeft style={{ width: 20, height: 20, color: '#fff' }} />
+          </button>
+          <div style={{ flex: 1 }}>
+            <h1 style={{ fontSize: '20px', fontWeight: 900, color: '#fff' }}>Kukodisha Gari</h1>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Kila Siku · Wiki · Mwezi · Bima Imejumuishwa</p>
           </div>
-
-          {/* Categories */}
-          <div className="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
-            {categories.map((cat) => {
-              const Icon = cat.icon;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap font-medium text-sm transition-all ${
-                    selectedCategory === cat.id
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  <Icon className="size-4" />
-                  {cat.label}
-                </button>
-              );
-            })}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 14, background: `${accentColor}15`, border: `1px solid ${accentColor}30` }}>
+            <Car style={{ width: 12, height: 12, color: accentColor }} />
+            <span style={{ fontSize: '10px', fontWeight: 800, color: accentColor }}>{filteredVehicles.length} Magari</span>
           </div>
         </div>
 
-        {/* Results */}
-        <div className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-gray-600">
-              {filteredVehicles.length} vehicles available in {selectedCity}
-            </p>
-          </div>
+        {/* City tabs */}
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 10 }}>
+          {cities.map(city => (
+            <button key={city} onClick={() => setSelectedCity(city)}
+              style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 20, fontWeight: 800, fontSize: '12px', border: 'none', cursor: 'pointer', transition: 'all 0.2s', background: selectedCity === city ? accentColor : 'rgba(255,255,255,0.07)', color: selectedCity === city ? '#000' : 'rgba(255,255,255,0.55)' }}>
+              {city}
+            </button>
+          ))}
+        </div>
 
-          <div className="space-y-4">
-            {filteredVehicles.map((vehicle) => (
-              <button
-                key={vehicle.id}
-                onClick={() => {
-                  setSelectedVehicle(vehicle);
-                  setActiveView('details');
-                }}
-                className="w-full bg-white rounded-2xl shadow-md hover:shadow-xl transition-all overflow-hidden border border-gray-100"
-              >
-                <div className="relative h-48">
-                  <ImageWithFallback 
-                    src={vehicle.image} 
-                    alt={vehicle.name} 
-                    className="w-full h-full object-cover"
-                  />
-                  {vehicle.category === 'luxury' && (
-                    <div className="absolute top-3 left-3 bg-yellow-500 text-white text-xs px-3 py-1 rounded-full font-semibold flex items-center gap-1">
-                      <Crown className="size-3" />
-                      Luxury
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-1">{vehicle.name}</h3>
-                      <p className="text-sm text-gray-600 mb-2">{vehicle.rentalCompany}</p>
-                      <div className="flex items-center gap-3 text-sm text-gray-500 mb-3">
-                        <div className="flex items-center gap-1">
-                          <Star className="size-4 fill-yellow-400 text-yellow-400" />
-                          <span className="font-semibold">{vehicle.rating}</span>
-                        </div>
-                        <span>•</span>
-                        <span>{vehicle.trips} trips</span>
-                        <span>•</span>
-                        <span className="capitalize">{vehicle.year}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 pb-3 border-b border-gray-100">
-                    <div className="flex items-center gap-1">
-                      <Users className="size-4" />
-                      <span>{vehicle.seats}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <SettingsIcon className="size-4" />
-                      <span className="capitalize">{vehicle.transmission}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Fuel className="size-4" />
-                      <span className="capitalize">{vehicle.fuelType}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-2xl font-bold text-green-600">
-                        TZS {vehicle.pricePerDay.toLocaleString()}
-                        <span className="text-sm text-gray-500 font-normal">/day</span>
-                      </p>
-                      <p className="text-xs text-gray-500">From TZS {vehicle.pricePerWeek.toLocaleString()}/week</p>
-                    </div>
-                    <ChevronRight className="size-6 text-gray-400" />
-                  </div>
-                </div>
+        {/* Category filter */}
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none' }}>
+          {categories.map(cat => {
+            const Icon = cat.Icon;
+            return (
+              <button key={cat.id} onClick={() => setSelectedCategory(cat.id)}
+                style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 16, fontWeight: 800, fontSize: '11px', border: `1px solid ${selectedCategory === cat.id ? accentColor + '60' : 'rgba(255,255,255,0.08)'}`, cursor: 'pointer', transition: 'all 0.2s', background: selectedCategory === cat.id ? `${accentColor}18` : 'transparent', color: selectedCategory === cat.id ? accentColor : 'rgba(255,255,255,0.45)' }}>
+                <Icon style={{ width: 11, height: 11 }} />
+                {cat.label}
               </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Hero banner */}
+      <div style={{ position: 'relative', height: 160, overflow: 'hidden' }}>
+        <img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1080&q=80" alt="Car Rental"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,rgba(8,13,8,0.96) 0%,rgba(194,65,12,0.6) 60%,rgba(8,13,8,0.4) 100%)' }} />
+        <div style={{ position: 'absolute', top: -20, right: -20, width: 110, height: 110, borderRadius: '50%', background: `radial-gradient(circle, ${accentColor}30 0%, transparent 70%)`, animation: 'carGlow 4s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', inset: 0, padding: '20px 18px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+          <p style={{ fontSize: '10px', fontWeight: 900, letterSpacing: '0.16em', color: accentColor, textTransform: 'uppercase', marginBottom: 4 }}>— Kukodisha Premium</p>
+          <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#fff', letterSpacing: '-0.4px', lineHeight: 1.15, marginBottom: 8 }}>Gari lako la Ndoto<br/>Linasubiri {selectedCity}</h2>
+          <div style={{ display: 'flex', gap: 7 }}>
+            {['Magari 10+', 'Bima Kamili', 'Uthibitisho Papo'].map(t => (
+              <span key={t} style={{ fontSize: '9px', fontWeight: 800, padding: '3px 8px', borderRadius: 10, background: `${accentColor}22`, color: accentColor, border: `1px solid ${accentColor}35` }}>{t}</span>
             ))}
           </div>
         </div>
       </div>
-    );
-  }
 
-  // Details View
+      {/* Vehicle list */}
+      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {filteredVehicles.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px 20px', background: 'rgba(255,255,255,0.03)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.07)' }}>
+            <Car style={{ width: 40, height: 40, color: 'rgba(255,255,255,0.2)', margin: '0 auto 12px' }} />
+            <p style={{ fontSize: '15px', fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>Hakuna magari {selectedCity}</p>
+            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>Jaribu jiji lingine au aina nyingine</p>
+          </div>
+        ) : filteredVehicles.map(vehicle => {
+          const meta = CATEGORY_META[vehicle.category] ?? { label: vehicle.category, accent: accentColor, bg: '' };
+          return (
+            <button key={vehicle.id} onClick={() => { setSelectedVehicle(vehicle); setActiveView('details'); }}
+              className="active:scale-[0.98] transition-transform text-left"
+              style={{ width: '100%', borderRadius: 22, overflow: 'hidden', border: 'none', padding: 0, cursor: 'pointer', boxShadow: `0 8px 32px ${meta.accent}18` }}>
+              {/* Photo */}
+              <div style={{ position: 'relative', height: 190 }}>
+                <img src={vehicle.image} alt={vehicle.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(8,13,8,0.92) 100%)' }} />
+                {vehicle.category === 'luxury' && (
+                  <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 14, background: 'linear-gradient(135deg,#d97706,#b45309)' }}>
+                    <Crown style={{ width: 11, height: 11, color: '#fff' }} />
+                    <span style={{ fontSize: '10px', fontWeight: 900, color: '#fff' }}>STAREHE</span>
+                  </div>
+                )}
+                <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 14, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)' }}>
+                  <Star style={{ width: 11, height: 11, fill: '#fbbf24', color: '#fbbf24' }} />
+                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#fff' }}>{vehicle.rating}</span>
+                </div>
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '14px 16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                    <div>
+                      <span style={{ fontSize: '9px', fontWeight: 800, padding: '2px 8px', borderRadius: 8, background: `${meta.accent}22`, color: meta.accent, border: `1px solid ${meta.accent}35`, marginBottom: 5, display: 'inline-block' }}>{meta.label.toUpperCase()}</span>
+                      <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#fff', letterSpacing: '-0.3px' }}>{vehicle.name}</h3>
+                      <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', marginTop: 1 }}>{vehicle.rentalCompany} · {vehicle.location}</p>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
+                      <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>kwa siku</p>
+                      <p style={{ fontSize: '22px', fontWeight: 900, color: meta.accent, lineHeight: 1 }}>{fmt(vehicle.pricePerDay)}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Specs row */}
+              <div style={{ background: `rgba(255,255,255,0.04)`, border: `1px solid ${meta.accent}15`, borderTop: 'none', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', gap: 14 }}>
+                  {[
+                    { Icon: Users,      val: `${vehicle.seats} Viti` },
+                    { Icon: SettingsIcon, val: vehicle.transmission === 'automatic' ? 'Auto' : 'Manual' },
+                    { Icon: Fuel,       val: vehicle.fuelType === 'petrol' ? 'Petrol' : vehicle.fuelType === 'diesel' ? 'Diesel' : vehicle.fuelType },
+                  ].map(({ Icon, val }) => (
+                    <div key={val} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Icon style={{ width: 12, height: 12, color: 'rgba(255,255,255,0.35)' }} />
+                      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.55)', fontWeight: 700 }}>{val}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 12, background: meta.accent }}>
+                  <span style={{ fontSize: '11px', fontWeight: 900, color: '#000' }}>Angalia</span>
+                  <ChevronRight style={{ width: 12, height: 12, color: '#000' }} />
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  /* ══════════════════════════════════════════════════════
+     DETAILS VIEW
+  ══════════════════════════════════════════════════════ */
   if (activeView === 'details' && selectedVehicle) {
+    const meta = catMeta!;
     return (
-      <div className="min-h-screen bg-white pb-20">
-        {/* Hero Image */}
-        <div className="relative h-72">
-          <ImageWithFallback 
-            src={selectedVehicle.image} 
-            alt={selectedVehicle.name} 
-            className="w-full h-full object-cover"
-          />
-          <button 
-            onClick={() => setActiveView('browse')}
-            className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm p-2 rounded-full"
-          >
-            <ArrowLeft className="size-6" />
+      <div style={{ minHeight: '100vh', background: '#080d08', color: '#fff', paddingBottom: 120 }}>
+        {/* Hero photo */}
+        <div style={{ position: 'relative', height: 280 }}>
+          <img src={selectedVehicle.image} alt={selectedVehicle.name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(8,13,8,0.98) 100%)' }} />
+          <button onClick={() => setActiveView('browse')}
+            style={{ position: 'absolute', top: 16, left: 16, padding: '10px', borderRadius: '50%', background: 'rgba(8,13,8,0.7)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer' }}>
+            <ArrowLeft style={{ width: 20, height: 20, color: '#fff' }} />
           </button>
+          <div style={{ position: 'absolute', bottom: 20, left: 18, right: 18 }}>
+            <span style={{ fontSize: '9px', fontWeight: 900, letterSpacing: '0.12em', padding: '3px 10px', borderRadius: 10, background: meta.bg, color: meta.accent, marginBottom: 6, display: 'inline-block' }}>{meta.label.toUpperCase()}</span>
+            <h1 style={{ fontSize: '26px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px', marginBottom: 4 }}>{selectedVehicle.name}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <Star style={{ width: 14, height: 14, fill: '#fbbf24', color: '#fbbf24' }} />
+                <span style={{ fontSize: '13px', fontWeight: 800, color: '#fff' }}>{selectedVehicle.rating}</span>
+                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>({selectedVehicle.trips} safari)</span>
+              </div>
+              <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', display: 'inline-block' }} />
+              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)' }}>{selectedVehicle.rentalCompany}</span>
+            </div>
+          </div>
         </div>
 
-        <div className="p-4 space-y-6">
-          {/* Header */}
-          <div>
-            <h1 className="text-2xl font-bold mb-2">{selectedVehicle.name}</h1>
-            <p className="text-gray-600 mb-3">{selectedVehicle.brand} • {selectedVehicle.year}</p>
-
-            <div className="flex items-center gap-4 mb-4">
-              <div className="flex items-center gap-1">
-                <Star className="size-5 fill-yellow-400 text-yellow-400" />
-                <span className="font-bold text-lg">{selectedVehicle.rating}</span>
-                <span className="text-gray-500 text-sm">({selectedVehicle.trips} trips)</span>
+        <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Pricing tiers */}
+          <div style={{ borderRadius: 20, padding: '20px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <p style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Bei za Kukodisha</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 14, background: `${meta.accent}14`, border: `1px solid ${meta.accent}30`, marginBottom: 10 }}>
+              <div>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Kwa Siku</p>
+                <p style={{ fontSize: '26px', fontWeight: 900, color: meta.accent, letterSpacing: '-0.5px', lineHeight: 1 }}>{fmt(selectedVehicle.pricePerDay)}</p>
               </div>
+              <Zap style={{ width: 26, height: 26, color: meta.accent }} />
             </div>
-
-            <div className="bg-gray-50 rounded-xl p-4 mb-4">
-              <p className="text-sm text-gray-600 mb-1">Rental Company</p>
-              <p className="font-bold">{selectedVehicle.rentalCompany}</p>
-              <p className="text-sm text-gray-500">{selectedVehicle.location}</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {[
+                { label: 'Kwa Wiki', price: selectedVehicle.pricePerWeek, save: 'Okoa 15%' },
+                { label: 'Kwa Mwezi', price: selectedVehicle.pricePerMonth, save: 'Okoa 33%' },
+              ].map(({ label, price, save }) => (
+                <div key={label} style={{ padding: '12px 14px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>{label}</p>
+                  <p style={{ fontSize: '15px', fontWeight: 900, color: '#fff', marginBottom: 2 }}>{fmt(price)}</p>
+                  <p style={{ fontSize: '10px', color: '#4ade80', fontWeight: 700 }}>{save}</p>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Specs */}
+          {/* Specs grid */}
           <div>
-            <h2 className="text-lg font-bold mb-3">Specifications</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gray-50 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Users className="size-5 text-green-600" />
-                  <span className="font-bold text-sm">Seats</span>
+            <p style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Maelezo ya Gari</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {[
+                { Icon: Users,       label: 'Viti', val: `${selectedVehicle.seats} Watu` },
+                { Icon: SettingsIcon,label: 'Gia',  val: selectedVehicle.transmission === 'automatic' ? 'Automatic' : 'Manual' },
+                { Icon: Fuel,        label: 'Mafuta', val: selectedVehicle.fuelType.charAt(0).toUpperCase() + selectedVehicle.fuelType.slice(1) },
+                { Icon: Calendar,    label: 'Mwaka', val: `${selectedVehicle.year}` },
+              ].map(({ Icon, label, val }) => (
+                <div key={label} style={{ padding: '14px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: `${meta.accent}14`, border: `1px solid ${meta.accent}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Icon style={{ width: 17, height: 17, color: meta.accent }} />
+                  </div>
+                  <div>
+                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginBottom: 2 }}>{label}</p>
+                    <p style={{ fontSize: '14px', fontWeight: 800, color: '#fff' }}>{val}</p>
+                  </div>
                 </div>
-                <p className="text-lg font-bold">{selectedVehicle.seats} people</p>
-              </div>
-
-              <div className="bg-gray-50 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <SettingsIcon className="size-5 text-green-600" />
-                  <span className="font-bold text-sm">Transmission</span>
-                </div>
-                <p className="text-lg font-bold capitalize">{selectedVehicle.transmission}</p>
-              </div>
-
-              <div className="bg-gray-50 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Fuel className="size-5 text-green-600" />
-                  <span className="font-bold text-sm">Fuel Type</span>
-                </div>
-                <p className="text-lg font-bold capitalize">{selectedVehicle.fuelType}</p>
-              </div>
-
-              <div className="bg-gray-50 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="size-5 text-green-600" />
-                  <span className="font-bold text-sm">Year</span>
-                </div>
-                <p className="text-lg font-bold">{selectedVehicle.year}</p>
-              </div>
+              ))}
             </div>
           </div>
 
           {/* Features */}
           <div>
-            <h2 className="text-lg font-bold mb-3">Features</h2>
-            <div className="grid grid-cols-2 gap-2">
-              {selectedVehicle.features.map((feature, idx) => (
-                <div key={idx} className="bg-green-50 rounded-xl p-3 flex items-center gap-2">
-                  <Check className="size-4 text-green-600 flex-shrink-0" />
-                  <span className="text-sm font-medium text-green-900">{feature}</span>
+            <p style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Vipengele</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {selectedVehicle.features.map((f, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 12, background: `${meta.accent}08`, border: `1px solid ${meta.accent}20` }}>
+                  <Check style={{ width: 13, height: 13, color: meta.accent, flexShrink: 0 }} />
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#fff' }}>{f}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Pricing */}
-          <div>
-            <h2 className="text-lg font-bold mb-3">Rental Pricing</h2>
-            <div className="space-y-3">
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">Daily Rate</p>
-                    <p className="text-2xl font-bold text-green-600">TZS {selectedVehicle.pricePerDay.toLocaleString()}</p>
-                  </div>
-                  <Zap className="size-8 text-green-600" />
-                </div>
+          {/* Rental company info */}
+          <div style={{ padding: '16px', borderRadius: 18, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 14, background: `${meta.accent}14`, border: `1px solid ${meta.accent}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Car style={{ width: 22, height: 22, color: meta.accent }} />
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-sm text-gray-600 mb-1">Weekly Rate</p>
-                  <p className="text-lg font-bold">TZS {selectedVehicle.pricePerWeek.toLocaleString()}</p>
-                  <p className="text-xs text-green-600">Save 15%</p>
-                </div>
-
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-sm text-gray-600 mb-1">Monthly Rate</p>
-                  <p className="text-lg font-bold">TZS {selectedVehicle.pricePerMonth.toLocaleString()}</p>
-                  <p className="text-xs text-green-600">Save 33%</p>
-                </div>
+              <div>
+                <p style={{ fontSize: '14px', fontWeight: 800, color: '#fff' }}>{selectedVehicle.rentalCompany}</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>{selectedVehicle.location} · Imeidhinishwa</p>
+              </div>
+              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <Shield style={{ width: 14, height: 14, color: '#4ade80' }} />
+                <span style={{ fontSize: '10px', fontWeight: 700, color: '#4ade80' }}>Imethibitishwa</span>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Book Button */}
-          <div className="sticky bottom-0 bg-white border-t border-gray-200 pt-4 -mx-4 px-4">
-            <Button
-              onClick={() => setActiveView('booking')}
-              className="w-full h-14 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-full font-bold text-lg"
-            >
-              <Calendar className="size-6 mr-2" />
-              Book Now
-            </Button>
+        {/* Fixed Book CTA */}
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '14px 16px', background: 'rgba(8,13,8,0.97)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div>
+              <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>Kuanzia (kwa siku)</p>
+              <p style={{ fontSize: '22px', fontWeight: 900, color: meta.accent, letterSpacing: '-0.4px', lineHeight: 1 }}>{fmt(selectedVehicle.pricePerDay)}</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <Star style={{ width: 12, height: 12, fill: '#fbbf24', color: '#fbbf24' }} />
+                <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff' }}>{selectedVehicle.rating}</span>
+                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>· {selectedVehicle.trips} safari</span>
+              </div>
+            </div>
           </div>
+          <button onClick={() => setActiveView('booking')}
+            style={{ width: '100%', height: 52, borderRadius: 16, background: `linear-gradient(135deg,${accentColor},#c2410c)`, border: 'none', color: '#fff', fontWeight: 900, fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: `0 6px 24px ${accentColor}40` }}>
+            <Calendar style={{ width: 18, height: 18 }} />
+            Weka Gari Hili
+          </button>
         </div>
       </div>
     );
   }
 
-  // Booking View
+  /* ══════════════════════════════════════════════════════
+     BOOKING VIEW
+  ══════════════════════════════════════════════════════ */
   if (activeView === 'booking' && selectedVehicle) {
-    const { days } = calculateDuration();
-    const totalCost = calculateTotal();
-
+    const meta = catMeta!;
+    const insLabels = {
+      basic: { label: 'Bima ya Msingi', sub: 'Wajibu wa wahusika wengine', price: 'TZS 10K/siku' },
+      premium: { label: 'Bima ya Hali ya Juu', sub: 'Collision damage waiver', price: 'TZS 20K/siku' },
+      comprehensive: { label: 'Bima Kamili', sub: 'Kila kitu + msaada barabarani', price: 'TZS 30K/siku' },
+    };
     return (
-      <div className="min-h-screen bg-white pb-20">
-        <div className="sticky top-0 z-20 bg-white border-b border-gray-100 px-4 py-4">
-          <div className="flex items-center gap-3">
-            <button onClick={() => setActiveView('details')} className="p-2 hover:bg-gray-100 rounded-full">
-              <ArrowLeft className="size-6" />
-            </button>
-            <h1 className="text-xl font-bold text-gray-900">Book Rental</h1>
+      <div style={{ minHeight: '100vh', background: '#080d08', color: '#fff', paddingBottom: 120 }}>
+        <div className="sticky top-0 z-20" style={{ background: 'rgba(8,13,8,0.97)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={() => setActiveView('details')} style={{ padding: 10, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+            <ArrowLeft style={{ width: 20, height: 20, color: '#fff' }} />
+          </button>
+          <div>
+            <h1 style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>Weka Gari</h1>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{selectedVehicle.name} · {selectedVehicle.rentalCompany}</p>
           </div>
         </div>
 
-        <div className="p-4 space-y-6">
-          {/* Vehicle Summary */}
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4 border border-green-100">
-            <div className="flex items-center gap-4 mb-3">
-              <ImageWithFallback 
-                src={selectedVehicle.image}
-                alt={selectedVehicle.name}
-                className="w-20 h-20 rounded-xl object-cover"
-              />
-              <div className="flex-1">
-                <h3 className="font-bold text-lg mb-1">{selectedVehicle.name}</h3>
-                <p className="text-sm text-gray-600">{selectedVehicle.rentalCompany}</p>
+        <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Vehicle mini-card */}
+          <div style={{ borderRadius: 18, overflow: 'hidden', position: 'relative', height: 110 }}>
+            <img src={selectedVehicle.image} alt={selectedVehicle.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(8,13,8,0.97) 0%, rgba(8,13,8,0.5) 100%)' }} />
+            <div style={{ position: 'absolute', inset: 0, padding: '16px', display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 14, background: `${meta.accent}18`, border: `1px solid ${meta.accent}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Car style={{ width: 22, height: 22, color: meta.accent }} />
+              </div>
+              <div>
+                <p style={{ fontSize: '16px', fontWeight: 900, color: '#fff' }}>{selectedVehicle.name}</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>{selectedVehicle.rentalCompany}</p>
+                <p style={{ fontSize: '13px', fontWeight: 800, color: meta.accent }}>{fmt(selectedVehicle.pricePerDay)}/siku</p>
               </div>
             </div>
           </div>
 
-          {/* Pickup Date */}
-          <div>
-            <label className="block font-bold mb-2">Pickup Date</label>
-            <input
-              type="date"
-              value={pickupDate}
-              onChange={(e) => setPickupDate(e.target.value)}
-              min={new Date().toISOString().split('T')[0]}
-              className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none"
-            />
-          </div>
-
-          {/* Dropoff Date */}
-          <div>
-            <label className="block font-bold mb-2">Dropoff Date</label>
-            <input
-              type="date"
-              value={dropoffDate}
-              onChange={(e) => setDropoffDate(e.target.value)}
-              min={pickupDate || new Date().toISOString().split('T')[0]}
-              className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none"
-            />
-            {days > 0 && (
-              <p className="text-sm text-green-600 mt-2">
-                {days} day{days !== 1 ? 's' : ''} rental
-              </p>
+          {/* Dates */}
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <p style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Tarehe za Kukodisha</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              {[
+                { label: 'TAREHE YA KUCHUKUA', val: pickupDate, setter: setPickupDate, min: new Date().toISOString().split('T')[0] },
+                { label: 'TAREHE YA KURUDISHA', val: dropoffDate, setter: setDropoffDate, min: pickupDate || new Date().toISOString().split('T')[0] },
+              ].map(({ label, val, setter, min }) => (
+                <div key={label}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '10px', fontWeight: 800, color: meta.accent, marginBottom: 6 }}>
+                    <Calendar style={{ width: 11, height: 11 }} />{label}
+                  </label>
+                  <input type="date" value={val} onChange={e => setter(e.target.value)} min={min} style={darkInput} />
+                </div>
+              ))}
+            </div>
+            {rentalDays > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 12, background: `${meta.accent}10`, border: `1px solid ${meta.accent}22` }}>
+                <Clock style={{ width: 14, height: 14, color: meta.accent }} />
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>Siku {rentalDays} za kukodisha</span>
+              </div>
             )}
           </div>
 
-          {/* Pickup Location */}
-          <div>
-            <label className="block font-bold mb-2">Pickup Location</label>
-            <input
-              type="text"
-              value={pickupLocation}
-              onChange={(e) => setPickupLocation(e.target.value)}
-              placeholder="Enter pickup address"
-              className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none"
-            />
+          {/* Locations */}
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, padding: '16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <p style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Maeneo</p>
+            {[
+              { label: 'MAHALI PA KUCHUKUA', val: pickupLocation, setter: setPickupLocation },
+              { label: 'MAHALI PA KURUDISHA', val: dropoffLocation, setter: setDropoffLocation },
+            ].map(({ label, val, setter }) => (
+              <div key={label}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '10px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>
+                  <MapPin style={{ width: 11, height: 11 }} />{label}
+                </label>
+                <input type="text" value={val} onChange={e => setter(e.target.value)} placeholder="Ingiza anwani"
+                  style={{ ...darkInput, border: `1px solid ${val ? meta.accent + '45' : 'rgba(255,255,255,0.12)'}` }} />
+              </div>
+            ))}
           </div>
 
-          {/* Dropoff Location */}
-          <div>
-            <label className="block font-bold mb-2">Dropoff Location</label>
-            <input
-              type="text"
-              value={dropoffLocation}
-              onChange={(e) => setDropoffLocation(e.target.value)}
-              placeholder="Enter dropoff address"
-              className="w-full h-12 px-4 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none"
-            />
-          </div>
-
-          {/* Add Driver */}
-          <div>
-            <label className="block font-bold mb-3">Add Professional Driver?</label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => setWithDriver(false)}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  !withDriver 
-                    ? 'border-green-500 bg-green-50' 
-                    : 'border-gray-200 bg-white'
-                }`}
-              >
-                <p className="font-semibold mb-1">Self Drive</p>
-                <p className="text-sm text-gray-600">Drive yourself</p>
-              </button>
-              <button
-                onClick={() => setWithDriver(true)}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  withDriver 
-                    ? 'border-green-500 bg-green-50' 
-                    : 'border-gray-200 bg-white'
-                }`}
-              >
-                <p className="font-semibold mb-1">With Driver</p>
-                <p className="text-sm text-gray-600">+TZS 30k/day</p>
-              </button>
+          {/* Driver option */}
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, padding: '16px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Chaguo la Dereva</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {[
+                { val: false, label: 'Jiendeshe', sub: 'Unaendesha wewe' },
+                { val: true,  label: 'Dereva', sub: '+TZS 30K/siku' },
+              ].map(opt => (
+                <button key={String(opt.val)} onClick={() => setWithDriver(opt.val)}
+                  style={{ padding: '14px', borderRadius: 14, textAlign: 'left', border: `2px solid ${withDriver === opt.val ? meta.accent : 'rgba(255,255,255,0.08)'}`, background: withDriver === opt.val ? `${meta.accent}10` : 'transparent', cursor: 'pointer', transition: 'all 0.2s' }}>
+                  <p style={{ fontSize: '13px', fontWeight: 800, color: '#fff', marginBottom: 3 }}>{opt.label}</p>
+                  <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>{opt.sub}</p>
+                  {withDriver === opt.val && <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 4 }}><Check style={{ width: 12, height: 12, color: meta.accent }} /><span style={{ fontSize: '10px', fontWeight: 700, color: meta.accent }}>Umechagua</span></div>}
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Insurance */}
-          <div>
-            <label className="block font-bold mb-3">Insurance Coverage</label>
-            <div className="space-y-3">
-              <button
-                onClick={() => setInsurance('basic')}
-                className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
-                  insurance === 'basic' 
-                    ? 'border-green-500 bg-green-50' 
-                    : 'border-gray-200 bg-white'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <p className="font-semibold">Basic Coverage</p>
-                  <p className="text-sm font-bold">+TZS 10k/day</p>
-                </div>
-                <p className="text-sm text-gray-600">Third party liability</p>
-              </button>
-
-              <button
-                onClick={() => setInsurance('premium')}
-                className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
-                  insurance === 'premium' 
-                    ? 'border-green-500 bg-green-50' 
-                    : 'border-gray-200 bg-white'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <p className="font-semibold">Premium Coverage</p>
-                  <p className="text-sm font-bold">+TZS 20k/day</p>
-                </div>
-                <p className="text-sm text-gray-600">Collision damage waiver included</p>
-              </button>
-
-              <button
-                onClick={() => setInsurance('comprehensive')}
-                className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
-                  insurance === 'comprehensive' 
-                    ? 'border-green-500 bg-green-50' 
-                    : 'border-gray-200 bg-white'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <p className="font-semibold">Comprehensive Coverage</p>
-                  <p className="text-sm font-bold">+TZS 30k/day</p>
-                </div>
-                <p className="text-sm text-gray-600">Full coverage + roadside assistance</p>
-              </button>
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 18, padding: '16px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>Bima ya Gari</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {(['basic', 'premium', 'comprehensive'] as const).map(ins => {
+                const info = insLabels[ins];
+                return (
+                  <button key={ins} onClick={() => setInsurance(ins)}
+                    style={{ padding: '14px 16px', borderRadius: 14, textAlign: 'left', border: `2px solid ${insurance === ins ? '#4ade80' : 'rgba(255,255,255,0.08)'}`, background: insurance === ins ? 'rgba(74,222,128,0.07)' : 'transparent', cursor: 'pointer', transition: 'all 0.2s' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <p style={{ fontSize: '13px', fontWeight: 800, color: '#fff' }}>{info.label}</p>
+                      <p style={{ fontSize: '12px', fontWeight: 800, color: insurance === ins ? '#4ade80' : 'rgba(255,255,255,0.5)' }}>{info.price}</p>
+                    </div>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: 3 }}>{info.sub}</p>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Cost Breakdown */}
-          {days > 0 && (
-            <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
-              <h3 className="font-bold mb-3">Cost Breakdown</h3>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Vehicle rental ({days} days)</span>
-                <span className="font-semibold">
-                  TZS {(totalCost - (withDriver ? 30000 * days : 0) - (insurance === 'basic' ? 10000 * days : insurance === 'premium' ? 20000 * days : 30000 * days)).toLocaleString()}
-                </span>
-              </div>
-              {withDriver && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Driver ({days} days)</span>
-                  <span className="font-semibold">TZS {(30000 * days).toLocaleString()}</span>
+          {/* Cost breakdown */}
+          {rentalDays > 0 && (
+            <div style={{ padding: '18px', borderRadius: 18, background: 'rgba(255,255,255,0.04)', border: `1px solid ${meta.accent}20` }}>
+              <p style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Muhtasari wa Gharama</p>
+              {[
+                ['Gari', `${rentalDays} siku`, fmt(totalCost - (withDriver ? 30000 * rentalDays : 0) - ({ basic: 10000, premium: 20000, comprehensive: 30000 }[insurance]) * rentalDays)],
+                withDriver && ['Dereva', `${rentalDays} siku`, fmt(30000 * rentalDays)],
+                ['Bima', `${rentalDays} siku`, fmt({ basic: 10000, premium: 20000, comprehensive: 30000 }[insurance] * rentalDays)],
+              ].filter(Boolean).map(([label, sub, val]) => (
+                <div key={label as string} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div>
+                    <p style={{ fontSize: '12px', fontWeight: 700, color: '#fff' }}>{label}</p>
+                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>{sub}</p>
+                  </div>
+                  <p style={{ fontSize: '13px', fontWeight: 800, color: meta.accent }}>{val}</p>
                 </div>
-              )}
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Insurance ({days} days)</span>
-                <span className="font-semibold">
-                  TZS {(insurance === 'basic' ? 10000 * days : insurance === 'premium' ? 20000 * days : 30000 * days).toLocaleString()}
-                </span>
-              </div>
-              <div className="border-t border-gray-300 pt-2 mt-2">
-                <div className="flex justify-between">
-                  <span className="font-bold">Total</span>
-                  <span className="text-xl font-bold text-green-600">TZS {totalCost.toLocaleString()}</span>
-                </div>
+              ))}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 12, marginTop: 4 }}>
+                <p style={{ fontSize: '15px', fontWeight: 900, color: '#fff' }}>Jumla</p>
+                <p style={{ fontSize: '24px', fontWeight: 900, color: meta.accent, letterSpacing: '-0.5px' }}>{fmt(totalCost)}</p>
               </div>
             </div>
           )}
 
           {/* PIN */}
           <div>
-            <label className="block font-bold mb-2">Enter PIN to Confirm</label>
-            <input
-              type="password"
-              maxLength={4}
-              placeholder="4-digit PIN"
-              value={pin}
-              onChange={(e) => setPin(e.target.value)}
-              className="w-full h-14 text-center text-2xl tracking-widest border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none"
-            />
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 800, color: 'rgba(255,255,255,0.7)', marginBottom: 10 }}>Ingiza PIN ya Kuthibitisha</label>
+            <input type="password" maxLength={4} placeholder="● ● ● ●" value={pin} onChange={e => setPin(e.target.value)}
+              style={{ width: '100%', height: 60, textAlign: 'center', fontSize: '28px', letterSpacing: '10px', borderRadius: 16, background: 'rgba(255,255,255,0.07)', border: `1px solid ${pin.length === 4 ? meta.accent : 'rgba(255,255,255,0.12)'}`, color: '#fff', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.3s' }} />
           </div>
 
-          {/* Book Button */}
-          <Button
-            onClick={handleBooking}
-            disabled={processing || !pickupDate || !dropoffDate || days < 1 || pin.length !== 4}
-            className="w-full h-14 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-full font-bold text-lg disabled:opacity-50"
-          >
-            {processing ? 'Processing...' : `Confirm Booking - TZS ${totalCost.toLocaleString()}`}
-          </Button>
+          <div style={{ padding: '12px 14px', borderRadius: 14, background: 'rgba(74,222,128,0.07)', border: '1px solid rgba(74,222,128,0.15)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Shield style={{ width: 14, height: 14, color: '#4ade80' }} />
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Malipo yako yanafanywa salama kupitia <strong style={{ color: '#4ade80' }}>goPay Secure</strong></p>
+          </div>
+        </div>
+
+        {/* Fixed CTA */}
+        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, padding: '14px 16px', background: 'rgba(8,13,8,0.97)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          <button onClick={handleBooking}
+            disabled={processing || !pickupDate || !dropoffDate || rentalDays < 1 || pin.length !== 4}
+            style={{ width: '100%', height: 54, borderRadius: 16, background: pin.length === 4 && rentalDays > 0 ? `linear-gradient(135deg,${accentColor},#c2410c)` : `${accentColor}28`, border: 'none', color: '#fff', fontWeight: 900, fontSize: '15px', cursor: pin.length !== 4 || rentalDays < 1 ? 'not-allowed' : 'pointer', boxShadow: pin.length === 4 && rentalDays > 0 ? `0 8px 32px ${accentColor}40` : 'none', transition: 'all 0.3s' }}>
+            {processing ? 'Inashughulikia...' : rentalDays > 0 ? `Thibitisha — ${fmt(totalCost)}` : 'Chagua Tarehe Kwanza'}
+          </button>
         </div>
       </div>
     );
   }
 
-  // Confirmation View
+  /* ══════════════════════════════════════════════════════
+     CONFIRMATION VIEW
+  ══════════════════════════════════════════════════════ */
+  const bookingRef = `CR-${Date.now().toString(36).toUpperCase()}`;
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-6">
-      <div className="text-center max-w-md">
-        <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Check className="size-10 text-white" />
+    <div style={{ minHeight: '100vh', background: '#080d08', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <style>{`@keyframes popIn{0%{transform:scale(0);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}} @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}`}</style>
+      <div style={{ maxWidth: 380, width: '100%', color: '#fff', textAlign: 'center' }}>
+        {/* Success icon */}
+        <div style={{ width: 88, height: 88, borderRadius: '50%', background: `linear-gradient(135deg,${accentColor},#c2410c)`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', animation: 'popIn 0.5s ease-out', boxShadow: `0 10px 48px ${accentColor}50` }}>
+          <Check style={{ width: 42, height: 42, color: '#fff' }} />
         </div>
-        <h1 className="text-2xl font-bold mb-2">Booking Confirmed!</h1>
-        <p className="text-gray-600 mb-6">
-          Your car rental has been reserved
-        </p>
+        <h1 style={{ fontSize: '26px', fontWeight: 900, marginBottom: 6, letterSpacing: '-0.5px' }}>Gari Limebukiwa!</h1>
+        <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', marginBottom: 28 }}>Vocha ya kukodisha iko tayari chini</p>
 
         {selectedVehicle && (
-          <div className="bg-gray-50 rounded-2xl p-6 mb-6 text-left space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Vehicle</span>
-              <span className="font-bold">{selectedVehicle.name}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Pickup</span>
-              <span className="font-semibold">{pickupDate}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Dropoff</span>
-              <span className="font-semibold">{dropoffDate}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Duration</span>
-              <span className="font-semibold">{calculateDuration().days} days</span>
-            </div>
-            {withDriver && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Driver</span>
-                <span className="font-semibold text-green-600">Included</span>
+          <div style={{ borderRadius: 24, overflow: 'hidden', marginBottom: 16 }}>
+            {/* Car photo strip */}
+            <div style={{ height: 120, position: 'relative' }}>
+              <img src={selectedVehicle.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(8,13,8,0.95))' }} />
+              <div style={{ position: 'absolute', bottom: 12, left: 16 }}>
+                <p style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>{selectedVehicle.name}</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>{selectedVehicle.rentalCompany}</p>
               </div>
-            )}
-            <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-              <span className="text-sm text-gray-600">Total Paid</span>
-              <span className="font-semibold text-green-600">TZS {calculateTotal().toLocaleString()}</span>
+            </div>
+
+            <div style={{ background: `linear-gradient(135deg,rgba(28,10,0,0.9),${accentColor}15)`, border: `1px solid ${accentColor}25`, borderTop: 'none', padding: '20px' }}>
+              {/* Booking ref */}
+              <div style={{ position: 'relative', overflow: 'hidden', background: `${accentColor}14`, borderRadius: 14, padding: '14px', marginBottom: 16 }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.05),transparent)', animation: 'shimmer 2.5s linear infinite' }} />
+                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginBottom: 4 }}>Nambari ya Vocha</p>
+                <p style={{ fontSize: '22px', fontWeight: 900, letterSpacing: '3px', color: accentColor }}>{bookingRef}</p>
+              </div>
+
+              {[
+                ['Gari',       selectedVehicle.name],
+                ['Kuchukua',   pickupDate],
+                ['Kurudisha',  dropoffDate],
+                ['Siku',       `${rentalDays}`],
+                ['Dereva',     withDriver ? 'Imejumuishwa' : 'Jiendeshe'],
+                ['Bima',       { basic: 'Msingi', premium: 'Hali ya Juu', comprehensive: 'Kamili' }[insurance]],
+              ].map(([k, v]) => (
+                <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{k}</span>
+                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#fff' }}>{v}</span>
+                </div>
+              ))}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 12 }}>
+                <span style={{ fontSize: '14px', fontWeight: 900, color: '#fff' }}>Jumla Iliyolipwa</span>
+                <span style={{ fontSize: '22px', fontWeight: 900, color: accentColor, letterSpacing: '-0.5px' }}>{fmt(totalCost)}</span>
+              </div>
             </div>
           </div>
         )}
 
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
-          <p className="text-sm font-semibold text-green-900 mb-1">📱 Booking confirmation sent</p>
-          <p className="text-xs text-green-700">
-            The rental company will contact you shortly with pickup details
-          </p>
+        <div style={{ padding: '14px 16px', borderRadius: 16, background: 'rgba(74,222,128,0.07)', border: '1px solid rgba(74,222,128,0.15)', marginBottom: 20 }}>
+          <p style={{ fontSize: '13px', fontWeight: 800, color: '#4ade80', marginBottom: 4 }}>📱 Vocha imetumwa kwa SMS</p>
+          <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>Onyesha vocha hii wakati wa kuchukua gari. Fika mapema dakika 15.</p>
         </div>
 
-        <Button
-          onClick={onBack}
-          className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-full font-bold"
-        >
-          Back to Home
-        </Button>
+        <button onClick={onBack} style={{ width: '100%', height: 52, borderRadius: 16, background: `linear-gradient(135deg,${accentColor},#c2410c)`, border: 'none', color: '#fff', fontWeight: 900, fontSize: '15px', cursor: 'pointer', boxShadow: `0 8px 32px ${accentColor}40` }}>
+          Rudi Nyumbani
+        </button>
       </div>
     </div>
   );

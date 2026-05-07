@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { User } from '../App';
 import {
   ArrowLeft, Bus, Ship, Plane, Hotel, Mountain, Users, MapPin,
-  ChevronRight, Star, Check, Train, Search,
+  ChevronRight, Star, Check, Train, Search, Car,
   ArrowRight, Shield, Sparkles, TrendingUp, Zap, Heart,
 } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
@@ -14,7 +14,7 @@ interface TravelPageRedesignedProps {
   onBack: () => void;
 }
 
-type BookingService = 'flights' | 'ferry' | 'buses' | 'sgr' | 'hotels' | 'parks' | 'ai';
+type BookingService = 'flights' | 'ferry' | 'buses' | 'sgr' | 'hotels' | 'parks' | 'ai' | 'cars';
 
 const SVC = {
   flights: { accent: '#60a5fa', glow: 'rgba(96,165,250,0.25)',  gradient: 'linear-gradient(160deg,#0f172a 0%,#1e3a8a 55%,#1d4ed8 100%)' },
@@ -355,6 +355,39 @@ export function TravelPageRedesigned({ user, accessToken, onBack }: TravelPageRe
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px', borderRadius: 14, background: '#991b1b', flexShrink: 0 }}>
+                <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff' }}>Weka</span>
+                <ArrowRight style={{ width: 12, height: 12, color: '#fff' }} />
+              </div>
+            </div>
+          </div>
+        </button>
+
+        {/* ── ROW 3.5: CARS — full-width strip ── */}
+        <button onClick={() => goBook('cars')}
+          className="active:scale-[0.985] transition-transform"
+          style={{ width: '100%', borderRadius: 24, overflow: 'hidden', position: 'relative', border: 'none', padding: 0, cursor: 'pointer', marginBottom: 12, display: 'block', boxShadow: '0 12px 40px rgba(251,146,60,0.22)' }}>
+          <div style={{ position: 'relative', height: 160 }}>
+            <img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1080&q=80" alt="Car Rental"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg,rgba(28,10,0,0.97) 0%,rgba(194,65,12,0.8) 50%,rgba(28,10,0,0.5) 100%)' }} />
+            {/* New badge */}
+            <div style={{ position: 'absolute', top: 14, right: 14, display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 20, background: 'linear-gradient(135deg,#fb923c,#c2410c)', boxShadow: '0 4px 16px rgba(251,146,60,0.5)' }}>
+              <span style={{ fontSize: '10px', fontWeight: 900, color: '#fff' }}>✨ KIPYA</span>
+            </div>
+            <div style={{ position: 'absolute', top: 14, left: 16, display: 'flex', alignItems: 'center', gap: 7, padding: '6px 12px', borderRadius: 20, background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: '1px solid rgba(251,146,60,0.3)' }}>
+              <Car style={{ width: 13, height: 13, color: '#fb923c' }} />
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#fff' }}>Kukodisha Gari</span>
+            </div>
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 18px 16px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+              <div>
+                <p style={{ fontSize: '18px', fontWeight: 900, color: '#fff', letterSpacing: '-0.4px', marginBottom: 4 }}>Gari Bora · Siku, Wiki, Mwezi</p>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {['Magari 10+', 'Bima Kamili', 'TZS 55K/siku+', 'Tanzania Yote'].map(c => (
+                    <span key={c} style={{ fontSize: '9px', fontWeight: 700, padding: '2px 7px', borderRadius: 8, background: 'rgba(251,146,60,0.18)', color: '#fdba74', border: '1px solid rgba(251,146,60,0.3)' }}>{c}</span>
+                  ))}
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px', borderRadius: 14, background: '#c2410c', flexShrink: 0 }}>
                 <span style={{ fontSize: '12px', fontWeight: 800, color: '#fff' }}>Weka</span>
                 <ArrowRight style={{ width: 12, height: 12, color: '#fff' }} />
               </div>
