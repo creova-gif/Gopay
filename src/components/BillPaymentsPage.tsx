@@ -1141,199 +1141,243 @@ export function BillPaymentsPage({ user, accessToken, onBack, onNavigate }: Bill
     );
   }
 
-  // CATEGORY VIEW - Show providers in selected category
+  // ── shared dark-theme tokens ──────────────────────────────────────────────
+  const D = {
+    bg:     '#080d08',
+    card:   'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.07)',
+    header: 'rgba(8,13,8,0.96)',
+    green:  '#4ade80',
+    greenD: '#16a34a',
+  };
+
+  // ── CATEGORY VIEW ────────────────────────────────────────────────────────
   if (activeView === 'category') {
-    const categoryProviders = allProviders.filter(p => p.category === selectedCategory);
-    const categoryData = categories.find(c => c.id === selectedCategory);
+    const catProviders = allProviders.filter(p => p.category === selectedCategory);
+    const catData      = categories.find(c => c.id === selectedCategory);
+    const m            = CAT_META[selectedCategory ?? 'electricity'] ?? CAT_META.electricity;
+    const CatIcon      = catData?.icon ?? Building2;
+    const filtered     = searchQuery.trim()
+      ? catProviders.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      : catProviders;
 
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b sticky top-0 z-20">
-          <div className="px-4 py-4">
-            <div className="flex items-center gap-3 mb-4">
-              <button onClick={() => setActiveView('home')} className="p-2 hover:bg-gray-100 rounded-full">
-                <ArrowLeft className="size-6 text-gray-900" />
+      <div style={{ minHeight: '100vh', background: D.bg, color: '#fff', paddingBottom: 32 }}>
+        {/* Sticky header */}
+        <div className="sticky top-0 z-20" style={{ background: D.header, backdropFilter: 'blur(14px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ padding: '14px 16px 12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+              <button onClick={() => setActiveView('home')} className="active:scale-95"
+                style={{ padding: 10, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer' }}>
+                <ArrowLeft style={{ width: 20, height: 20, color: '#fff' }} />
               </button>
-              <div className="flex items-center gap-3">
-                {categoryData && <categoryData.icon className="size-6 text-gray-900" />}
-                <h1 className="text-xl font-bold text-gray-900">{categoryData?.name}</h1>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: `${m.accent}18`, border: `1px solid ${m.accent}35`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CatIcon style={{ width: 20, height: 20, color: m.accent }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <h1 style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>{catData?.name}</h1>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{catProviders.length} watoa huduma</p>
               </div>
             </div>
-
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search providers..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-12 pl-12 pr-4 bg-gray-100 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
+            {/* Search */}
+            <div style={{ position: 'relative' }}>
+              <Search style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'rgba(255,255,255,0.35)' }} />
+              <input type="text" placeholder="Tafuta mtoa huduma..."
+                value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                style={{ width: '100%', height: 44, paddingLeft: 40, paddingRight: searchQuery ? 40 : 14, borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' as const }} />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')}
+                  style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', padding: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', cursor: 'pointer' }}>
+                  <X style={{ width: 12, height: 12, color: 'rgba(255,255,255,0.6)' }} />
+                </button>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="p-4 space-y-3">
-          {categoryProviders.map((provider) => (
-            <button
-              key={provider.id}
-              onClick={() => {
-                setSelectedProvider(provider);
-                setFormData(initializeFormData(provider));
-                setAmount('');
-                setActiveView('provider');
-              }}
-              className="w-full bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all flex items-center gap-4"
-            >
-              <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center text-2xl">
-                <provider.icon className="size-6 text-gray-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <h3 className="font-semibold text-gray-900">{provider.name}</h3>
-                <p className="text-sm text-gray-600">Instant payment</p>
-              </div>
-              <ChevronRight className="size-5 text-gray-400" />
-            </button>
-          ))}
+        <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {filtered.length === 0 && (
+            <p style={{ textAlign: 'center', padding: '32px 0', fontSize: '14px', color: 'rgba(255,255,255,0.35)' }}>
+              Hakuna matokeo kwa "{searchQuery}"
+            </p>
+          )}
+          {filtered.map((provider, i) => {
+            const Icon = provider.icon;
+            return (
+              <button key={provider.id}
+                onClick={() => { setSelectedProvider(provider); setFormData(initializeFormData(provider)); setAmount(''); setActiveView('provider'); }}
+                className="active:scale-[0.98] transition-transform"
+                style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 18, background: D.card, border: D.border, cursor: 'pointer', textAlign: 'left' }}>
+                <div style={{ width: 50, height: 50, borderRadius: 15, background: `${m.accent}12`, border: `1px solid ${m.accent}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Icon style={{ width: 22, height: 22, color: m.accent }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff', marginBottom: 3 }}>{provider.name}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: D.green }} />
+                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>Malipo ya papo hapo</span>
+                    {provider.popular && (
+                      <span style={{ padding: '1px 7px', borderRadius: 10, background: `${m.accent}18`, border: `1px solid ${m.accent}30`, fontSize: '10px', fontWeight: 800, color: m.accent }}>
+                        Maarufu
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <ChevronRight style={{ width: 17, height: 17, color: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
+              </button>
+            );
+          })}
         </div>
       </div>
     );
   }
 
-  // PROVIDER VIEW - Enter bill details
+  // ── PROVIDER VIEW ────────────────────────────────────────────────────────
   if (activeView === 'provider') {
+    const m   = CAT_META[selectedProvider?.category ?? 'electricity'] ?? CAT_META.electricity;
+    const Icon = selectedProvider?.icon ?? Building2;
+    const canContinue = selectedProvider?.fields.every(f => !f.required || formData[f.name]);
+
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b sticky top-0 z-20">
-          <div className="px-4 py-4">
-            <div className="flex items-center gap-3">
-              <button onClick={() => setActiveView(selectedCategory ? 'category' : 'home')} className="p-2 hover:bg-gray-100 rounded-full">
-                <ArrowLeft className="size-6 text-gray-900" />
+      <div style={{ minHeight: '100vh', background: D.bg, color: '#fff', paddingBottom: 32 }}>
+        {/* Header */}
+        <div className="sticky top-0 z-20" style={{ background: D.header, backdropFilter: 'blur(14px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ padding: '14px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button onClick={() => setActiveView(selectedCategory ? 'category' : 'home')} className="active:scale-95"
+                style={{ padding: 10, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer' }}>
+                <ArrowLeft style={{ width: 20, height: 20, color: '#fff' }} />
               </button>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center text-xl">
-                  {selectedProvider?.icon && <selectedProvider.icon className="size-6 text-gray-600" />}
-                </div>
-                <h1 className="text-xl font-bold text-gray-900">{selectedProvider?.name}</h1>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: `${m.accent}18`, border: `1px solid ${m.accent}35`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon style={{ width: 20, height: 20, color: m.accent }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <h1 style={{ fontSize: '17px', fontWeight: 900, color: '#fff' }}>{selectedProvider?.name}</h1>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Ingiza maelezo ya bili</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="p-4">
-          <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
-            <h3 className="font-bold text-gray-900">Enter Bill Details</h3>
+        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* Field card */}
+          <div style={{ borderRadius: 22, background: D.card, border: D.border, padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 10, background: `${m.accent}15`, border: `1px solid ${m.accent}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon style={{ width: 16, height: 16, color: m.accent }} />
+              </div>
+              <p style={{ fontSize: '14px', fontWeight: 800, color: '#fff' }}>Maelezo ya Bili</p>
+            </div>
 
-            {selectedProvider?.fields.map((field) => (
+            {selectedProvider?.fields.map(field => (
               <div key={field.name}>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  {field.label} {field.required && <span className="text-red-500">*</span>}
-                </label>
-                <Input
-                  type={field.type}
-                  placeholder={field.placeholder}
+                <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 7 }}>
+                  {field.label}{field.required && ' *'}
+                </p>
+                <input type={field.type} placeholder={field.placeholder}
                   value={formData[field.name] || ''}
-                  onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
-                  className="h-12"
-                />
+                  onChange={e => setFormData({ ...formData, [field.name]: e.target.value })}
+                  style={{ width: '100%', height: 50, padding: '0 14px', borderRadius: 13, background: 'rgba(255,255,255,0.06)', border: `1px solid ${formData[field.name] ? m.accent + '55' : 'rgba(255,255,255,0.1)'}`, color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' as const, transition: 'border 0.2s' }} />
               </div>
             ))}
-
-            <div className="pt-4">
-              <Button
-                onClick={() => {
-                  setAmount(formData.amount || '');
-                  setActiveView('payment');
-                }}
-                className="w-full h-12 bg-green-600 hover:bg-green-700"
-                disabled={!selectedProvider?.fields.every(f => !f.required || formData[f.name])}
-              >
-                Continue
-              </Button>
-            </div>
           </div>
+
+          {/* Security note */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 12, background: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.15)' }}>
+            <Shield style={{ width: 14, height: 14, color: D.green, flexShrink: 0 }} />
+            <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Taarifa yako inalindwa na usimbaji wa hali ya juu</span>
+          </div>
+
+          {/* CTA */}
+          <button onClick={() => { setAmount(formData.amount || ''); setActiveView('payment'); }}
+            disabled={!canContinue}
+            className="active:scale-[0.98] transition-transform"
+            style={{ width: '100%', height: 54, borderRadius: 18, border: 'none', fontWeight: 900, fontSize: '15px', cursor: canContinue ? 'pointer' : 'not-allowed', transition: 'all 0.2s',
+              background: canContinue ? `linear-gradient(135deg,${m.accent},${m.accent}cc)` : 'rgba(255,255,255,0.08)',
+              color: canContinue ? '#000' : 'rgba(255,255,255,0.3)',
+              boxShadow: canContinue ? `0 6px 24px ${m.accent}35` : 'none' }}>
+            Endelea
+          </button>
         </div>
       </div>
     );
   }
 
-  // PAYMENT VIEW - Select payment method and confirm
+  // ── PAYMENT VIEW ─────────────────────────────────────────────────────────
   if (activeView === 'payment') {
     const fees = calculateFees(parseInt(amount) || 0, paymentMethod);
+    const m    = CAT_META[selectedProvider?.category ?? 'electricity'] ?? CAT_META.electricity;
+    const ProvIcon = selectedProvider?.icon ?? Building2;
 
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b sticky top-0 z-20">
-          <div className="px-4 py-4">
-            <div className="flex items-center gap-3">
-              <button onClick={() => setActiveView('provider')} className="p-2 hover:bg-gray-100 rounded-full">
-                <ArrowLeft className="size-6 text-gray-900" />
+      <div style={{ minHeight: '100vh', background: D.bg, color: '#fff', paddingBottom: 40 }}>
+        {/* Header */}
+        <div className="sticky top-0 z-20" style={{ background: D.header, backdropFilter: 'blur(14px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ padding: '14px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button onClick={() => setActiveView('provider')} className="active:scale-95"
+                style={{ padding: 10, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer' }}>
+                <ArrowLeft style={{ width: 20, height: 20, color: '#fff' }} />
               </button>
-              <h1 className="text-xl font-bold text-gray-900">Payment Details</h1>
+              <div style={{ flex: 1 }}>
+                <h1 style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>Maelezo ya Malipo</h1>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Chagua njia ya kulipa</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="p-4 space-y-4">
-          {/* Payment Summary */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center gap-4 mb-4 pb-4 border-b">
-              <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-2xl">
-                {selectedProvider?.icon && <selectedProvider.icon className="size-6 text-gray-500" />}
+        <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* Bill summary */}
+          <div style={{ borderRadius: 22, background: D.card, border: D.border, padding: '18px 18px 14px', overflow: 'hidden', position: 'relative' }}>
+            <div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: `radial-gradient(circle,${m.accent}15,transparent 70%)` }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ width: 50, height: 50, borderRadius: 15, background: `${m.accent}15`, border: `1px solid ${m.accent}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <ProvIcon style={{ width: 24, height: 24, color: m.accent }} />
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">{selectedProvider?.name}</h3>
-                <p className="text-sm text-gray-600">
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginBottom: 2 }}>{selectedProvider?.name}</p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
                   {Object.entries(formData).find(([key]) => key !== 'amount')?.[1]}
                 </p>
               </div>
             </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Bill Amount</span>
-                <span className="font-semibold text-gray-900">{formatCurrency(fees.billAmount)}</span>
+            {[
+              { label: 'Kiasi cha Bili', value: formatCurrency(fees.billAmount), color: '#fff' },
+              { label: 'Ada ya Huduma', value: 'BURE', color: D.green },
+            ].map(row => (
+              <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>{row.label}</span>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: row.color }}>{row.value}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Service Fee</span>
-                <span className="font-semibold text-green-600">FREE</span>
-              </div>
-              <div className="pt-3 border-t flex justify-between">
-                <span className="font-semibold text-gray-900">Total Amount</span>
-                <span className="text-xl font-bold text-gray-900">{formatCurrency(fees.totalAmount)}</span>
-              </div>
+            ))}
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: 2 }}>
+              <span style={{ fontSize: '14px', fontWeight: 800, color: '#fff' }}>Jumla</span>
+              <span style={{ fontSize: '20px', fontWeight: 900, color: m.accent }}>{formatCurrency(fees.totalAmount)}</span>
             </div>
           </div>
 
-          {/* Payment Method */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h3 className="font-bold text-gray-900 mb-4">Payment Method</h3>
-            <div className="space-y-2">
-              {paymentMethods.map((method) => {
-                const MethodIcon = getPaymentMethodIcon(method.id as PaymentMethod);
+          {/* Payment methods */}
+          <div style={{ borderRadius: 22, background: D.card, border: D.border, padding: '18px 18px 14px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 14 }}>Njia ya Kulipa</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {paymentMethods.map(method => {
+                const sel = paymentMethod === method.id;
+                const MethodIcon = method.icon;
                 return (
-                  <button
-                    key={method.id}
-                    onClick={() => setPaymentMethod(method.id as PaymentMethod)}
-                    className={`w-full p-4 rounded-xl border-2 transition-all ${
-                      paymentMethod === method.id
-                        ? 'border-green-600 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`${paymentMethod === method.id ? 'bg-green-600' : 'bg-gray-200'} w-5 h-5 rounded-full flex items-center justify-center`}>
-                        {paymentMethod === method.id && <Check className="size-3 text-white" />}
-                      </div>
-                      <MethodIcon className={`size-5 ${method.color}`} />
-                      <div className="flex-1 text-left">
-                        <p className="font-medium text-gray-900">{getPaymentMethodName(method.id as PaymentMethod)}</p>
-                        {method.balance !== null && (
-                          <p className="text-xs text-gray-600">Balance: {formatCurrency(method.balance)}</p>
-                        )}
-                      </div>
-                      {method.id === 'card' && (
-                        <button className="text-sm text-green-600 font-semibold">+ Add Card</button>
+                  <button key={method.id} onClick={() => setPaymentMethod(method.id as PaymentMethod)}
+                    className="active:scale-[0.98] transition-transform"
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 14, border: `1px solid ${sel ? 'rgba(74,222,128,0.5)' : 'rgba(255,255,255,0.07)'}`, background: sel ? 'rgba(74,222,128,0.08)' : 'rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.15s' }}>
+                    <div style={{ width: 20, height: 20, borderRadius: '50%', background: sel ? D.greenD : 'rgba(255,255,255,0.12)', border: `2px solid ${sel ? D.green : 'rgba(255,255,255,0.2)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+                      {sel && <Check style={{ width: 10, height: 10, color: '#fff' }} />}
+                    </div>
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <MethodIcon style={{ width: 17, height: 17, color: sel ? D.green : 'rgba(255,255,255,0.6)' }} />
+                    </div>
+                    <div style={{ flex: 1, textAlign: 'left' }}>
+                      <p style={{ fontSize: '13px', fontWeight: 700, color: sel ? '#fff' : 'rgba(255,255,255,0.75)' }}>{getPaymentMethodName(method.id as PaymentMethod)}</p>
+                      {method.balance !== null && (
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Salio: {formatCurrency(method.balance)}</p>
                       )}
                     </div>
                   </button>
@@ -1342,191 +1386,214 @@ export function BillPaymentsPage({ user, accessToken, onBack, onNavigate }: Bill
             </div>
           </div>
 
-          {/* Additional Options */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
-            <h3 className="font-bold text-gray-900">Options</h3>
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Star className="size-5 text-gray-400" />
-                <div>
-                  <p className="font-medium text-gray-900">Save as favorite</p>
-                  <p className="text-xs text-gray-600">Quick access for future payments</p>
+          {/* Options */}
+          <div style={{ borderRadius: 22, background: D.card, border: D.border, padding: '18px 18px 14px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 14 }}>Chaguo za Ziada</p>
+            {[
+              { icon: Star, label: 'Hifadhi kama kipendwa', sub: 'Ufikio wa haraka wakati ujao', state: saveAsFavorite, setter: setSaveAsFavorite },
+              { icon: Calendar, label: 'Panga malipo', sub: 'Lipa kiotomatiki kila mwezi', state: schedulePayment, setter: setSchedulePayment },
+            ].map(opt => {
+              const OptIcon = opt.icon;
+              return (
+                <div key={opt.label} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <OptIcon style={{ width: 17, height: 17, color: 'rgba(255,255,255,0.5)' }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>{opt.label}</p>
+                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{opt.sub}</p>
+                  </div>
+                  <button onClick={() => opt.setter(!opt.state)}
+                    style={{ width: 44, height: 24, borderRadius: 12, background: opt.state ? D.greenD : 'rgba(255,255,255,0.12)', border: 'none', cursor: 'pointer', position: 'relative', transition: 'all 0.2s', flexShrink: 0 }}>
+                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: opt.state ? 23 : 3, transition: 'left 0.2s' }} />
+                  </button>
                 </div>
-              </div>
-              <input
-                type="checkbox"
-                checked={saveAsFavorite}
-                onChange={(e) => setSaveAsFavorite(e.target.checked)}
-                className="w-5 h-5 rounded accent-green-600"
-              />
-            </div>
-
+              );
+            })}
             {saveAsFavorite && (
-              <Input
-                placeholder="Enter nickname (e.g., Home, Office)"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                className="h-12"
-              />
+              <input placeholder="Jina (mf. Nyumbani, Ofisi)" value={nickname} onChange={e => setNickname(e.target.value)}
+                style={{ width: '100%', height: 44, padding: '0 14px', borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' as const }} />
             )}
+          </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Calendar className="size-5 text-gray-400" />
-                <div>
-                  <p className="font-medium text-gray-900">Schedule payment</p>
-                  <p className="text-xs text-gray-600">Pay automatically every month</p>
-                </div>
-              </div>
-              <input
-                type="checkbox"
-                checked={schedulePayment}
-                onChange={(e) => setSchedulePayment(e.target.checked)}
-                className="w-5 h-5 rounded accent-green-600"
-              />
+          {/* Security badge */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 14, background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.15)' }}>
+            <Shield style={{ width: 16, height: 16, color: '#60a5fa', flexShrink: 0 }} />
+            <div>
+              <p style={{ fontSize: '12px', fontWeight: 700, color: '#93c5fd' }}>Malipo Salama</p>
+              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Usimbaji wa 256-bit uliothibitishwa na mfumo wetu</p>
             </div>
           </div>
 
-          {/* Security Notice */}
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3">
-            <Shield className="size-5 text-blue-600 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-blue-900">Secure Payment</p>
-              <p className="text-xs text-blue-700 mt-1">
-                Your payment is protected with 256-bit encryption and verified by our security system.
-              </p>
-            </div>
-          </div>
-
-          <Button
-            onClick={() => setActiveView('confirm')}
-            className="w-full h-14 bg-green-600 hover:bg-green-700 text-lg"
-          >
-            Pay {formatCurrency(fees.totalAmount)}
-          </Button>
+          <button onClick={() => setActiveView('confirm')} className="active:scale-[0.98] transition-transform"
+            style={{ width: '100%', height: 56, borderRadius: 18, background: 'linear-gradient(135deg,#16a34a,#15803d)', border: 'none', color: '#fff', fontWeight: 900, fontSize: '16px', cursor: 'pointer', boxShadow: '0 6px 28px rgba(22,163,74,0.4)' }}>
+            Lipa {formatCurrency(fees.totalAmount)}
+          </button>
         </div>
       </div>
     );
   }
 
-  // CONFIRM VIEW - Enter PIN
+  // ── CONFIRM VIEW ─────────────────────────────────────────────────────────
   if (activeView === 'confirm') {
     const fees = calculateFees(parseInt(amount) || 0, paymentMethod);
+    const m    = CAT_META[selectedProvider?.category ?? 'electricity'] ?? CAT_META.electricity;
+    const ProvIcon = selectedProvider?.icon ?? Building2;
 
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b sticky top-0 z-20">
-          <div className="px-4 py-4">
-            <div className="flex items-center gap-3">
-              <button onClick={() => setActiveView('payment')} className="p-2 hover:bg-gray-100 rounded-full">
-                <ArrowLeft className="size-6 text-gray-900" />
+      <div style={{ minHeight: '100vh', background: D.bg, color: '#fff', display: 'flex', flexDirection: 'column' }}>
+        {/* Header */}
+        <div className="sticky top-0 z-20" style={{ background: D.header, backdropFilter: 'blur(14px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ padding: '14px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button onClick={() => setActiveView('payment')} className="active:scale-95"
+                style={{ padding: 10, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer' }}>
+                <ArrowLeft style={{ width: 20, height: 20, color: '#fff' }} />
               </button>
-              <h1 className="text-xl font-bold text-gray-900">Confirm Payment</h1>
+              <div>
+                <h1 style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>Thibitisha Malipo</h1>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Ingiza PIN yako kuthibitisha</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="p-4">
-          <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield className="size-8 text-green-600" />
+        <div style={{ flex: 1, padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Amount hero */}
+          <div style={{ borderRadius: 24, background: D.card, border: D.border, padding: '24px 20px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: -30, left: '50%', transform: 'translateX(-50%)', width: 140, height: 140, borderRadius: '50%', background: `radial-gradient(circle,${m.accent}18,transparent 70%)` }} />
+            <div style={{ position: 'relative' }}>
+              <div style={{ width: 60, height: 60, borderRadius: 18, background: `${m.accent}15`, border: `1px solid ${m.accent}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+                <ProvIcon style={{ width: 28, height: 28, color: m.accent }} />
+              </div>
+              <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>{selectedProvider?.name}</p>
+              <p style={{ fontSize: '34px', fontWeight: 900, color: '#fff', letterSpacing: '-1px', marginBottom: 6 }}>
+                {formatCurrency(fees.totalAmount)}
+              </p>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 12px', borderRadius: 20, background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.2)' }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: D.green }} />
+                <span style={{ fontSize: '11px', fontWeight: 700, color: D.green }}>Ada ya Huduma: BURE</span>
+              </div>
             </div>
-            <h3 className="font-bold text-xl text-gray-900 mb-2">Enter Your PIN</h3>
-            <p className="text-gray-700 mb-6">
-              Please enter your {paymentMethod === 'gopay' ? 'goPay' : 'mobile money'} PIN to confirm
-            </p>
-
-            <div className="max-w-xs mx-auto mb-6">
-              <Input
-                type="password"
-                inputMode="numeric"
-                maxLength={4}
-                placeholder="• • • •"
-                value={pin}
-                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                className="h-14 text-center text-2xl tracking-widest"
-              />
-            </div>
-
-            <Button
-              onClick={handlePaymentSubmit}
-              disabled={pin.length !== 4 || processing}
-              className="w-full h-14 bg-green-600 hover:bg-green-700"
-            >
-              {processing ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                  Processing...
-                </div>
-              ) : (
-                `Confirm & Pay ${formatCurrency(fees.totalAmount)}`
-              )}
-            </Button>
           </div>
+
+          {/* PIN entry */}
+          <div style={{ borderRadius: 24, background: D.card, border: D.border, padding: '22px 20px', flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Shield style={{ width: 17, height: 17, color: '#60a5fa' }} />
+              </div>
+              <div>
+                <p style={{ fontSize: '14px', fontWeight: 800, color: '#fff' }}>Ingiza PIN Yako</p>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
+                  PIN ya {paymentMethod === 'gopay' ? 'goPay' : 'pochi ya simu'}
+                </p>
+              </div>
+            </div>
+
+            {/* Dot display */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 24 }}>
+              {[0,1,2,3].map(i => (
+                <div key={i} style={{ width: 16, height: 16, borderRadius: '50%', background: i < pin.length ? D.greenD : 'rgba(255,255,255,0.15)', border: `2px solid ${i < pin.length ? D.green : 'rgba(255,255,255,0.2)'}`, transition: 'all 0.2s', transform: i < pin.length ? 'scale(1.1)' : 'scale(1)' }} />
+              ))}
+            </div>
+
+            {/* Numpad */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+              {['1','2','3','4','5','6','7','8','9','','0','⌫'].map((key, idx) => {
+                if (key === '') return <div key={idx} />;
+                const isDel = key === '⌫';
+                return (
+                  <button key={key + idx}
+                    onClick={() => {
+                      if (isDel) { setPin(p => p.slice(0,-1)); return; }
+                      if (pin.length < 4) setPin(p => p + key);
+                    }}
+                    className="active:scale-90 transition-transform"
+                    style={{ height: 56, borderRadius: 16, background: isDel ? 'transparent' : 'rgba(255,255,255,0.06)', border: isDel ? 'none' : '1px solid rgba(255,255,255,0.08)', fontSize: isDel ? '22px' : '22px', fontWeight: 600, color: '#fff', cursor: 'pointer' }}>
+                    {key}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <button onClick={handlePaymentSubmit} disabled={pin.length !== 4 || processing}
+            className="active:scale-[0.98] transition-transform"
+            style={{ width: '100%', height: 56, borderRadius: 18, border: 'none', fontWeight: 900, fontSize: '16px', cursor: pin.length === 4 && !processing ? 'pointer' : 'not-allowed', transition: 'all 0.2s',
+              background: pin.length === 4 && !processing ? 'linear-gradient(135deg,#16a34a,#15803d)' : 'rgba(22,163,74,0.25)',
+              color: pin.length === 4 && !processing ? '#fff' : 'rgba(255,255,255,0.35)',
+              boxShadow: pin.length === 4 && !processing ? '0 6px 28px rgba(22,163,74,0.4)' : 'none' }}>
+            {processing
+              ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                  <span style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />
+                  Inashughulikia…
+                </span>
+              : `Thibitisha • ${formatCurrency(fees.totalAmount)}`}
+          </button>
         </div>
       </div>
     );
   }
 
-  // SUCCESS VIEW
+  // ── SUCCESS VIEW ─────────────────────────────────────────────────────────
   if (activeView === 'success') {
+    const m = CAT_META[selectedProvider?.category ?? 'electricity'] ?? CAT_META.electricity;
+    const ProvIcon = selectedProvider?.icon ?? Building2;
+    const txnId = `TXN${Date.now()}`;
+
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="size-10 text-green-600" />
+      <div style={{ minHeight: '100vh', background: D.bg, color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, position: 'relative', overflow: 'hidden' }}>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes popIn{0%{transform:scale(0) rotate(-20deg);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}`}</style>
+        {/* Bg glow */}
+        <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle,rgba(22,163,74,0.2),transparent 70%)', pointerEvents: 'none' }} />
+
+        <div style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {/* Icon */}
+          <div style={{ width: 90, height: 90, borderRadius: 28, background: 'linear-gradient(135deg,#16a34a,#15803d)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 22, boxShadow: '0 0 60px rgba(22,163,74,0.45)', animation: 'popIn 0.5s ease forwards' }}>
+            <Check style={{ width: 44, height: 44, color: '#fff' }} />
           </div>
-          
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
-          <p className="text-gray-700 mb-6">
-            Your {selectedProvider?.name} bill has been paid successfully
+          <p style={{ fontSize: '26px', fontWeight: 900, color: '#fff', marginBottom: 6, textAlign: 'center' }}>Imelipwa! 🎉</p>
+          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginBottom: 28, textAlign: 'center' }}>
+            Bili ya {selectedProvider?.name} imelipwa kwa mafanikio
           </p>
 
-          <div className="bg-gray-50 rounded-2xl p-6 mb-6 space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Amount Paid</span>
-              <span className="font-bold text-gray-900">{formatCurrency(parseInt(amount))}</span>
+          {/* Receipt card */}
+          <div style={{ width: '100%', borderRadius: 24, background: D.card, border: D.border, padding: '20px 20px', marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ width: 46, height: 46, borderRadius: 14, background: `${m.accent}15`, border: `1px solid ${m.accent}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <ProvIcon style={{ width: 22, height: 22, color: m.accent }} />
+              </div>
+              <div>
+                <p style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>{selectedProvider?.name}</p>
+                <p style={{ fontSize: '11px', color: D.green, fontWeight: 700 }}>✓ Malipo yamefanikiwa</p>
+              </div>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Payment Method</span>
-              <span className="font-medium text-gray-900 capitalize">{paymentMethod.replace('pesa', ' Pesa')}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Transaction ID</span>
-              <span className="font-medium text-gray-900">TXN{Date.now()}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Date & Time</span>
-              <span className="font-medium text-gray-900">{new Date().toLocaleString()}</span>
-            </div>
+            {[
+              { label: 'Kiasi kilicholipwa', value: formatCurrency(parseInt(amount)), highlight: true },
+              { label: 'Njia ya malipo', value: getPaymentMethodName(paymentMethod), highlight: false },
+              { label: 'Nambari ya muamala', value: txnId, highlight: false },
+              { label: 'Tarehe na wakati', value: new Date().toLocaleString('sw-TZ', { dateStyle: 'medium', timeStyle: 'short' }), highlight: false },
+            ].map(row => (
+              <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>{row.label}</span>
+                <span style={{ fontSize: '13px', fontWeight: row.highlight ? 900 : 600, color: row.highlight ? D.green : '#fff' }}>{row.value}</span>
+              </div>
+            ))}
           </div>
 
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => {
-                setActiveView('home');
-                setFormData({});
-                setAmount('');
-                setPin('');
-              }}
-            >
-              <Download className="size-4 mr-2" />
-              Receipt
-            </Button>
-            <Button
-              className="flex-1 bg-green-600 hover:bg-green-700"
-              onClick={() => {
-                setActiveView('home');
-                setFormData({});
-                setAmount('');
-                setPin('');
-              }}
-            >
-              Done
-            </Button>
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: 12, width: '100%' }}>
+            <button onClick={() => { setActiveView('home'); setFormData({}); setAmount(''); setPin(''); }}
+              className="active:scale-95 transition-transform"
+              style={{ flex: 1, height: 52, borderRadius: 16, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontWeight: 700, fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <Download style={{ width: 16, height: 16 }} /> Risiti
+            </button>
+            <button onClick={() => { setActiveView('home'); setFormData({}); setAmount(''); setPin(''); }}
+              className="active:scale-95 transition-transform"
+              style={{ flex: 1, height: 52, borderRadius: 16, background: 'linear-gradient(135deg,#16a34a,#15803d)', border: 'none', color: '#fff', fontWeight: 900, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 20px rgba(22,163,74,0.4)' }}>
+              Maliza
+            </button>
           </div>
         </div>
       </div>
