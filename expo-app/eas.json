@@ -9,6 +9,9 @@
       "android": {
         "buildType": "apk",
         "credentialsSource": "local"
+      },
+      "ios": {
+        "credentialsSource": "remote"
       }
     },
     "production": {
@@ -25,12 +28,12 @@
     "production": {
       "android": {
         "serviceAccountKeyPath": "./google-play-key.json",
-        "track": "production"
+        "track": "internal"
       },
       "ios": {
-        "appleId": "YOUR-APPLE-ID@email.com",
-        "ascAppId": "YOUR-APP-STORE-CONNECT-APP-ID",
-        "appleTeamId": "YOUR-APPLE-TEAM-ID"
+        "appleId": "chiefjustin98@icloud.com",
+        "ascAppId": "FILL_IN_AFTER_CREATING_APP",
+        "appleTeamId": "FILL_IN_FROM_APPLE_DEVELOPER"
       }
     }
   }

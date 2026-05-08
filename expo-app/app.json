@@ -22,7 +22,8 @@
         "NSLocationWhenInUseUsageDescription": "goPay inatumia mahali pako kupata maduka na ATM karibu nawe.",
         "NSFaceIDUsageDescription": "goPay inatumia Face ID kuingia kwa usalama zaidi.",
         "UIStatusBarStyle": "UIStatusBarStyleLightContent",
-        "UIViewControllerBasedStatusBarAppearance": true
+        "UIViewControllerBasedStatusBarAppearance": true,
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
