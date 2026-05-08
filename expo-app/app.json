@@ -52,8 +52,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "YOUR-EAS-PROJECT-ID"
+        "projectId": "62eac3a0-273d-4efa-a650-e2b4a4e241db"
       }
-    }
+    },
+    "owner": "jaymafie"
   }
 }
