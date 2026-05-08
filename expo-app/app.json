@@ -1,0 +1,59 @@
+{
+  "expo": {
+    "name": "goPay",
+    "slug": "gopay-tz",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#080d08",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#080d08"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.gopay.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "goPay inahitaji kamera yako kuskan QR codes za malipo.",
+        "NSPhotoLibraryUsageDescription": "goPay inahitaji gallery yako kuongeza picha ya wasifu.",
+        "NSLocationWhenInUseUsageDescription": "goPay inatumia mahali pako kupata maduka na ATM karibu nawe.",
+        "NSFaceIDUsageDescription": "goPay inatumia Face ID kuingia kwa usalama zaidi.",
+        "UIStatusBarStyle": "UIStatusBarStyleLightContent",
+        "UIViewControllerBasedStatusBarAppearance": true
+      }
+    },
+    "android": {
+      "package": "com.gopay.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#080d08"
+      },
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.CAMERA",
+        "android.permission.VIBRATE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "softwareKeyboardLayoutMode": "resize"
+    },
+    "plugins": [
+      "expo-splash-screen",
+      [
+        "expo-system-ui",
+        {
+          "backgroundColor": "#080d08"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "YOUR-EAS-PROJECT-ID"
+      }
+    }
+  }
+}
