@@ -1,3 +1,4 @@
+# Include everything except these
 node_modules/
 .expo/
 dist/

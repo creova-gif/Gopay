@@ -48,7 +48,11 @@
         {
           "backgroundColor": "#080d08"
         }
-      ]
+      ],
+      "expo-local-authentication",
+      "expo-camera",
+      "expo-secure-store",
+      "expo-asset"
     ],
     "extra": {
       "eas": {
