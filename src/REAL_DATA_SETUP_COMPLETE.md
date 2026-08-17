@@ -1,3 +1,7 @@
+> ⚠️ **STATUS CORRECTION (verified against live database):** This describes the intended demo/real-data-switching architecture. As of the most recent audit, the connected Supabase database has no live business tables — the app is currently running in demo/local-storage mode only, not against real persisted backend data. See README.md for accurate current status.
+
+---
+
 # ✅ REAL DATA CONNECTION - SETUP COMPLETE!
 
 ## Your App Now Supports Both Demo & Real Backend Data! 🎉
