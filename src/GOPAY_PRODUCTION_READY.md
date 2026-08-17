@@ -1,3 +1,7 @@
+> ⚠️ **STATUS CORRECTION (verified against live database):** This document was written during development and describes the *intended* architecture. As of the most recent audit, the connected Supabase database contains no live business tables (users, wallets, transactions) — the payment integrations described below have not been verified against real persisted data. Treat this document as a design/planning artifact, not a current status report. See README.md for accurate current status.
+
+---
+
 # 🚀 goPay Tanzania Super App - PRODUCTION READY
 
 ## ✅ COMPLETE FEATURE SET
