@@ -65,6 +65,50 @@ async function verifyUser(authHeader: string | null) {
   return user.id;
 }
 
+// PIN brute-force protection. Previously every PIN-gated endpoint compared
+// wallet.pin directly with no attempt limit at all — a 4-digit PIN (10,000
+// possibilities) is practically guessable given an already-valid session
+// token and no lockout. This locks PIN-gated actions for 15 minutes after 5
+// consecutive wrong attempts, and resets the counter on a correct PIN.
+const PIN_MAX_ATTEMPTS = 5;
+const PIN_LOCKOUT_MS = 15 * 60 * 1000;
+
+async function checkPin(
+  userId: string,
+  wallet: any,
+  submittedPin: string
+): Promise<{ ok: true } | { ok: false; error: string; status: number }> {
+  const now = Date.now();
+
+  if (wallet.pinLockedUntil && now < wallet.pinLockedUntil) {
+    const minutesLeft = Math.ceil((wallet.pinLockedUntil - now) / 60000);
+    return {
+      ok: false,
+      error: `Too many incorrect PIN attempts. Try again in ${minutesLeft} minute(s).`,
+      status: 429,
+    };
+  }
+
+  if (wallet.pin !== submittedPin) {
+    const attempts = (wallet.pinFailedAttempts || 0) + 1;
+    wallet.pinFailedAttempts = attempts;
+    if (attempts >= PIN_MAX_ATTEMPTS) {
+      wallet.pinLockedUntil = now + PIN_LOCKOUT_MS;
+      wallet.pinFailedAttempts = 0;
+    }
+    await kv.set(`wallet:${userId}`, wallet);
+    return { ok: false, error: 'Invalid PIN', status: 400 };
+  }
+
+  if (wallet.pinFailedAttempts || wallet.pinLockedUntil) {
+    wallet.pinFailedAttempts = 0;
+    wallet.pinLockedUntil = null;
+    await kv.set(`wallet:${userId}`, wallet);
+  }
+
+  return { ok: true };
+}
+
 // Auth Routes
 app.post('/make-server-69a10ee8/auth/signup', async (c) => {
   try {
@@ -189,8 +233,9 @@ app.post('/make-server-69a10ee8/wallet/link-account', async (c) => {
 
     // Verify PIN
     const wallet = await kv.get(`wallet:${userId}`);
-    if (wallet.pin !== pin) {
-      return c.json({ error: 'Invalid PIN' }, 400);
+    const pinCheck = await checkPin(userId, wallet, pin);
+    if (!pinCheck.ok) {
+      return c.json({ error: pinCheck.error }, pinCheck.status);
     }
 
     const accounts = await kv.get(`linked_accounts:${userId}`) || [];
@@ -224,8 +269,9 @@ app.post('/make-server-69a10ee8/wallet/add-funds', async (c) => {
     const { amount, source, pin, idempotencyKey } = await c.req.json();
 
     const wallet = await kv.get(`wallet:${userId}`);
-    if (wallet.pin !== pin) {
-      return c.json({ error: 'Invalid PIN' }, 400);
+    const pinCheck = await checkPin(userId, wallet, pin);
+    if (!pinCheck.ok) {
+      return c.json({ error: pinCheck.error }, pinCheck.status);
     }
 
     // idempotencyKey should be client-generated and stable across retries of
@@ -275,8 +321,9 @@ app.post('/make-server-69a10ee8/wallet/send-money', async (c) => {
     const { recipient, amount, pin, idempotencyKey } = await c.req.json();
 
     const wallet = await kv.get(`wallet:${userId}`);
-    if (wallet.pin !== pin) {
-      return c.json({ error: 'Invalid PIN' }, 400);
+    const pinCheck = await checkPin(userId, wallet, pin);
+    if (!pinCheck.ok) {
+      return c.json({ error: pinCheck.error }, pinCheck.status);
     }
 
     const amountNum = parseInt(amount);
@@ -346,8 +393,9 @@ app.post('/make-server-69a10ee8/payments/process', async (c) => {
     const { provider, accountNumber, amount, pin } = await c.req.json();
 
     const wallet = await kv.get(`wallet:${userId}`);
-    if (wallet.pin !== pin) {
-      return c.json({ error: 'Invalid PIN' }, 400);
+    const pinCheck = await checkPin(userId, wallet, pin);
+    if (!pinCheck.ok) {
+      return c.json({ error: pinCheck.error }, pinCheck.status);
     }
 
     const amountNum = parseInt(amount);
@@ -405,8 +453,9 @@ app.post('/make-server-69a10ee8/payments/bill-payment', async (c) => {
       return c.json({ error: 'Wallet not found' }, 404);
     }
     
-    if (wallet.pin !== pin) {
-      return c.json({ error: 'Invalid PIN - Please check your PIN and try again' }, 400);
+    const pinCheck = await checkPin(userId, wallet, pin);
+    if (!pinCheck.ok) {
+      return c.json({ error: pinCheck.error }, pinCheck.status);
     }
 
     const amountNum = parseInt(amount);
@@ -551,8 +600,9 @@ app.post('/make-server-69a10ee8/wallet/pay-qr', async (c) => {
     const { qrCode, amount, pin } = await c.req.json();
 
     const wallet = await kv.get(`wallet:${userId}`);
-    if (wallet.pin !== pin) {
-      return c.json({ error: 'Invalid PIN' }, 400);
+    const pinCheck = await checkPin(userId, wallet, pin);
+    if (!pinCheck.ok) {
+      return c.json({ error: pinCheck.error }, pinCheck.status);
     }
 
     const qrData = await kv.get(`qr:${qrCode}`);
