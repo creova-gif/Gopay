@@ -1,10 +1,28 @@
 import { Hono } from 'npm:hono';
 import { cors } from 'npm:hono/cors';
+import { createClient } from 'npm:@supabase/supabase-js';
 import * as kv from './kv_store.tsx';
 
 const paymentAggregatorApp = new Hono();
 
 paymentAggregatorApp.use('*', cors());
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
+
+// Same verification pattern used in index.ts and admin.tsx — derives the
+// user id from Supabase's own token verification, never trusts a
+// client-supplied userId. Every endpoint in this file that moves money or
+// credits rewards must call this and reject on null.
+async function verifyUser(authHeader: string | null): Promise<string | null> {
+  if (!authHeader) return null;
+  const accessToken = authHeader.split(' ')[1];
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken);
+  if (error || !user?.id) return null;
+  return user.id;
+}
 
 // ============================================
 // PAYMENT AGGREGATOR INTEGRATION
@@ -670,8 +688,19 @@ async function processClickPesa(payment: PaymentRequest): Promise<PaymentRespons
 // ============================================
 
 paymentAggregatorApp.post('/process-payment', async (c) => {
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
   try {
-    const payment: PaymentRequest = await c.req.json();
+    const payment: PaymentRequest & { userId?: string } = await c.req.json();
+
+    // The authenticated user's own verified id is always used for anything
+    // that credits/debits an account (rewards below). Any userId sent in the
+    // body is ignored for that purpose — it was previously trusted directly,
+    // which let a caller credit reward points to an arbitrary account.
+    payment.userId = userId;
 
     // Validate payment
     if (!payment.amount || payment.amount <= 0) {
@@ -755,29 +784,114 @@ paymentAggregatorApp.post('/process-payment', async (c) => {
 // ============================================
 
 paymentAggregatorApp.post('/disburse', async (c) => {
+  // Previously this endpoint took userId, amount, phoneNumber straight from
+  // the request body with no authentication at all — anyone could disburse
+  // real money to any phone number. Fixed: caller must be authenticated, the
+  // verified user's own id is the only one ever used, and the amount is
+  // debited from that user's real ledger balance (with idempotency) before
+  // any money-movement API is called.
+  const userId = await verifyUser(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ error: 'Unauthorized' }, 401);
+  }
+
   try {
-    const { userId, amount, phoneNumber, paymentMethod } = await c.req.json();
+    const { amount, phoneNumber, paymentMethod, idempotencyKey } = await c.req.json();
+
+    if (!amount || amount <= 0) {
+      return c.json({ success: false, error: 'Invalid amount' }, 400);
+    }
+    if (!phoneNumber || !paymentMethod) {
+      return c.json({ success: false, error: 'phoneNumber and paymentMethod are required' }, 400);
+    }
+
+    const wallet = await kv.get(`wallet:${userId}`);
+    if (!wallet) {
+      return c.json({ success: false, error: 'Wallet not found' }, 404);
+    }
+
+    // idempotencyKey should be client-generated and stable across retries of
+    // the SAME disbursement attempt, matching the pattern used by
+    // wallet/add-funds and wallet/send-money.
+    const key = idempotencyKey || crypto.randomUUID();
+
+    // Debit first. process_wallet_transaction is expected to reject the
+    // debit if it would take the ledger balance negative — that rejection
+    // is this endpoint's balance check. If that assumption is wrong (i.e.
+    // the function does not itself enforce a non-negative balance), this
+    // must be fixed at the database function before this endpoint is
+    // considered safe to use with real disbursement credentials.
+    const { data: debitResult, error: debitError } = await supabase.rpc('process_wallet_transaction', {
+      p_idempotency_key: key,
+      p_user_id: userId,
+      p_endpoint: 'payment-aggregator/disburse',
+      p_entry_type: 'debit',
+      p_amount: parseInt(amount),
+      p_currency: wallet.currency || 'TZS',
+      p_description: `Disbursement to ${phoneNumber} via ${paymentMethod}`,
+    });
+
+    if (debitError) throw debitError;
+    if (debitResult.error) {
+      // Covers both "insufficient balance" and "duplicate idempotency key"
+      // style rejections from the ledger function.
+      return c.json({ success: false, error: debitResult.message || debitResult.error }, debitResult.error === 'conflict' ? 409 : 400);
+    }
 
     const transactionId = `GO-DISBURSE-${Date.now()}`;
-
-    // Use appropriate API for disbursement
     let result: PaymentResponse;
 
-    switch (paymentMethod) {
-      case 'mpesa':
-        // M-Pesa B2C
-        result = await disburseMpesa(phoneNumber, amount, transactionId);
-        break;
-      case 'airtel':
-        // Airtel Disbursement
-        result = await disburseAirtel(phoneNumber, amount, transactionId);
-        break;
-      case 'tigo':
-        result = await disburseTigo(phoneNumber, amount, transactionId);
-        break;
-      default:
-        throw new Error('Unsupported disbursement method');
+    try {
+      switch (paymentMethod) {
+        case 'mpesa':
+          result = await disburseMpesa(phoneNumber, amount, transactionId);
+          break;
+        case 'airtel':
+          result = await disburseAirtel(phoneNumber, amount, transactionId);
+          break;
+        case 'tigo':
+          result = await disburseTigo(phoneNumber, amount, transactionId);
+          break;
+        default:
+          throw new Error('Unsupported disbursement method');
+      }
+    } catch (providerError: any) {
+      // The ledger was already debited but the money never actually left —
+      // this is exactly the "payment succeeds but the call to move money
+      // fails" failure mode. Credit the debit back so the user's real
+      // balance is correct, then report the failure.
+      await supabase.rpc('process_wallet_transaction', {
+        p_idempotency_key: `${key}-refund`,
+        p_user_id: userId,
+        p_endpoint: 'payment-aggregator/disburse-refund',
+        p_entry_type: 'credit',
+        p_amount: parseInt(amount),
+        p_currency: wallet.currency || 'TZS',
+        p_description: `Refund: disbursement to ${phoneNumber} failed at provider`,
+      });
+      throw providerError;
     }
+
+    if (!result.success) {
+      // Provider responded but reported failure (as opposed to throwing) —
+      // same compensating-credit logic applies.
+      await supabase.rpc('process_wallet_transaction', {
+        p_idempotency_key: `${key}-refund`,
+        p_user_id: userId,
+        p_endpoint: 'payment-aggregator/disburse-refund',
+        p_entry_type: 'credit',
+        p_amount: parseInt(amount),
+        p_currency: wallet.currency || 'TZS',
+        p_description: `Refund: disbursement to ${phoneNumber} declined by provider`,
+      });
+      return c.json(result);
+    }
+
+    // Keep the kv wallet record's cached balance in sync, matching the
+    // pattern already used in wallet/add-funds — the ledger remains the
+    // source of truth.
+    wallet.balance = debitResult.newBalance;
+    await kv.set(`wallet:${userId}`, wallet);
 
     return c.json(result);
   } catch (error: any) {
