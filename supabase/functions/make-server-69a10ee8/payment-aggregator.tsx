@@ -908,7 +908,7 @@ paymentAggregatorApp.post('/disburse', async (c) => {
 paymentAggregatorApp.post('/mpesa-callback', async (c) => {
   try {
     const callback = await c.req.json();
-    console.log('M-Pesa callback received:', callback);
+    console.log('M-Pesa callback received:', { ResultCode: callback.Body?.stkCallback?.ResultCode, CheckoutRequestID: callback.Body?.stkCallback?.CheckoutRequestID });
 
     // Update transaction status
     if (callback.Body?.stkCallback?.ResultCode === 0) {
@@ -928,10 +928,15 @@ paymentAggregatorApp.post('/mpesa-callback', async (c) => {
 paymentAggregatorApp.post('/selcom-webhook', async (c) => {
   try {
     const webhook = await c.req.json();
-    console.log('Selcom webhook received:', webhook);
-    
-    // Verify signature and update transaction
-    
+    console.log('Selcom webhook received:', { order_id: webhook.order_id, payment_status: webhook.payment_status });
+
+    // NOT YET IMPLEMENTED: unlike the ClickPesa handler above, this does not
+    // verify a signature or update any transaction record — it only
+    // acknowledges receipt. Selcom-routed transactions currently never get
+    // their status updated from this webhook. Do not treat Selcom as a
+    // reliable payment path until this matches the ClickPesa handler's
+    // verify-then-update pattern.
+
     return c.json({ status: 'received' });
   } catch (error) {
     console.error('Selcom webhook error:', error);
@@ -943,20 +948,29 @@ paymentAggregatorApp.post('/selcom-webhook', async (c) => {
 paymentAggregatorApp.post('/clickpesa-callback', async (c) => {
   try {
     const callback = await c.req.json();
-    console.log('ClickPesa callback received:', callback);
+    console.log('ClickPesa callback received:', { merchant_reference: callback.merchant_reference, status: callback.status, payment_id: callback.payment_id });
 
-    // Verify signature
+    // Verify signature. Previously this skipped verification entirely (fail
+    // open) whenever the secret key or the signature field was absent — an
+    // attacker could omit the signature field and have any fabricated
+    // callback accepted. Now both a missing server-side secret and a missing
+    // or wrong signature are rejected (fail closed).
     const clickpesaSecretKey = Deno.env.get('CLICKPESA_SECRET_KEY');
-    if (clickpesaSecretKey && callback.signature) {
-      const expectedSignature = await generateHMAC(
-        `${callback.merchant_reference}${callback.status}${callback.amount}`,
-        clickpesaSecretKey
-      );
-      
-      if (callback.signature !== expectedSignature) {
-        console.error('ClickPesa signature verification failed');
-        return c.json({ status: 'signature_mismatch' }, 401);
-      }
+    if (!clickpesaSecretKey) {
+      console.error('ClickPesa webhook received but CLICKPESA_SECRET_KEY is not configured — rejecting rather than accepting unverified');
+      return c.json({ status: 'not_configured' }, 500);
+    }
+    if (!callback.signature) {
+      console.error('ClickPesa callback missing signature field');
+      return c.json({ status: 'signature_missing' }, 401);
+    }
+    const expectedSignature = await generateHMAC(
+      `${callback.merchant_reference}${callback.status}${callback.amount}`,
+      clickpesaSecretKey
+    );
+    if (callback.signature !== expectedSignature) {
+      console.error('ClickPesa signature verification failed');
+      return c.json({ status: 'signature_mismatch' }, 401);
     }
 
     // Update transaction status
