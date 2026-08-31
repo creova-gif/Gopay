@@ -186,10 +186,14 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
         } else {
           const error = await response.json();
           toast.error(error.error || 'Failed to add funds');
+          // regenerate idempotency key so user retry uses a fresh key
+          setAddFundsData(prev => ({ ...prev, idempotencyKey: crypto.randomUUID() }));
         }
       } catch (error) {
         console.error('Error adding funds:', error);
         toast.error('An error occurred');
+        // regenerate idempotency key after unexpected failure
+        setAddFundsData(prev => ({ ...prev, idempotencyKey: crypto.randomUUID() }));
       }
     }
   };
@@ -230,10 +234,14 @@ export function WalletPage({ user, accessToken, onBack, onNavigate, isDemoMode }
         } else {
           const error = await response.json();
           toast.error(error.error || 'Failed to send money');
+          // regenerate idempotency key so retry uses a fresh key
+          setSendMoneyData(prev => ({ ...prev, idempotencyKey: crypto.randomUUID() }));
         }
       } catch (error) {
         console.error('Error sending money:', error);
         toast.error('An error occurred');
+        // regenerate idempotency key after unexpected failure
+        setSendMoneyData(prev => ({ ...prev, idempotencyKey: crypto.randomUUID() }));
       }
     }
   };
