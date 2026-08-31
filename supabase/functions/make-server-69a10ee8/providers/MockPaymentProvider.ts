@@ -20,6 +20,23 @@ export class MockPaymentProvider implements IPaymentProvider {
   }
 
   /**
+   * Mask sensitive strings, leaving visible last N chars.
+   */
+  private maskSensitive(value: string, visible = 4): string {
+    if (!value) return '';
+    const len = value.length;
+    const visibleCount = Math.min(visible, len);
+    return '*'.repeat(Math.max(0, len - visibleCount)) + value.slice(-visibleCount);
+  }
+
+  /**
+   * Generate a lightweight correlation id for logs.
+   */
+  private generateCorrelationId(): string {
+    return `cid-${Date.now().toString(36)}-${Math.random().toString(36).substring(2,8)}`;
+  }
+
+  /**
    * Helper to simulate network latency and connection reliability
    */
   private async simulateNetwork(): Promise<void> {
@@ -34,8 +51,10 @@ export class MockPaymentProvider implements IPaymentProvider {
    * Requests a mobile money debit/C2B push (STK Push)
    */
   public async requestPayment(request: TransactionRequest): Promise<TransactionResponse> {
+    const correlationId = this.generateCorrelationId();
     try {
-      console.log(`[SANDBOX] Initiating Mobile Money Push to ${request.phoneNumber} for ${request.amount} ${request.currency}...`);
+      const maskedPhone = this.maskSensitive(request.phoneNumber ?? '', 4);
+      console.log(`[SANDBOX][cid:${correlationId}] Initiating Mobile Money Push to phone:${maskedPhone} for ${request.amount} ${request.currency}...`);
 
       // Simulate real-world carrier latency and network drops
       await this.simulateNetwork();
@@ -71,7 +90,8 @@ export class MockPaymentProvider implements IPaymentProvider {
       };
 
     } catch (error: any) {
-      console.error(`[SANDBOX NETWORK ERROR] Push payment failed for key ${request.idempotencyKey}: ${error.message}`);
+      const maskedKey = this.maskSensitive(request.idempotencyKey ?? '', 4);
+      console.error(`[SANDBOX NETWORK ERROR][cid:${correlationId}] Push payment failed for idempotency:${maskedKey}: ${error.message}`);
       // Throwing the error simulates a true network failure, allowing the client
       // to test its retry logic and verify that the idempotency key prevents duplicate charges.
       throw error;
